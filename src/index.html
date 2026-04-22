@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>To-Do List</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <h1>To-Do List</h1>
+    <form class="todo-form">
+      <input type="text" id="todo-input" placeholder="Enter a task...">
+      <button type="button" id="add-button">Add</button>
+    </form>
+    <ul class="todo-list">
+      <li class="todo-item">
+        <input type="checkbox" id="todo-1">
+        <label for="todo-1">Buy groceries</label>
+      </li>
+      <li class="todo-item completed">
+        <input type="checkbox" id="todo-2" checked>
+        <label for="todo-2">Call dentist</label>
+      </li>
+      <li class="todo-item">
+        <input type="checkbox" id="todo-3">
+        <label for="todo-3">Finish report</label>
+      </li>
+    </ul>
+  </div>
+</body>
+</html>
