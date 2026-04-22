@@ -42,3 +42,14 @@ Clean and minimal — white/light grey aesthetic, ample whitespace, readable typ
 | JavaScript variables & functions | camelCase | `addTodo`, `nextId` |
 | CSS classes | kebab-case | `todo-item`, `todo-list` |
 | HTML IDs | kebab-case | `todo-input`, `add-button` |
+
+---
+
+## Development Workflow (BDD)
+
+Follow a BDD (Behaviour-Driven Development) cycle for every new feature:
+
+1. **Write tests first** — add unit tests in a dedicated test file before writing any implementation code.
+2. **Run tests and confirm they fail** — execute the test suite; all new tests must fail at this point (red phase).
+3. **Implement the feature** — write the minimum code needed to satisfy the feature requirements and the failing tests.
+4. **Rerun tests and confirm they pass** — execute the test suite again; all tests must now pass (green phase). If any test still fails, refactor the implementation and repeat from step 3.
