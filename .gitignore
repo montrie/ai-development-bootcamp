@@ -1,2 +1,7 @@
 .claude/settings.local.json
 CLAUDE.local.md
+
+/node_modules
+/.playwright-mcp
+/playwright-report
+/test-results
