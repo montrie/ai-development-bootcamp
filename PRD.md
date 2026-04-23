@@ -120,16 +120,17 @@ When a ToDo item is marked as done:
 |---|---|
 | F-01 | The user can type a task description into the text input. |
 | F-02 | Clicking "Add" creates a new ToDo item and appends it to the list. |
-| F-03 | An item cannot be added if the input is empty or whitespace-only. |
-| F-04 | After adding, the input field is cleared. |
+| F-03 | Pressing Enter in the text input triggers the same add action as clicking "Add". |
+| F-04 | An item cannot be added if the input is empty or whitespace-only. |
+| F-05 | After adding, the input field is cleared. |
 
 #### Complete a ToDo Item
 
 | ID | Requirement |
 |---|---|
-| F-05 | Each item has a checkbox. Clicking it toggles the item's "done" state. |
-| F-06 | A completed item is visually greyed out with strikethrough text. |
-| F-07 | A completed item can be toggled back to "not done" by clicking the checkbox again. |
+| F-06 | Each item has a checkbox. Clicking it toggles the item's "done" state. |
+| F-07 | A completed item is visually greyed out with strikethrough text. |
+| F-08 | A completed item can be toggled back to "not done" by clicking the checkbox again. |
 
 ### 6.4 Behaviour Edge Cases
 
@@ -165,8 +166,8 @@ Each ToDo item row gains a **delete button** on the right side. Clicking it imme
 
 | ID | Requirement |
 |---|---|
-| F-08 | Each item has a delete button. |
-| F-09 | Clicking the delete button removes the item from the list permanently. |
+| F-09 | Each item has a delete button. |
+| F-10 | Clicking the delete button removes the item from the list permanently. |
 
 ### 7.4 Success Criteria
 
@@ -187,9 +188,9 @@ Persist the ToDo list across page refreshes using `localStorage`, so the user's 
 
 | ID | Requirement |
 |---|---|
-| F-10 | The full list (text + done state) is saved to `localStorage` on every change (add, complete, delete). |
-| F-11 | On page load, the saved list is read from `localStorage` and rendered. |
-| F-12 | If `localStorage` is unavailable (private browsing restrictions), the app degrades gracefully — it works in-memory for the session and displays a short note informing the user that changes will not be saved. |
+| F-11 | The full list (text + done state) is saved to `localStorage` on every change (add, complete, delete). |
+| F-12 | On page load, the saved list is read from `localStorage` and rendered. |
+| F-13 | If `localStorage` is unavailable (private browsing restrictions), the app degrades gracefully — it works in-memory for the session and displays a short note informing the user that changes will not be saved. |
 
 ### 8.3 Behaviour Edge Cases
 
