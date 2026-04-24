@@ -22,7 +22,7 @@ test.describe('Clicking the delete button removes the item from the list', () =>
 
   test('item is no longer visible after deletion', async ({ page }) => {
     await page.locator('.todo-item .todo-delete-btn').first().click();
-    await expect(page.locator('.todo-item label')).not.toContainText('Buy milk');
+    await expect(page.locator('.todo-item label', { hasText: 'Buy milk' })).toHaveCount(0);
   });
 });
 
@@ -35,8 +35,8 @@ test.describe('Deleted item does not reappear after adding a new item', () => {
   test('deleted item stays gone when a new item is added', async ({ page }) => {
     await page.locator('.todo-item .todo-delete-btn').first().click();
     await addTodo(page, 'Call dentist');
-    await expect(page.locator('.todo-item label')).not.toContainText('Buy milk');
-    await expect(page.locator('.todo-item label')).toContainText('Call dentist');
+    await expect(page.locator('.todo-item label', { hasText: 'Buy milk' })).toHaveCount(0);
+    await expect(page.locator('.todo-item label', { hasText: 'Call dentist' })).toHaveCount(1);
   });
 });
 
