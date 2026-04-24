@@ -6,6 +6,14 @@ function init() {
   const addButton = document.getElementById('add-button');
   const list = document.querySelector('.todo-list');
 
+  const loaded = loadState();
+  if (loaded === null) {
+    document.getElementById('storage-notice').removeAttribute('hidden');
+  } else {
+    todos = loaded;
+    if (todos.length > 0) nextId = Math.max(...todos.map((t) => t.id)) + 1;
+  }
+
   addButton.addEventListener('click', () => {
     const text = input.value.trim();
     if (!text) {
@@ -85,6 +93,7 @@ function render() {
 
 function addTodo(text) {
   todos.push({ id: nextId++, text, done: false });
+  saveState();
   render();
 }
 
@@ -92,13 +101,32 @@ function toggleTodo(id) {
   const todo = todos.find((t) => t.id === id);
   if (todo) {
     todo.done = !todo.done;
+    saveState();
     render();
   }
 }
 
 function deleteTodo(id) {
   todos = todos.filter((t) => t.id !== id);
+  saveState();
   render();
+}
+
+function saveState() {
+  try {
+    localStorage.setItem('todo-items', JSON.stringify(todos));
+  } catch {
+    document.getElementById('storage-notice').removeAttribute('hidden');
+  }
+}
+
+function loadState() {
+  try {
+    const saved = localStorage.getItem('todo-items');
+    return saved ? JSON.parse(saved) : [];
+  } catch {
+    return null;
+  }
 }
 
 document.addEventListener('DOMContentLoaded', init);
