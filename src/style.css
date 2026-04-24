@@ -86,9 +86,21 @@ h1 {
 .todo-item label {
   font-size: 1rem;
   cursor: pointer;
+  overflow-wrap: break-word;
+  min-width: 0;
 }
 
 .todo-item.completed label {
   color: #aaa;
   text-decoration: line-through;
+}
+
+#todo-input.invalid {
+  border-color: #e53e3e;
+}
+
+.todo-placeholder {
+  color: #aaa;
+  font-style: italic;
+  padding: 0.6rem 0;
 }

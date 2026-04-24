@@ -1,8 +1,9 @@
-'use strict';
-const { test, expect } = require('@playwright/test');
-const fs = require('fs');
-const path = require('path');
+import { test, expect } from '@playwright/test';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const srcDir = path.join(__dirname, '..', 'src');
 
 test.describe('Required project files are present', () => {
@@ -14,9 +15,10 @@ test.describe('Required project files are present', () => {
   test('style.css exists in /src', () => {
     expect(fs.existsSync(path.join(srcDir, 'style.css'))).toBe(true);
   });
-  test('app.js is either absent or empty', () => {
+  test('app.js exists and contains JavaScript', () => {
     const p = path.join(srcDir, 'app.js');
-    if (fs.existsSync(p)) expect(fs.readFileSync(p, 'utf8').trim()).toBe('');
+    expect(fs.existsSync(p)).toBe(true);
+    expect(fs.readFileSync(p, 'utf8').trim().length).toBeGreaterThan(0);
   });
 });
 
@@ -59,18 +61,3 @@ test.describe('New ToDo form elements', () => {
   });
 });
 
-test.describe('New ToDo form has no interactivity', () => {
-  test.beforeEach(async ({ page }) => { await page.goto('/'); });
-
-  test('clicking "Add" does not add a list item', async ({ page }) => {
-    const before = await page.locator('li').count();
-    await page.getByRole('button', { name: 'Add' }).click();
-    expect(await page.locator('li').count()).toBe(before);
-  });
-  test('text input value is unchanged after clicking "Add"', async ({ page }) => {
-    const input = page.locator('input[type="text"], input:not([type])');
-    const before = await input.inputValue();
-    await page.getByRole('button', { name: 'Add' }).click();
-    await expect(input).toHaveValue(before);
-  });
-});
