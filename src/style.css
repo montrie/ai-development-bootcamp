@@ -105,6 +105,14 @@ h1 {
   padding: 0.6rem 0;
 }
 
+#storage-notice {
+  font-size: 0.8rem;
+  color: #888;
+  font-style: italic;
+  margin: 0 0 1rem;
+  text-align: center;
+}
+
 .todo-delete-btn {
   margin-left: auto;
   background: none;
