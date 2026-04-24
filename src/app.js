@@ -35,6 +35,13 @@ function init() {
     }
   });
 
+  list.addEventListener('click', (e) => {
+    if (e.target.classList.contains('todo-delete-btn')) {
+      const li = e.target.closest('[data-id]');
+      if (li) deleteTodo(Number(li.dataset.id));
+    }
+  });
+
   render();
 }
 
@@ -64,8 +71,14 @@ function render() {
     label.htmlFor = `todo-${todo.id}`;
     label.textContent = todo.text;
 
+    const deleteBtn = document.createElement('button');
+    deleteBtn.className = 'todo-delete-btn';
+    deleteBtn.textContent = '✕';
+    deleteBtn.setAttribute('aria-label', `Delete ${todo.text}`);
+
     li.appendChild(checkbox);
     li.appendChild(label);
+    li.appendChild(deleteBtn);
     list.appendChild(li);
   });
 }
@@ -81,6 +94,11 @@ function toggleTodo(id) {
     todo.done = !todo.done;
     render();
   }
+}
+
+function deleteTodo(id) {
+  todos = todos.filter((t) => t.id !== id);
+  render();
 }
 
 document.addEventListener('DOMContentLoaded', init);
