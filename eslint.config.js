@@ -17,7 +17,7 @@ export default [
     files: ['tests/**/*.js'],
     languageOptions: {
       ecmaVersion: 2022,
-      sourceType: 'commonjs',
+      sourceType: 'module',
       globals: {
         ...globals.browser,
         ...globals.node

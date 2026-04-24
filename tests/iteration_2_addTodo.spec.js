@@ -1,5 +1,4 @@
-'use strict';
-const { test, expect } = require('@playwright/test');
+import { test, expect } from '@playwright/test';
 
 test.describe('User can type a task description into the todo input', () => {
   test.beforeEach(async ({ page }) => { await page.goto('/'); });

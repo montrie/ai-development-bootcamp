@@ -1,5 +1,4 @@
-'use strict';
-const { test, expect } = require('@playwright/test');
+import { test, expect } from '@playwright/test';
 
 test.describe('Submitting an empty input shows a validation cue', () => {
   test.beforeEach(async ({ page }) => { await page.goto('/'); });

@@ -1,5 +1,4 @@
-'use strict';
-const { test, expect } = require('@playwright/test');
+import { test, expect } from '@playwright/test';
 
 test.describe('Each todo item has a checkbox', () => {
   test.beforeEach(async ({ page }) => {

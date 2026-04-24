@@ -1,5 +1,4 @@
-'use strict';
-const { test, expect } = require('@playwright/test');
+import { test, expect } from '@playwright/test';
 
 test.describe('The page heading and form are visible on load', () => {
   test.beforeEach(async ({ page }) => { await page.goto('/'); });
