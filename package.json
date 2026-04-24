@@ -2,11 +2,15 @@
   "name": "todo-app",
   "version": "1.0.0",
   "description": "Simple, lightweight ToDo application",
+  "type": "module",
   "scripts": {
+    "lint": "eslint src/**/*.js tests/**/*.js",
     "test": "playwright test"
   },
   "devDependencies": {
+    "@eslint/js": "^9.0.0",
     "@playwright/test": "^1.59.1",
+    "eslint": "^9.0.0",
     "serve": "^14.0.0"
   }
 }
