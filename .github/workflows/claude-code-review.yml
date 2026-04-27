@@ -41,7 +41,23 @@ jobs:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           plugin_marketplaces: 'https://github.com/anthropics/claude-code.git'
           plugins: 'code-review@claude-code-plugins'
-          prompt: '/code-review:code-review ${{ github.repository }}/pull/${{ github.event.pull_request.number }}'
+          prompt: |
+            /code-review:code-review ${{ github.repository }}/pull/${{ github.event.pull_request.number }}
+
+            After completing the review, post a PR comment using the gh CLI:
+              gh pr comment ${{ github.event.pull_request.number }} --repo ${{ github.repository }} --body "<your summary>"
+
+            The summary must use this markdown structure:
+            ## Claude Review Summary
+
+            **What this PR does:** <1-2 sentence description>
+
+            **Findings:**
+            - List each issue found (severity: bug/warning/suggestion)
+            - Or "No significant issues found" if clean
+
+            **Verdict:** <Approved / Changes requested / Needs discussion>
+          use_sticky_comment: true
           # See https://github.com/anthropics/claude-code-action/blob/main/docs/usage.md
           # or https://code.claude.com/docs/en/cli-reference for available options
 
