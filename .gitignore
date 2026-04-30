@@ -5,3 +5,13 @@ CLAUDE.local.md
 /.playwright-mcp
 /playwright-report
 /test-results
+/.tips
+/session_summaries
+
+*.txt
+
+# V2 build artifacts
+apps/backend/target/
+apps/frontend/node_modules/
+apps/frontend/playwright-report/
+apps/frontend/test-results/
