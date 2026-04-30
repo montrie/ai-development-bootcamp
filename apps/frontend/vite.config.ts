@@ -11,8 +11,12 @@ export default defineConfig({
   },
   server: {
     port: 5173,
+    host: process.env.VITE_HOST === 'true',
+    watch: {
+      usePolling: process.env.VITE_POLLING === 'true',
+    },
     proxy: {
-      '/api': 'http://localhost:8080',
+      '/api': process.env.BACKEND_URL ?? 'http://localhost:8080',
     },
   },
 });

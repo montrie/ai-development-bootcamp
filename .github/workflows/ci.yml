@@ -88,85 +88,38 @@ jobs:
     timeout-minutes: 20
     permissions:
       contents: read
-    services:
-      postgres:
-        image: postgres:17
-        env:
-          POSTGRES_DB: todo_db
-          POSTGRES_USER: todo_app_user
-          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_DB_PASSWORD }}
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up Java 26
-        uses: actions/setup-java@v4
-        with:
-          java-version: "26"
-          distribution: "temurin"
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
-      - name: Cache Maven dependencies
-        uses: actions/cache@v4
-        with:
-          path: ~/.m2/repository
-          key: ${{ runner.os }}-maven-${{ hashFiles('apps/backend/pom.xml') }}
-          restore-keys: ${{ runner.os }}-maven-
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "20"
-          cache: "npm"
-          cache-dependency-path: apps/frontend/package-lock.json
-
-      - name: Install frontend dependencies
-        run: npm ci
-        working-directory: apps/frontend
-
-      - name: Cache Playwright browsers
-        uses: actions/cache@v4
-        id: playwright-cache
-        with:
-          path: ~/.cache/ms-playwright
-          key: playwright-${{ runner.os }}-${{ hashFiles('apps/frontend/package-lock.json') }}
-
-      - name: Install Playwright browsers
-        if: steps.playwright-cache.outputs.cache-hit != 'true'
-        run: npx playwright install --with-deps
-        working-directory: apps/frontend
-
-      - name: Install Playwright system dependencies (cached)
-        if: steps.playwright-cache.outputs.cache-hit == 'true'
-        run: npx playwright install-deps
-        working-directory: apps/frontend
-
-      - name: Start Spring Boot backend
-        run: mvn -f apps/backend/pom.xml --no-transfer-progress spring-boot:run &
-        shell: bash
-        env:
-          SPRING_DATASOURCE_PASSWORD: ${{ secrets.POSTGRES_DB_PASSWORD }}
-
-      - name: Wait for backend
+      - name: Build images with layer caching
         run: |
-          until curl -sf http://localhost:8080/api/todos > /dev/null 2>&1; do
-            echo "Waiting for backend..."
-            sleep 2
-          done
-          echo "Backend ready."
-        timeout-minutes: 2
+          docker buildx bake -f compose.yml backend e2e-test \
+            --set "*.cache-from=type=gha" \
+            --set "*.cache-to=type=gha,mode=max" \
+            --load
+        env:
+          POSTGRES_DB: todo_db
+          POSTGRES_USER: todo_app_user
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_DB_PASSWORD }}
 
       - name: Run E2E tests
-        run: npm run test:e2e
-        working-directory: apps/frontend
+        run: docker compose run --rm e2e-test
         env:
-          CI: true
+          POSTGRES_DB: todo_db
+          POSTGRES_USER: todo_app_user
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_DB_PASSWORD }}
+
+      - name: Stop Docker services
+        if: always()
+        run: docker compose down -v
+        env:
+          POSTGRES_DB: todo_db
+          POSTGRES_USER: todo_app_user
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_DB_PASSWORD }}
 
       - name: Upload Playwright report
         if: failure()
