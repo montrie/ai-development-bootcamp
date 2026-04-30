@@ -1,8 +1,10 @@
 # Gherkin Test Guidelines (Condensed)
 
 ## Structure
-- Files are in the `features` director
-- Each file is named in the pattern `iteration_N_featureName.feature` (e.g. `iteration_2_addTodo.feature`)
+- Version 1 feature files are in `features-v1/`
+- Version 2 feature files are in `apps/frontend/features/`
+- Each file is prefixed with its version: `vN_featureName.feature` (e.g. `v1_iteration_2_addTodo.feature`, `v2_addTodo.feature`)
+- This prefix convention applies to all test-related files: `.feature` files, Playwright spec files, Vitest test files, and JUnit test files
 - One `Feature:` block per file
 - Scenarios ordered simple → complex
 
