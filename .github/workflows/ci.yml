@@ -28,7 +28,33 @@ jobs:
       - name: Run ESLint
         run: npm run lint
 
-  test:
+  backend-test:
+    needs: lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java 26
+        uses: actions/setup-java@v4
+        with:
+          java-version: "26"
+          distribution: "temurin"
+
+      - name: Cache Maven dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('apps/backend/pom.xml') }}
+          restore-keys: ${{ runner.os }}-maven-
+
+      - name: Run backend tests
+        run: mvn -f apps/backend/pom.xml --no-transfer-progress test
+
+  frontend-unit-test:
     needs: lint
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -37,7 +63,6 @@ jobs:
     strategy:
       matrix:
         node-version: [18, 20]
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -47,32 +72,106 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
           cache: "npm"
+          cache-dependency-path: apps/frontend/package-lock.json
 
-      - name: Install dependencies
+      - name: Install frontend dependencies
         run: npm ci
+        working-directory: apps/frontend
+
+      - name: Run Vitest unit tests
+        run: npm run test:unit
+        working-directory: apps/frontend
+
+  e2e-test:
+    needs: [backend-test, frontend-unit-test]
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_DB: todo_db
+          POSTGRES_USER: todo_app_user
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_DB_PASSWORD }}
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java 26
+        uses: actions/setup-java@v4
+        with:
+          java-version: "26"
+          distribution: "temurin"
+
+      - name: Cache Maven dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('apps/backend/pom.xml') }}
+          restore-keys: ${{ runner.os }}-maven-
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: apps/frontend/package-lock.json
+
+      - name: Install frontend dependencies
+        run: npm ci
+        working-directory: apps/frontend
 
       - name: Cache Playwright browsers
         uses: actions/cache@v4
         id: playwright-cache
         with:
           path: ~/.cache/ms-playwright
-          key: playwright-${{ runner.os }}-${{ matrix.node-version }}-${{ hashFiles('package-lock.json') }}
+          key: playwright-${{ runner.os }}-${{ hashFiles('apps/frontend/package-lock.json') }}
 
       - name: Install Playwright browsers
         if: steps.playwright-cache.outputs.cache-hit != 'true'
         run: npx playwright install --with-deps
+        working-directory: apps/frontend
 
       - name: Install Playwright system dependencies (cached)
         if: steps.playwright-cache.outputs.cache-hit == 'true'
         run: npx playwright install-deps
+        working-directory: apps/frontend
 
-      - name: Run tests
-        run: npm test
+      - name: Start Spring Boot backend
+        run: mvn -f apps/backend/pom.xml --no-transfer-progress spring-boot:run &
+        shell: bash
+        env:
+          SPRING_DATASOURCE_PASSWORD: ${{ secrets.POSTGRES_DB_PASSWORD }}
+
+      - name: Wait for backend
+        run: |
+          until curl -sf http://localhost:8080/api/todos > /dev/null 2>&1; do
+            echo "Waiting for backend..."
+            sleep 2
+          done
+          echo "Backend ready."
+        timeout-minutes: 2
+
+      - name: Run E2E tests
+        run: npm run test:e2e
+        working-directory: apps/frontend
+        env:
+          CI: true
 
       - name: Upload Playwright report
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: playwright-report-node${{ matrix.node-version }}
-          path: playwright-report/
+          name: playwright-report
+          path: apps/frontend/playwright-report/
           retention-days: 7
