@@ -41,21 +41,18 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up Java 26
-        uses: actions/setup-java@v4
-        with:
-          java-version: "26"
-          distribution: "temurin"
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
-      - name: Cache Maven dependencies
-        uses: actions/cache@v4
-        with:
-          path: ~/.m2/repository
-          key: ${{ runner.os }}-maven-${{ hashFiles('apps/backend/pom.xml') }}
-          restore-keys: ${{ runner.os }}-maven-
+      - name: Build backend-test image with layer caching
+        run: |
+          docker buildx bake -f compose.yml backend-test \
+            --set "*.cache-from=type=gha" \
+            --set "*.cache-to=type=gha,mode=max" \
+            --load
 
       - name: Run backend tests
-        run: mvn -f apps/backend/pom.xml --no-transfer-progress test
+        run: docker compose run --rm backend-test
 
   frontend-unit-test:
     needs: lint
@@ -63,27 +60,22 @@ jobs:
     timeout-minutes: 10
     permissions:
       contents: read
-    strategy:
-      matrix:
-        node-version: [18, 20]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ matrix.node-version }}
-          cache: "npm"
-          cache-dependency-path: apps/frontend/package-lock.json
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
-      - name: Install frontend dependencies
-        run: npm ci
-        working-directory: apps/frontend
+      - name: Build frontend-unit-test image with layer caching
+        run: |
+          docker buildx bake -f compose.yml frontend-unit-test \
+            --set "*.cache-from=type=gha" \
+            --set "*.cache-to=type=gha,mode=max" \
+            --load
 
-      - name: Run Vitest unit tests
-        run: npm run test:unit
-        working-directory: apps/frontend
+      - name: Run frontend unit tests
+        run: docker compose run --rm frontend-unit-test
 
   e2e-test:
     needs: [backend-test, frontend-unit-test]
