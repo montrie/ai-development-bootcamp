@@ -9,8 +9,7 @@
     "preview": "vite preview",
     "lint": "eslint src",
     "test:unit": "vitest run",
-    "test:unit:watch": "vitest",
-    "test:e2e": "playwright test"
+    "test:unit:watch": "vitest"
   },
   "dependencies": {
     "react": "^19.0.0",
@@ -18,7 +17,6 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.0.0",
-    "@playwright/test": "^1.50.0",
     "@testing-library/jest-dom": "^6.0.0",
     "@testing-library/react": "^16.0.0",
     "@testing-library/user-event": "^14.0.0",

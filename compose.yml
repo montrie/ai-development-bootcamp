@@ -62,11 +62,12 @@ services:
   e2e-test:
     profiles: [test]
     build:
-      context: apps/frontend
+      context: .
       dockerfile: Dockerfile.e2e
     volumes:
-      - ./apps/frontend:/app
+      - .:/app
       - /app/node_modules
+      - /app/apps/frontend/node_modules
     environment:
       BACKEND_URL: http://backend:8080
       VITE_HOST: "true"
