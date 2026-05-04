@@ -39,7 +39,9 @@ jobs:
         uses: anthropics/claude-code-action@v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
           use_sticky_comment: true
+          claude_args: '--allowedTools "Bash(gh pr diff *),Bash(gh pr comment *),Bash(gh api *),Read"'
           prompt: |
             You are reviewing a pull request for a ToDo application.
             Fetch the diff with: gh pr diff ${{ github.event.pull_request.number }} --repo ${{ github.repository }}
