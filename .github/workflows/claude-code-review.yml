@@ -39,15 +39,23 @@ jobs:
         uses: anthropics/claude-code-action@v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-          plugin_marketplaces: 'https://github.com/anthropics/claude-code.git'
-          plugins: 'code-review@claude-code-plugins'
+          use_sticky_comment: true
           prompt: |
-            /code-review:code-review ${{ github.repository }}/pull/${{ github.event.pull_request.number }}
+            You are reviewing a pull request for a ToDo application.
+            Fetch the diff with: gh pr diff ${{ github.event.pull_request.number }} --repo ${{ github.repository }}
 
-            After completing the review, post a PR comment using the gh CLI:
-              gh pr comment ${{ github.event.pull_request.number }} --repo ${{ github.repository }} --body "<your summary>"
+            Check only the following:
+            1. **Test coverage** — new behaviour must include all three layers: JUnit 5 (backend), Vitest (frontend), Playwright+Gherkin (E2E). Flag any missing layer as a bug.
+            2. **Test file naming** — test files must be prefixed with the version number (e.g. `v2_`).
+            3. **Naming conventions** — camelCase for JS/TS/Java variables and methods; PascalCase for React components and Java classes; kebab-case for CSS classes and HTML IDs.
+            4. **V2 structure** — all V2 code must live under `apps/frontend/` or `apps/backend/`; E2E tests under `bdd/`.
+            5. **REST API contract** — endpoints must match: GET/POST `/api/todos`, PATCH/DELETE `/api/todos/{id}`, DELETE `/api/todos`.
+            6. **Obvious bugs** — TypeScript type errors, unhandled nulls, logic mistakes.
 
-            The summary must use this markdown structure:
+            Then post a comment using:
+              gh pr comment ${{ github.event.pull_request.number }} --repo ${{ github.repository }} --body "<summary>"
+
+            Use this exact structure:
             ## Claude Review Summary
 
             **What this PR does:** <1-2 sentence description>
@@ -57,7 +65,4 @@ jobs:
             - Or "No significant issues found" if clean
 
             **Verdict:** <Approved / Changes requested / Needs discussion>
-          use_sticky_comment: true
-          # See https://github.com/anthropics/claude-code-action/blob/main/docs/usage.md
-          # or https://code.claude.com/docs/en/cli-reference for available options
 

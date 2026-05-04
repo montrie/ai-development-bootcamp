@@ -11,7 +11,7 @@
 
 The ToDo application has two versions:
 
-- **Version 1** — fully client-side (HTML/CSS/Vanilla JS, `localStorage` persistence). Files remain at the repository root.
+- **Version 1** — retired. App files deleted; Gherkin feature specs preserved in `features-v1/` for reference only.
 - **Version 2** — full-stack: React/TypeScript frontend + Spring Boot 4 REST API + PostgreSQL database. Source lives under `apps/`.
 
 ---
@@ -22,35 +22,33 @@ The ToDo application has two versions:
 apps/
   frontend/            React + TypeScript app (Vite)
     src/               React components, hooks, api.ts
-    features/          Gherkin .feature files (BDD)
     package.json
     vite.config.ts
     tsconfig.json
-    playwright.config.ts
   backend/             Spring Boot 4 app
     src/main/java/     Production code
     src/test/java/     JUnit 5 tests
     pom.xml
-index.html             Version 1 (unchanged)
-style.css              Version 1 (unchanged)
-app.js                 Version 1 (unchanged)
-features-v1/           Version 1 Gherkin .feature files
-tests/                 Version 1 Playwright specs
+bdd/
+  features/            V2 Gherkin .feature files
+  tests/               V2 Playwright specs
+features-v1/           V1 Gherkin .feature files (reference only; V1 app deleted)
+scripts/               Dev helper scripts (start_v2.sh, setup_db.sh, test_all.sh)
 ```
 
 ---
 
 ## 3. Technical Constraints
 
-| Constraint | Version 1 | Version 2 |
-|---|---|---|
-| Frontend | HTML5, CSS3, Vanilla JS (ES6+) | React 19, TypeScript, Vite |
-| Backend | None | Spring Boot 4, Java 26 |
-| Database | None (`localStorage`) | PostgreSQL |
-| Frameworks | None | React, Spring Boot |
-| Runtime | Modern browser | Browser + JVM |
-| Deployment | Three static files | `apps/frontend/` + `apps/backend/` |
-| Containerisation | N/A | Out of scope for V2 |
+| Constraint | Version 2 |
+|---|---|
+| Frontend | React 19, TypeScript, Vite |
+| Backend | Spring Boot 4, Java 26 |
+| Database | PostgreSQL |
+| Frameworks | React, Spring Boot |
+| Runtime | Browser + JVM |
+| Deployment | `apps/frontend/` + `apps/backend/` |
+| Containerisation | Out of scope for V2 |
 
 ---
 
@@ -128,7 +126,7 @@ Write failing Vitest component tests using React Testing Library → implement �
 
 ### 6.3 End-to-End BDD (Playwright + Gherkin)
 
-Follow the 5-step BDD cycle defined in `TESTING_WORKFLOW.md`. Gherkin `.feature` files live in `apps/frontend/features/`. Playwright specs live alongside them and target the Vite dev server.
+Follow the 5-step BDD cycle defined in `TESTING_WORKFLOW.md`. Gherkin `.feature` files live in `bdd/features/`. Playwright specs live in `bdd/tests/` and target the Vite dev server.
 
 | Layer | Tool | Scope |
 |---|---|---|
@@ -151,39 +149,6 @@ Follow the 5-step BDD cycle defined in `TESTING_WORKFLOW.md`. Gherkin `.feature`
 
 ---
 
-## 8. Version 1 Architecture (Reference)
+## 8. Version 1 (Reference)
 
-Version 1 details are preserved here for reference. No changes are made to V1 files.
-
-### 8.1 File Structure
-
-```
-index.html   — page structure and markup
-style.css    — all styling
-app.js       — all logic (state, rendering, events, localStorage)
-```
-
-### 8.2 State
-
-```javascript
-let todos = [];   // array of { id, text, done }
-let nextId = 1;
-```
-
-### 8.3 Functions
-
-| Function | Responsibility |
-|---|---|
-| `init()` | Entry point — binds events, loads state, renders |
-| `render()` | Clears and rebuilds the list from `todos` |
-| `addTodo(text)` | Appends a new ToDo item, saves, renders |
-| `toggleTodo(id)` | Toggles `done`, saves, renders |
-| `deleteTodo(id)` | Removes a ToDo item, saves, renders |
-| `saveState()` | Serialises `todos` to `localStorage` |
-| `loadState()` | Deserialises `todos` from `localStorage`; returns `[]` if unavailable |
-
-### 8.4 localStorage
-
-| Key | Value |
-|---|---|
-| `"todo-items"` | JSON array of `{ id, text, done }` objects |
+The V1 app files (`index.html`, `style.css`, `app.js`) have been deleted. The Gherkin feature specs in `features-v1/` are retained for reference only.
