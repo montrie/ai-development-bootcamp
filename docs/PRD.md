@@ -29,4 +29,4 @@ Anyone who needs a straightforward task list in their browser — no account, no
 | Version | Status | Description | Details |
 |---|---|---|---|
 | Version 1 | Complete | Vanilla browser app (HTML/CSS/JS, localStorage) | [PRD_V1.md](product-requirements/PRD_V1.md) |
-| Version 2 | In Progress | Full-stack app (React + Spring Boot + PostgreSQL) | [PRD_V2.md](product-requirements/PRD_V2.md) |
+| Version 2 | Complete | Full-stack app (React + Spring Boot + PostgreSQL) | [PRD_V2.md](product-requirements/PRD_V2.md) |

@@ -1,7 +1,7 @@
 # Product Requirements Document (PRD)
 ## Version 2 — Full-Stack App
 
-**Status:** In Progress
+**Status:** Complete
 
 ---
 
@@ -33,6 +33,7 @@ Features F-01 through F-10 carry over unchanged in UX behaviour from Version 1. 
 | F-14 | The full list (text + done state) is saved to Postgres on every change (add, complete, delete) via the REST API |
 | F-15 | On page load, todos are fetched from the REST API and rendered |
 | F-16 | If the API is unreachable, the app shows a non-intrusive error note; it does **not** fall back to in-memory (the server is the authoritative source of truth) |
+| F-17 | The application (frontend, backend, database) is containerised via Docker Compose for local development and CI. No dedicated tests are required — all backend, frontend, and E2E tests run inside Docker, so a Docker failure surfaces immediately as a test suite failure. |
 
 ---
 
