@@ -1,16 +1,11 @@
 {
-  "name": "todo-app",
+  "name": "todo-app-e2e",
   "version": "1.0.0",
-  "description": "Simple, lightweight ToDo application",
-  "type": "module",
+  "private": true,
   "scripts": {
-    "lint": "eslint src/**/*.js tests/**/*.js",
-    "test": "playwright test"
+    "test:e2e": "playwright test"
   },
   "devDependencies": {
-    "@eslint/js": "^9.0.0",
-    "@playwright/test": "^1.59.1",
-    "eslint": "^9.0.0",
-    "serve": "^14.0.0"
+    "@playwright/test": "^1.50.0"
   }
 }

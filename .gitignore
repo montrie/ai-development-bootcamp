@@ -10,6 +10,9 @@ CLAUDE.local.md
 
 *.txt
 
+*.env
+*.env.*
+
 # V2 build artifacts
 apps/backend/target/
 apps/frontend/node_modules/
