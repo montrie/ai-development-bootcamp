@@ -48,7 +48,7 @@ scripts/               Dev helper scripts (start_v2.sh, setup_db.sh, test_all.sh
 | Frameworks | React, Spring Boot |
 | Runtime | Browser + JVM |
 | Deployment | `apps/frontend/` + `apps/backend/` |
-| Containerisation | Out of scope for V2 |
+| Containerisation | Docker Compose |
 
 ---
 
@@ -126,7 +126,7 @@ Write failing Vitest component tests using React Testing Library â†’ implement â
 
 ### 6.3 End-to-End BDD (Playwright + Gherkin)
 
-Follow the 5-step BDD cycle defined in `TESTING_WORKFLOW.md`. Gherkin `.feature` files live in `bdd/features/`. Playwright specs live in `bdd/tests/` and target the Vite dev server.
+Follow the 5-step BDD cycle defined in @testing/TESTING_WORKFLOW.md. Gherkin `.feature` files live in `bdd/features/`. Playwright specs live in `bdd/tests/` and target the Vite dev server.
 
 | Layer | Tool | Scope |
 |---|---|---|

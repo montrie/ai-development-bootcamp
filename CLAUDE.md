@@ -12,7 +12,7 @@ A full-stack ToDo application (React/TypeScript + Spring Boot 4 + PostgreSQL). S
 
 ## File Structure
 
-See @ARCHITECTURE.md — Section 2.
+See @docs/ARCHITECTURE.md — Section 2.
 
 ---
 
@@ -33,13 +33,13 @@ Clean and minimal — white/light grey aesthetic, ample whitespace, readable typ
 
 ## Naming Conventions
 
-See @ARCHITECTURE.md — Section 7.
+See @docs/ARCHITECTURE.md — Section 7.
 
 ---
 
 ## Development Workflow
 
-See @TESTING_WORKFLOW.md.
+See @docs/testing/TESTING_WORKFLOW.md.
 
 ---
 

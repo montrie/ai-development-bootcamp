@@ -43,4 +43,3 @@ Always reset state in `Background` or `Given` — never assume a clean browser.
 - Multiple behaviours per scenario
 - Typos in step text
 - Duplicate step phrasing across files
-
