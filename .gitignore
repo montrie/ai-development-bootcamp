@@ -13,6 +13,8 @@ CLAUDE.local.md
 *.env
 *.env.*
 
+./results_playwright/
+
 # V2 build artifacts
 apps/backend/target/
 apps/frontend/node_modules/
