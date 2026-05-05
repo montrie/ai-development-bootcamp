@@ -28,7 +28,7 @@ export default function AddTodoForm({ onAdd }: Props) {
         type="text"
         value={value}
         aria-label="Todo input"
-        aria-invalid={invalid ? 'true' : undefined}
+        aria-invalid={invalid ? 'true' : undefined} // undefined omits the attribute; false would keep it and some screen readers announce it
         placeholder="What needs to be done?"
         onChange={(e) => {
           setValue(e.target.value);

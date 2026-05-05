@@ -11,6 +11,7 @@ export default function App() {
   const [todos, setTodos] = useState<Todo[]>([]);
   const [error, setError] = useState<string | null>(null);
 
+  // [token] dependency re-triggers the fetch after login, not just on first mount
   useEffect(() => {
     if (!token) return;
     fetchTodos()
