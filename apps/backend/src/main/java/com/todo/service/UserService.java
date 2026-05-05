@@ -1,5 +1,8 @@
-package com.todo;
+package com.todo.service;
 
+import com.todo.model.Role;
+import com.todo.model.User;
+import com.todo.repository.UserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 

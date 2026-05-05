@@ -1,5 +1,6 @@
-package com.todo;
+package com.todo.config;
 
+import com.todo.service.JwtService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;

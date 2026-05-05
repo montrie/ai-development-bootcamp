@@ -1,4 +1,4 @@
-package com.todo;
+package com.todo.model;
 
 import jakarta.persistence.*;
 import java.time.OffsetDateTime;

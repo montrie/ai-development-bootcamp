@@ -1,5 +1,7 @@
-package com.todo;
+package com.todo.controller;
 
+import com.todo.repository.TodoRepository;
+import com.todo.service.JwtService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;

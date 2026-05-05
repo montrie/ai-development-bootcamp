@@ -1,5 +1,7 @@
-package com.todo;
+package com.todo.controller;
 
+import com.todo.model.Todo;
+import com.todo.repository.TodoRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;

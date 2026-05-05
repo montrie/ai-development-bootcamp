@@ -1,4 +1,4 @@
-package com.todo;
+package com.todo.controller;
 
 import org.junit.jupiter.api.Test;
 
