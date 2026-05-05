@@ -20,6 +20,9 @@ services:
     environment:
       DB_HOST: db
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
+      ADMIN_USERNAME: ${ADMIN_USERNAME:-admin}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
     depends_on:
       db:
         condition: service_healthy
@@ -45,7 +48,7 @@ services:
     build:
       context: apps/backend
       target: build
-    command: mvn test -q
+    command: mvn test
     volumes:
       - ./apps/backend/target:/app/target
 
