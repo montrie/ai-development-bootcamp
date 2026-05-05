@@ -1,0 +1,87 @@
+name: Deploy to Cloud Run
+
+on:
+  workflow_run:
+    workflows: ["CI"]
+    branches: [main]
+    types: [completed]
+
+jobs:
+  deploy:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+
+      - name: Configure Docker for Artifact Registry
+        run: gcloud auth configure-docker ${{ secrets.GCP_REGION }}-docker.pkg.dev --quiet
+
+      - name: Set image tags
+        id: tags
+        run: |
+          SHORT_SHA=${GITHUB_SHA::8}
+          echo "backend=${{ secrets.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/todo-app/backend:${SHORT_SHA}" >> $GITHUB_OUTPUT
+          echo "frontend=${{ secrets.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/todo-app/frontend:${SHORT_SHA}" >> $GITHUB_OUTPUT
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Build and push backend
+        uses: docker/build-push-action@v6
+        with:
+          context: apps/backend
+          push: true
+          tags: ${{ steps.tags.outputs.backend }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build and push frontend
+        uses: docker/build-push-action@v6
+        with:
+          context: apps/frontend
+          file: apps/frontend/Dockerfile.prod
+          push: true
+          tags: ${{ steps.tags.outputs.frontend }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Deploy backend to Cloud Run
+        id: deploy-backend
+        uses: google-github-actions/deploy-cloudrun@v2
+        with:
+          service: todo-backend
+          region: ${{ secrets.GCP_REGION }}
+          image: ${{ steps.tags.outputs.backend }}
+          flags: >-
+            --allow-unauthenticated
+            --port=8080
+            --add-cloudsql-instances=${{ secrets.CLOUDSQL_INSTANCE_CONNECTION_NAME }}
+            --service-account=${{ secrets.GCP_SERVICE_ACCOUNT }}
+          env_vars: |
+            SPRING_DATASOURCE_URL=jdbc:postgresql:///todo_db?cloudSqlInstance=${{ secrets.CLOUDSQL_INSTANCE_CONNECTION_NAME }}&socketFactory=com.google.cloud.sql.postgres.SocketFactory
+            SPRING_DATASOURCE_USERNAME=${{ secrets.DB_USER }}
+          secrets: |
+            SPRING_DATASOURCE_PASSWORD=todo-db-password:latest
+
+      - name: Deploy frontend to Cloud Run
+        uses: google-github-actions/deploy-cloudrun@v2
+        with:
+          service: todo-frontend
+          region: ${{ secrets.GCP_REGION }}
+          image: ${{ steps.tags.outputs.frontend }}
+          flags: >-
+            --allow-unauthenticated
+            --port=8080
+            --service-account=${{ secrets.GCP_SERVICE_ACCOUNT }}
+          env_vars: |
+            BACKEND_URL=${{ steps.deploy-backend.outputs.url }}

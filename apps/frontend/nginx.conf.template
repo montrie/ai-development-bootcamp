@@ -1,12 +1,13 @@
 server {
-    listen 80;
+    listen 8080;
     root /usr/share/nginx/html;
     index index.html;
 
     location /api/ {
-        proxy_pass http://backend:8080;
-        proxy_set_header Host $host;
+        proxy_pass ${BACKEND_URL};
+        proxy_set_header Host $proxy_host;
         proxy_set_header X-Real-IP $remote_addr;
+        proxy_ssl_server_name on;
     }
 
     location / {
