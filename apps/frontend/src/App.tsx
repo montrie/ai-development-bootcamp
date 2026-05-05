@@ -1,18 +1,37 @@
 import { useEffect, useState } from 'react';
 import { fetchTodos, createTodo, updateTodo, deleteTodo, type Todo } from './api';
+import { getToken, setToken, clearToken } from './auth';
 import AddTodoForm from './components/AddTodoForm';
+import AuthPage from './components/AuthPage';
 import TodoList from './components/TodoList';
 import './App.css';
 
 export default function App() {
+  const [token, setTokenState] = useState<string | null>(getToken());
   const [todos, setTodos] = useState<Todo[]>([]);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (!token) return;
     fetchTodos()
       .then(setTodos)
       .catch(() => setError('Could not reach the server. Changes will not be saved.'));
-  }, []);
+  }, [token]);
+
+  function handleAuth(tok: string) {
+    setToken(tok);
+    setTokenState(tok);
+  }
+
+  function handleLogout() {
+    clearToken();
+    setTokenState(null);
+    setTodos([]);
+  }
+
+  if (!token) {
+    return <AuthPage onAuth={handleAuth} />;
+  }
 
   async function handleAdd(text: string) {
     const created = await createTodo(text);
@@ -31,7 +50,10 @@ export default function App() {
 
   return (
     <div className="app">
-      <h1>To-Do List</h1>
+      <div className="app-header">
+        <h1>To-Do List</h1>
+        <button onClick={handleLogout}>Log out</button>
+      </div>
       {error && <p className="error-notice">{error}</p>}
       <AddTodoForm onAdd={handleAdd} />
       <TodoList todos={todos} onToggle={handleToggle} onDelete={handleDelete} />

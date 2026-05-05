@@ -3,6 +3,7 @@ import * as api from '../api';
 import App from '../App';
 
 vi.mock('../api');
+vi.mock('../auth', () => ({ getToken: () => 'fake-token', setToken: vi.fn(), clearToken: vi.fn() }));
 
 const todo = (id: number, text: string, done = false) => ({ id, text, done });
 
