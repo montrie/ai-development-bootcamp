@@ -26,52 +26,63 @@ export default function AuthPage({ onAuth }: Props) {
     }
   }
 
+  function handleKeyDown(e: React.KeyboardEvent) {
+    if (e.key === 'Enter') handleSubmit();
+  }
+
   return (
     <div className="auth-page">
-      <h1>To-Do List</h1>
-      <div role="tablist">
-        <button
-          role="tab"
-          aria-selected={tab === 'login'}
-          onClick={() => { setTab('login'); setError(null); }}
-        >
-          Log in
+      <div className="auth-card">
+        <h1 className="auth-title">To-Do List</h1>
+
+        <div role="tablist" className="auth-tab-list">
+          <button
+            role="tab"
+            className="auth-tab"
+            aria-selected={tab === 'login'}
+            onClick={() => { setTab('login'); setError(null); }}
+          >
+            Log in
+          </button>
+          <button
+            role="tab"
+            className="auth-tab"
+            aria-selected={tab === 'register'}
+            onClick={() => { setTab('register'); setError(null); }}
+          >
+            Register
+          </button>
+        </div>
+
+        <div className="auth-field">
+          <label htmlFor="username-input">Username</label>
+          <input
+            id="username-input"
+            type="text"
+            className="auth-input"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            onKeyDown={handleKeyDown}
+          />
+        </div>
+        <div className="auth-field">
+          <label htmlFor="password-input">Password</label>
+          <input
+            id="password-input"
+            type="password"
+            className="auth-input"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            onKeyDown={handleKeyDown}
+          />
+        </div>
+
+        {error && <p className="auth-error">{error}</p>}
+
+        <button className="auth-submit" onClick={handleSubmit}>
+          {tab === 'login' ? 'Log in' : 'Register'}
         </button>
-        <button
-          role="tab"
-          aria-selected={tab === 'register'}
-          onClick={() => { setTab('register'); setError(null); }}
-        >
-          Register
-        </button>
       </div>
-
-      <div>
-        <label htmlFor="username-input">Username</label>
-        <input
-          id="username-input"
-          type="text"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-        />
-      </div>
-      <div>
-        <label htmlFor="password-input">Password</label>
-        <input
-          id="password-input"
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
-      </div>
-
-      {error && <p className="auth-error">{error}</p>}
-
-      {tab === 'login' ? (
-        <button onClick={handleSubmit}>Log in</button>
-      ) : (
-        <button onClick={handleSubmit}>Register</button>
-      )}
     </div>
   );
 }
