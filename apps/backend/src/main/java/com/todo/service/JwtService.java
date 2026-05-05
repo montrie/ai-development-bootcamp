@@ -21,6 +21,7 @@ public class JwtService {
     public JwtService(@Value("${jwt.secret}") String secret) {
         byte[] keyBytes = secret.getBytes(StandardCharsets.UTF_8);
         SecretKeySpec secretKey = new SecretKeySpec(keyBytes, "HmacSHA256");
+        // Explicit type argument required — Java cannot infer SecurityContext from SecretKeySpec
         this.encoder = new NimbusJwtEncoder(new ImmutableSecret<SecurityContext>(secretKey));
         this.decoder = NimbusJwtDecoder
                 .withSecretKey(secretKey)
@@ -34,7 +35,7 @@ public class JwtService {
                 .subject(user.getUsername())
                 .claim("role", user.getRole().name())
                 .issuedAt(now)
-                .expiresAt(now.plusSeconds(86400))
+                .expiresAt(now.plusSeconds(86400)) // 24 hours
                 .build();
         JwsHeader header = JwsHeader.with(MacAlgorithm.HS256).build();
         return encoder.encode(JwtEncoderParameters.from(header, claims)).getTokenValue();

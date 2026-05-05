@@ -32,6 +32,7 @@ public class UserService {
     }
 
     public String login(String username, String password) {
+        // Both "user not found" and "wrong password" throw the same exception to avoid leaking user existence
         User user = userRepository.findByUsername(username)
                 .orElseThrow(InvalidCredentialsException::new);
         if (!passwordEncoder.matches(password, user.getPasswordHash())) {

@@ -30,7 +30,7 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                .requestMatchers("/api/todos/**", "/api/todos").hasRole("USER")
+                .requestMatchers("/api/todos/**", "/api/todos").hasRole("USER") // /** alone does not match the base path
                 .requestMatchers("/api/users/**").authenticated()
                 .anyRequest().authenticated()
             )
@@ -43,6 +43,10 @@ public class SecurityConfig {
         return http.build();
     }
 
+    /*
+     * Spring's default converter reads the 'scope'/'scp' claim with a 'SCOPE_' prefix.
+     * Override to read our custom 'role' claim with 'ROLE_' so hasRole("USER") resolves correctly.
+     */
     @Bean
     public JwtAuthenticationConverter createJwtAuthConverter() {
         JwtGrantedAuthoritiesConverter authoritiesConverter = new JwtGrantedAuthoritiesConverter();
@@ -58,6 +62,7 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
+    // Exposed as a bean so @WebMvcTest can inject a JwtDecoder without duplicating the one already wired in the filter chain
     @Bean
     public JwtDecoder jwtDecoder() {
         return jwtService.jwtDecoder();
