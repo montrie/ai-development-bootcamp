@@ -57,25 +57,21 @@ CONNECTION_NAME=$(gcloud sql instances describe todo-db \
   --format="value(connectionName)" --project="${PROJECT_ID}")
 
 echo "==> Deploying backend to Cloud Run..."
+# --allow-unauthenticated: make the service publicly accessible without authentication.
+# --port=8080: Cloud Run routes external traffic to this container port.
+# --add-cloudsql-instances: mounts the Cloud SQL Unix socket so the app connects without a public IP.
+# --service-account: run as the deployer SA (least-privilege).
+# --set-env-vars: override Spring Boot datasource config; socketFactory uses the Unix socket instead of TCP.
+# --set-secrets: pull the DB password from Secret Manager at deploy time — never stored in plaintext.
 gcloud run deploy todo-backend \
   --image="${BACKEND_IMAGE}" \
   --region="${REGION}" \
   --project="${PROJECT_ID}" \
-  # Make the service publicly accessible without authentication.
   --allow-unauthenticated \
-  # Cloud Run routes external traffic to this container port.
   --port=8080 \
-  # Mounts the Cloud SQL Unix socket inside the container so the app can
-  # connect to the database without opening a public IP.
   --add-cloudsql-instances="${CONNECTION_NAME}" \
-  # Run the container as the deployer service account (least-privilege).
   --service-account="${SA_EMAIL}" \
-  # Override Spring Boot datasource config via environment variables.
-  # The socketFactory param tells the JDBC driver to use the Unix socket
-  # instead of a TCP connection.
   --set-env-vars="SPRING_DATASOURCE_URL=jdbc:postgresql:///todo_db?cloudSqlInstance=${CONNECTION_NAME}&socketFactory=com.google.cloud.sql.postgres.SocketFactory,SPRING_DATASOURCE_USERNAME=todo_app_user" \
-  # Pull the DB password from GCP Secret Manager at deploy time.
-  # The value is injected as an env var and never stored in plaintext.
   --set-secrets="SPRING_DATASOURCE_PASSWORD=todo-db-password:latest"
 
 # Capture the backend's auto-provisioned Cloud Run HTTPS URL.
@@ -83,6 +79,8 @@ BACKEND_URL=$(gcloud run services describe todo-backend \
   --region="${REGION}" --format="value(status.url)" --project="${PROJECT_ID}")
 
 echo "==> Deploying frontend to Cloud Run..."
+# --set-env-vars BACKEND_URL: passed to nginx so it knows where to proxy /api/* requests.
+# nginx.conf.template substitutes ${BACKEND_URL} at container startup.
 gcloud run deploy todo-frontend \
   --image="${FRONTEND_IMAGE}" \
   --region="${REGION}" \
@@ -90,8 +88,6 @@ gcloud run deploy todo-frontend \
   --allow-unauthenticated \
   --port=8080 \
   --service-account="${SA_EMAIL}" \
-  # Pass the backend URL to nginx so it knows where to proxy /api/* requests.
-  # nginx.conf.template substitutes ${BACKEND_URL} at container startup.
   --set-env-vars="BACKEND_URL=${BACKEND_URL}"
 
 # Capture the frontend's public URL for the summary output.
