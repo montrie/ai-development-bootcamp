@@ -1,10 +1,10 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import * as api from '../api';
+import * as api from '../services/api';
 import App from '../App';
 
-vi.mock('../api');
-vi.mock('../auth', () => ({ getToken: () => 'fake-token', setToken: vi.fn(), clearToken: vi.fn() }));
+vi.mock('../services/api');
+vi.mock('../services/auth', () => ({ getToken: () => 'fake-token', setToken: vi.fn(), clearToken: vi.fn() }));
 
 const todo = (id: number, text: string, done = false) => ({ id, text, done });
 const getInput = () => screen.getByRole('textbox');

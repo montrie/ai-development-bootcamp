@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
-import { fetchTodos, createTodo, updateTodo, deleteTodo, type Todo } from './api';
-import { getToken, setToken, clearToken } from './auth';
+import { fetchTodos, createTodo, updateTodo, deleteTodo, type Todo } from './services/api';
+import { getToken, setToken, clearToken } from './services/auth';
 import AddTodoForm from './components/AddTodoForm';
 import AuthPage from './components/AuthPage';
 import TodoList from './components/TodoList';
-import './App.css';
+import './styles/App.css';
 
 export default function App() {
   const [token, setTokenState] = useState<string | null>(getToken());

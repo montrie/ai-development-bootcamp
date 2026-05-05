@@ -1,11 +1,11 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import * as api from '../api';
-import * as auth from '../auth';
+import * as api from '../services/api';
+import * as auth from '../services/auth';
 import App from '../App';
 
-vi.mock('../api');
-vi.mock('../auth', () => ({
+vi.mock('../services/api');
+vi.mock('../services/auth', () => ({
   getToken: vi.fn(),
   setToken: vi.fn(),
   clearToken: vi.fn(),

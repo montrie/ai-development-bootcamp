@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { loginUser, registerUser } from '../api';
+import { loginUser, registerUser } from '../services/api';
+import '../styles/AuthPage.css';
 
 type Tab = 'login' | 'register';
 
