@@ -1,5 +1,6 @@
 package com.todo.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import java.time.OffsetDateTime;
 
@@ -21,6 +22,11 @@ public class Todo {
     @Column(name = "created_at", nullable = false, updatable = false)
     private OffsetDateTime createdAt;
 
+    @JsonIgnore
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
+
     @PrePersist
     private void prePersist() {
         createdAt = OffsetDateTime.now();
@@ -32,4 +38,6 @@ public class Todo {
     public boolean isDone() { return done; }
     public void setDone(boolean done) { this.done = done; }
     public OffsetDateTime getCreatedAt() { return createdAt; }
+    public User getUser() { return user; }
+    public void setUser(User user) { this.user = user; }
 }
