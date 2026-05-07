@@ -5,13 +5,13 @@ import com.todo.model.User;
 import com.todo.repository.TodoRepository;
 import com.todo.repository.UserRepository;
 import com.todo.service.JwtService;
-import com.todo.support.TestSecurityConfig;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
+import com.todo.config.SecurityConfig;
 import com.todo.support.MockUserFactory;
 import org.junit.jupiter.api.Test;
+import org.springframework.context.annotation.Import;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
-import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -24,7 +24,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(TodoController.class)
-@Import(TestSecurityConfig.class)
+@Import(SecurityConfig.class)
 class V3PerUserTodosTest {
 
     @Autowired

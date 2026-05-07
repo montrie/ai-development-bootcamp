@@ -6,8 +6,8 @@ import com.todo.repository.TodoRepository;
 import com.todo.repository.UserRepository;
 import com.todo.service.JwtService;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
+import com.todo.config.SecurityConfig;
 import com.todo.support.MockUserFactory;
-import com.todo.support.TestSecurityConfig;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,7 +25,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(TodoController.class)
-@Import(TestSecurityConfig.class)
+@Import(SecurityConfig.class)
 class V2CompleteTodoTest {
 
     @Autowired

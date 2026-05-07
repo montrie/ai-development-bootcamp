@@ -6,13 +6,13 @@ import com.todo.repository.TodoRepository;
 import com.todo.repository.UserRepository;
 import com.todo.service.JwtService;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
+import com.todo.config.SecurityConfig;
 import com.todo.support.MockUserFactory;
-import com.todo.support.TestSecurityConfig;
 import org.junit.jupiter.api.BeforeEach;
+import org.springframework.context.annotation.Import;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
-import org.springframework.context.annotation.Import;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -24,7 +24,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(TodoController.class)
-@Import(TestSecurityConfig.class)
+@Import(SecurityConfig.class)
 class V2DeleteTodoTest {
 
     @Autowired
@@ -65,8 +65,14 @@ class V2DeleteTodoTest {
     }
 
     @Test
-    void deletesAllTodosAndReturnsNoContent() throws Exception {
+    void deleteAllAsUserReturnsForbidden() throws Exception {
         mvc.perform(delete("/api/todos").with(MockUserFactory.jwtAs("user")))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void deleteAllAsAdminReturnsNoContent() throws Exception {
+        mvc.perform(delete("/api/todos").with(MockUserFactory.jwtAsAdmin("admin")))
                 .andExpect(status().isNoContent());
 
         verify(repository).deleteAll();

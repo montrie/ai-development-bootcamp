@@ -35,4 +35,10 @@ public final class MockUserFactory {
                 .jwt(j -> j.subject(username))
                 .authorities(new SimpleGrantedAuthority("ROLE_USER"));
     }
+
+    public static RequestPostProcessor jwtAsAdmin(String username) {
+        return jwt()
+                .jwt(j -> j.subject(username))
+                .authorities(new SimpleGrantedAuthority("ROLE_ADMIN"));
+    }
 }
