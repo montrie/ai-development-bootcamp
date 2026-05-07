@@ -6,6 +6,8 @@ import com.todo.repository.UserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class UserService {
 
@@ -47,9 +49,33 @@ public class UserService {
         }
     }
 
+    public List<User> listUsers() {
+        return userRepository.findAll();
+    }
+
+    public void deleteUser(Long id) {
+        if (!userRepository.existsById(id)) {
+            throw new UserNotFoundException(id);
+        }
+        userRepository.deleteById(id);
+    }
+
+    public void resetPassword(Long id, String newPassword) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new UserNotFoundException(id));
+        user.setPasswordHash(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+    }
+
     public static class UsernameAlreadyTakenException extends RuntimeException {
         public UsernameAlreadyTakenException(String username) {
             super("Username already taken: " + username);
+        }
+    }
+
+    public static class UserNotFoundException extends RuntimeException {
+        public UserNotFoundException(Long id) {
+            super("User not found: " + id);
         }
     }
 }

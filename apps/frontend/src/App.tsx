@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { fetchTodos, createTodo, updateTodo, deleteTodo, type Todo } from './services/api';
-import { getToken, setToken, clearToken } from './services/auth';
+import { getToken, setToken, clearToken, getRole } from './services/auth';
 import AddTodoForm from './components/AddTodoForm';
+import AdminPanel from './components/AdminPanel';
 import AuthPage from './components/AuthPage';
 import TodoList from './components/TodoList';
 import './styles/App.css';
@@ -11,9 +12,12 @@ export default function App() {
   const [todos, setTodos] = useState<Todo[]>([]);
   const [error, setError] = useState<string | null>(null);
 
+  const role = token ? getRole() : null;
+
   // [token] dependency re-triggers the fetch after login, not just on first mount
+  // Skip fetching todos for admin users — they use the admin panel instead
   useEffect(() => {
-    if (!token) return;
+    if (!token || role === 'ADMIN') return;
     fetchTodos()
       .then(setTodos)
       .catch(() => setError('Could not reach the server. Changes will not be saved.'));
@@ -32,6 +36,10 @@ export default function App() {
 
   if (!token) {
     return <AuthPage onAuth={handleAuth} />;
+  }
+
+  if (role === 'ADMIN') {
+    return <AdminPanel onLogout={handleLogout} />;
   }
 
   async function handleAdd(text: string) {

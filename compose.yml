@@ -26,6 +26,12 @@ services:
     depends_on:
       db:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c 'cat /dev/null > /dev/tcp/localhost/8080'"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
 
   frontend:
     build:
@@ -48,9 +54,12 @@ services:
     build:
       context: apps/backend
       target: build
-    command: mvn test
+    # src/ is mounted so new/changed source files are picked up without rebuilding the image.
+    # target/ is intentionally NOT mounted — the container compiles to its own ephemeral
+    # filesystem, avoiding stale .class files from previous host builds.
     volumes:
-      - ./apps/backend/target:/app/target
+      - ./apps/backend/src:/app/src
+    command: mvn test
 
   frontend-unit-test:
     profiles: [test]
@@ -76,7 +85,8 @@ services:
       VITE_HOST: "true"
       CI: "true"
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
 
   pgadmin:
     image: dpage/pgadmin4

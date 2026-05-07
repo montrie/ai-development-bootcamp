@@ -9,6 +9,7 @@ vi.mock('../services/auth', () => ({
   getToken: vi.fn(),
   setToken: vi.fn(),
   clearToken: vi.fn(),
+  getRole: vi.fn(),
 }));
 
 const mockGetToken = vi.mocked(auth.getToken);

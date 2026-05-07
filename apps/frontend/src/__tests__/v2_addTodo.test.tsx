@@ -4,7 +4,7 @@ import * as api from '../services/api';
 import App from '../App';
 
 vi.mock('../services/api');
-vi.mock('../services/auth', () => ({ getToken: () => 'fake-token', setToken: vi.fn(), clearToken: vi.fn() }));
+vi.mock('../services/auth', () => ({ getToken: () => 'fake-token', setToken: vi.fn(), clearToken: vi.fn(), getRole: () => null }));
 
 const todo = (id: number, text: string, done = false) => ({ id, text, done });
 const getInput = () => screen.getByRole('textbox');

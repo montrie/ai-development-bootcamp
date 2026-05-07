@@ -2,6 +2,7 @@ import { getToken, clearToken } from './auth';
 
 const BASE = '/api/todos';
 const AUTH_BASE = '/api/auth';
+const ADMIN_BASE = '/api/admin';
 
 function authHeaders(): Record<string, string> {
   const token = getToken();
@@ -69,4 +70,30 @@ export async function deleteTodo(id: number): Promise<void> {
   const res = await fetch(`${BASE}/${id}`, { method: 'DELETE', headers: authHeaders() });
   if (res.status === 401) { clearToken(); window.location.reload(); throw new Error('Unauthorized'); }
   if (!res.ok) throw new Error('Failed to delete todo');
+}
+
+export type User = {
+  id: number;
+  username: string;
+  role: string;
+};
+
+export async function fetchUsers(): Promise<User[]> {
+  const res = await fetch(`${ADMIN_BASE}/users`, { headers: authHeaders() });
+  if (!res.ok) throw new Error('Failed to fetch users');
+  return res.json();
+}
+
+export async function deleteUser(id: number): Promise<void> {
+  const res = await fetch(`${ADMIN_BASE}/users/${id}`, { method: 'DELETE', headers: authHeaders() });
+  if (!res.ok) throw new Error('Failed to delete user');
+}
+
+export async function resetUserPassword(id: number, newPassword: string): Promise<void> {
+  const res = await fetch(`${ADMIN_BASE}/users/${id}/password`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...authHeaders() },
+    body: JSON.stringify({ newPassword }),
+  });
+  if (!res.ok) throw new Error('Failed to reset password');
 }
