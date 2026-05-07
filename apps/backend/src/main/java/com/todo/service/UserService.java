@@ -67,6 +67,22 @@ public class UserService {
         userRepository.save(user);
     }
 
+    public void changeOwnPassword(String username, String currentPassword, String newPassword) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new UserNotFoundException(-1L));
+        if (!passwordEncoder.matches(currentPassword, user.getPasswordHash())) {
+            throw new InvalidCurrentPasswordException();
+        }
+        user.setPasswordHash(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+    }
+
+    public static class InvalidCurrentPasswordException extends RuntimeException {
+        public InvalidCurrentPasswordException() {
+            super("Current password is incorrect");
+        }
+    }
+
     public static class UsernameAlreadyTakenException extends RuntimeException {
         public UsernameAlreadyTakenException(String username) {
             super("Username already taken: " + username);

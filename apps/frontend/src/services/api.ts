@@ -97,3 +97,13 @@ export async function resetUserPassword(id: number, newPassword: string): Promis
   });
   if (!res.ok) throw new Error('Failed to reset password');
 }
+
+export async function changePassword(currentPassword: string, newPassword: string): Promise<void> {
+  const res = await fetch('/api/users/self/password', {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...authHeaders() },
+    body: JSON.stringify({ currentPassword, newPassword }),
+  });
+  if (res.status === 401) { clearToken(); window.location.reload(); throw new Error('Unauthorized'); }
+  if (!res.ok) throw new Error('Current password is incorrect');
+}

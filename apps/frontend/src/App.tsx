@@ -4,6 +4,7 @@ import { getToken, setToken, clearToken, getRole } from './services/auth';
 import AddTodoForm from './components/AddTodoForm';
 import AdminPanel from './components/AdminPanel';
 import AuthPage from './components/AuthPage';
+import ChangePasswordForm from './components/ChangePasswordForm';
 import TodoList from './components/TodoList';
 import './styles/App.css';
 
@@ -11,6 +12,7 @@ export default function App() {
   const [token, setTokenState] = useState<string | null>(getToken());
   const [todos, setTodos] = useState<Todo[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [showChangePassword, setShowChangePassword] = useState(false);
 
   const role = token ? getRole() : null;
 
@@ -61,9 +63,13 @@ export default function App() {
     <div className="app">
       <div className="app-header">
         <h1>To-Do List</h1>
+        <button id="change-password-link" onClick={() => setShowChangePassword((p) => !p)}>
+          Change password
+        </button>
         <button onClick={handleLogout}>Log out</button>
       </div>
       {error && <p className="error-notice">{error}</p>}
+      {showChangePassword && <ChangePasswordForm />}
       <AddTodoForm onAdd={handleAdd} />
       <TodoList todos={todos} onToggle={handleToggle} onDelete={handleDelete} />
     </div>

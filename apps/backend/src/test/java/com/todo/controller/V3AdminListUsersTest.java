@@ -5,11 +5,11 @@ import com.todo.model.Role;
 import com.todo.model.User;
 import com.todo.service.JwtService;
 import com.todo.service.UserService;
+import com.todo.support.MockUserFactory;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -17,7 +17,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.util.List;
 
 import static org.mockito.BDDMockito.given;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -47,7 +46,7 @@ class V3AdminListUsersTest {
         given(userService.listUsers()).willReturn(List.of(alice));
 
         mvc.perform(get("/api/admin/users")
-                        .with(jwt().authorities(new SimpleGrantedAuthority("ROLE_ADMIN"))))
+                        .with(MockUserFactory.jwtAsAdmin("admin")))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].username").value("alice"))
                 .andExpect(jsonPath("$[0].role").value("USER"))
@@ -57,7 +56,7 @@ class V3AdminListUsersTest {
     @Test
     void listUsersForRegularUserReturns403() throws Exception {
         mvc.perform(get("/api/admin/users")
-                        .with(jwt().authorities(new SimpleGrantedAuthority("ROLE_USER"))))
+                        .with(MockUserFactory.jwtAs("alice")))
                 .andExpect(status().isForbidden());
     }
 }

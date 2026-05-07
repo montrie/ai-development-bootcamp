@@ -2,17 +2,17 @@ package com.todo.controller;
 
 import com.todo.config.SecurityConfig;
 import com.todo.repository.TodoRepository;
+import com.todo.repository.UserRepository;
 import com.todo.service.JwtService;
+import com.todo.support.MockUserFactory;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -28,6 +28,9 @@ class V3AdminTodoAccessTest {
     TodoRepository todoRepository;
 
     @MockitoBean
+    UserRepository userRepository;
+
+    @MockitoBean
     JwtService jwtService;
 
     @MockitoBean
@@ -36,7 +39,7 @@ class V3AdminTodoAccessTest {
     @Test
     void adminCannotGetTodos() throws Exception {
         mvc.perform(get("/api/todos")
-                        .with(jwt().authorities(new SimpleGrantedAuthority("ROLE_ADMIN"))))
+                        .with(MockUserFactory.jwtAsAdmin("admin")))
                 .andExpect(status().isForbidden());
     }
 
@@ -45,7 +48,7 @@ class V3AdminTodoAccessTest {
         mvc.perform(post("/api/todos")
                         .contentType("application/json")
                         .content("{\"text\":\"test\"}")
-                        .with(jwt().authorities(new SimpleGrantedAuthority("ROLE_ADMIN"))))
+                        .with(MockUserFactory.jwtAsAdmin("admin")))
                 .andExpect(status().isForbidden());
     }
 }
