@@ -1,4 +1,4 @@
-import type { Todo } from '../api';
+import type { Todo } from '../services/api';
 
 type Props = {
   todo: Todo;

@@ -1,8 +1,9 @@
 import { render, screen } from '@testing-library/react';
-import * as api from '../api';
+import * as api from '../services/api';
 import App from '../App';
 
-vi.mock('../api');
+vi.mock('../services/api');
+vi.mock('../services/auth', () => ({ getToken: () => 'fake-token', setToken: vi.fn(), clearToken: vi.fn(), getRole: () => null }));
 
 const todo = (id: number, text: string, done = false) => ({ id, text, done });
 

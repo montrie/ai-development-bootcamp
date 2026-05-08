@@ -1,18 +1,49 @@
 import { useEffect, useState } from 'react';
-import { fetchTodos, createTodo, updateTodo, deleteTodo, type Todo } from './api';
+import { fetchTodos, createTodo, updateTodo, deleteTodo, type Todo } from './services/api';
+import { getToken, setToken, clearToken, getRole } from './services/auth';
 import AddTodoForm from './components/AddTodoForm';
+import AdminPanel from './components/AdminPanel';
+import AuthPage from './components/AuthPage';
+import ChangePasswordForm from './components/ChangePasswordForm';
+import Navbar from './components/Navbar';
 import TodoList from './components/TodoList';
-import './App.css';
+import './styles/App.css';
 
 export default function App() {
+  const [token, setTokenState] = useState<string | null>(getToken());
   const [todos, setTodos] = useState<Todo[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [showChangePassword, setShowChangePassword] = useState(false);
 
+  const role = token ? getRole() : null;
+
+  // [token] dependency re-triggers the fetch after login, not just on first mount
+  // Skip fetching todos for admin users — they use the admin panel instead
   useEffect(() => {
+    if (!token || role === 'ADMIN') return;
     fetchTodos()
       .then(setTodos)
       .catch(() => setError('Could not reach the server. Changes will not be saved.'));
-  }, []);
+  }, [token]);
+
+  function handleAuth(tok: string) {
+    setToken(tok);
+    setTokenState(tok);
+  }
+
+  function handleLogout() {
+    clearToken();
+    setTokenState(null);
+    setTodos([]);
+  }
+
+  if (!token) {
+    return <AuthPage onAuth={handleAuth} />;
+  }
+
+  if (role === 'ADMIN') {
+    return <AdminPanel onLogout={handleLogout} />;
+  }
 
   async function handleAdd(text: string) {
     const created = await createTodo(text);
@@ -30,11 +61,18 @@ export default function App() {
   }
 
   return (
-    <div className="app">
-      <h1>To-Do List</h1>
-      {error && <p className="error-notice">{error}</p>}
-      <AddTodoForm onAdd={handleAdd} />
-      <TodoList todos={todos} onToggle={handleToggle} onDelete={handleDelete} />
-    </div>
+    <>
+      <Navbar
+        title="To-Do List"
+        onChangePassword={() => setShowChangePassword((p) => !p)}
+        onLogout={handleLogout}
+      />
+      <div className="app">
+        {error && <p className="error-notice">{error}</p>}
+        {showChangePassword && <ChangePasswordForm />}
+        <AddTodoForm onAdd={handleAdd} />
+        <TodoList todos={todos} onToggle={handleToggle} onDelete={handleDelete} />
+      </div>
+    </>
   );
 }
