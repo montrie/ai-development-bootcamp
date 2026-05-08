@@ -1,6 +1,6 @@
 ---
 name: backend-dev
-description: Backend TDD implementor. Given a context brief and the E2E .spec.ts file, writes failing JUnit 5 tests then implements the minimum Spring Boot code (controller, service, repo, DB migration) to make them pass. Only modifies files within apps/backend/. Does NOT run tests — test-verifier does that. Invoke after e2e-spec-author.
+description: Backend TDD implementor. Given a context brief and the E2E .spec.ts file, writes failing JUnit 5 tests then implements the minimum Spring Boot code (controller, service, repo, DB migration) to make them pass. Only modifies files within apps/backend/. Does NOT run tests — test-verifier does that. Invoke after e2e-spec-author, in parallel with frontend-dev.
 tools: Read, Write, Edit, Bash
 ---
 

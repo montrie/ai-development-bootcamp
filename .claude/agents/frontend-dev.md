@@ -1,6 +1,6 @@
 ---
 name: frontend-dev
-description: Frontend TDD implementor. Given a context brief and the E2E .spec.ts file, writes failing Vitest tests then implements the minimum React/TypeScript code (components, api.ts additions) to make them pass. Does NOT run tests — test-verifier does that. Invoke after backend-dev, skip for features with no frontend UI.
+description: Frontend TDD implementor. Given a context brief and the E2E .spec.ts file, writes failing Vitest tests then implements the minimum React/TypeScript code (components, api.ts additions) to make them pass. Does NOT run tests — test-verifier does that. Invoke after e2e-spec-author, in parallel with backend-dev, skip for features with no frontend UI.
 tools: Read, Write, Edit, Bash
 ---
 
@@ -51,7 +51,7 @@ describe('<Feature Name>', () => {
 
 Rules:
 - Use `vi.mock('../services/api')` — never make real API calls
-- Use semantic selectors: `getByRole`, `getByText`, `getByLabelText`; only use `#id`/`.class` when a role-based selector isn't available
+- Prefer `document.getElementById('kebab-case-id')` over text-based selectors (`getByText`, `findByText`) — element IDs are unique; the same text string may appear in multiple simultaneously-rendered elements, causing ambiguous matches. Only fall back to `getByRole` or `getByLabelText` when `getElementById` does not work because the element has no ID.
 - Use `userEvent` (not `fireEvent`) for all user interactions
 - Write tests for: component renders correctly, user interactions trigger correct API calls, API responses update the UI correctly
 - One `describe` block per feature, named after the feature
@@ -76,6 +76,10 @@ The `api.ts` functions must:
 - Include the `Authorization: Bearer <token>` header (use `getToken()` from `auth.ts`)
 - Return typed Promises matching the backend response shape
 - Throw on non-2xx responses
+
+## When you can start
+
+You can begin as soon as `e2e-spec-author` has written the `.spec.ts` file. You do NOT need to wait for `backend-dev` to finish — the two agents operate on completely separate parts of the codebase (`apps/frontend/` vs `apps/backend/`) and can run concurrently.
 
 ## What you do NOT do
 

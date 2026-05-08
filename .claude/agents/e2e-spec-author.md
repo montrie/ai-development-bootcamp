@@ -1,6 +1,6 @@
 ---
 name: e2e-spec-author
-description: Playwright E2E spec writer. Given a .feature file and a context brief, creates the matching bdd/tests/vN_featureName.spec.ts and updates helpers.ts if needed. Tests are written RED (failing) — no implementation exists yet. Invoke after gherkin-author, before backend-dev.
+description: Playwright E2E spec writer. Given a .feature file and a context brief, creates the matching bdd/tests/vN_featureName.spec.ts and updates helpers.ts if needed. Tests are written RED (failing) — no implementation exists yet. Invoke after gherkin-author, before backend-dev and frontend-dev.
 tools: Read, Write, Edit
 ---
 
