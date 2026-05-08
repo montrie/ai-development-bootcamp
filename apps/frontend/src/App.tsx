@@ -5,6 +5,7 @@ import AddTodoForm from './components/AddTodoForm';
 import AdminPanel from './components/AdminPanel';
 import AuthPage from './components/AuthPage';
 import ChangePasswordForm from './components/ChangePasswordForm';
+import Navbar from './components/Navbar';
 import TodoList from './components/TodoList';
 import './styles/App.css';
 
@@ -60,18 +61,18 @@ export default function App() {
   }
 
   return (
-    <div className="app">
-      <div className="app-header">
-        <h1>To-Do List</h1>
-        <button id="change-password-link" onClick={() => setShowChangePassword((p) => !p)}>
-          Change password
-        </button>
-        <button id="logout-button" onClick={handleLogout}>Log out</button>
+    <>
+      <Navbar
+        title="To-Do List"
+        onChangePassword={() => setShowChangePassword((p) => !p)}
+        onLogout={handleLogout}
+      />
+      <div className="app">
+        {error && <p className="error-notice">{error}</p>}
+        {showChangePassword && <ChangePasswordForm />}
+        <AddTodoForm onAdd={handleAdd} />
+        <TodoList todos={todos} onToggle={handleToggle} onDelete={handleDelete} />
       </div>
-      {error && <p className="error-notice">{error}</p>}
-      {showChangePassword && <ChangePasswordForm />}
-      <AddTodoForm onAdd={handleAdd} />
-      <TodoList todos={todos} onToggle={handleToggle} onDelete={handleDelete} />
-    </div>
+    </>
   );
 }

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { changePassword } from '../services/api';
+import '../styles/ChangePasswordForm.css';
 
 export default function ChangePasswordForm() {
   const [currentPassword, setCurrentPassword] = useState('');
@@ -24,28 +25,41 @@ export default function ChangePasswordForm() {
   }
 
   return (
-    <div>
-      <input
-        id="current-password-input"
-        type="password"
-        value={currentPassword}
-        onChange={(e) => setCurrentPassword(e.target.value)}
-        placeholder="Current password"
-      />
-      <input
-        id="new-password-input"
-        type="password"
-        value={newPassword}
-        onChange={(e) => setNewPassword(e.target.value)}
-        placeholder="New password"
-      />
-      <input
-        id="confirm-password-input"
-        type="password"
-        value={confirmPassword}
-        onChange={(e) => setConfirmPassword(e.target.value)}
-        placeholder="Confirm new password"
-      />
+    <div className="change-password-card">
+      <h2>Change password</h2>
+      <div className="change-password-field">
+        <label htmlFor="current-password-input">Current password</label>
+        <input
+          id="current-password-input"
+          className="change-password-input"
+          type="password"
+          value={currentPassword}
+          onChange={(e) => setCurrentPassword(e.target.value)}
+          placeholder="Enter current password"
+        />
+      </div>
+      <div className="change-password-field">
+        <label htmlFor="new-password-input">New password</label>
+        <input
+          id="new-password-input"
+          className="change-password-input"
+          type="password"
+          value={newPassword}
+          onChange={(e) => setNewPassword(e.target.value)}
+          placeholder="Enter new password"
+        />
+      </div>
+      <div className="change-password-field">
+        <label htmlFor="confirm-password-input">Confirm new password</label>
+        <input
+          id="confirm-password-input"
+          className="change-password-input"
+          type="password"
+          value={confirmPassword}
+          onChange={(e) => setConfirmPassword(e.target.value)}
+          placeholder="Confirm new password"
+        />
+      </div>
       <button id="change-password-button" onClick={handleSubmit}>
         Change password
       </button>
