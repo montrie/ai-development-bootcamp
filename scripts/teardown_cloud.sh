@@ -2,9 +2,20 @@
 # Exit immediately on error, treat unset variables as errors, propagate pipe failures.
 set -euo pipefail
 
+# Resolve the repo root regardless of where the script is called from.
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+
 # ── GCP config ────────────────────────────────────────────────────────────────
-PROJECT_ID="todo-app-495408"
-REGION="europe-west3"
+ENV_FILE="${ROOT_DIR}/.env"
+if [[ ! -f "${ENV_FILE}" ]]; then
+  echo "Error: ${ENV_FILE} not found. Copy .env.example and fill in your values." >&2
+  exit 1
+fi
+# shellcheck source=../.env
+source "${ENV_FILE}"
+
+PROJECT_ID="${GCP_PROJECT_ID}"
+REGION="${GCP_REGION}"
 # ──────────────────────────────────────────────────────────────────────────────
 
 echo "==> Deleting Cloud Run services..."
