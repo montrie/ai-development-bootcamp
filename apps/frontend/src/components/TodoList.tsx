@@ -1,4 +1,5 @@
-import type { Todo } from '../api';
+import type { Todo } from '../services/api';
+import '../styles/TodoList.css';
 import TodoItem from './TodoItem';
 
 type Props = {

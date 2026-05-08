@@ -20,9 +20,18 @@ services:
     environment:
       DB_HOST: db
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
+      ADMIN_USERNAME: ${ADMIN_USERNAME:-admin}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
     depends_on:
       db:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c 'cat /dev/null > /dev/tcp/localhost/8080'"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
 
   frontend:
     build:
@@ -45,9 +54,12 @@ services:
     build:
       context: apps/backend
       target: build
-    command: mvn test -q
+    # src/ is mounted so new/changed source files are picked up without rebuilding the image.
+    # target/ is intentionally NOT mounted — the container compiles to its own ephemeral
+    # filesystem, avoiding stale .class files from previous host builds.
     volumes:
-      - ./apps/backend/target:/app/target
+      - ./apps/backend/src:/app/src
+    command: mvn test
 
   frontend-unit-test:
     profiles: [test]
@@ -72,8 +84,11 @@ services:
       BACKEND_URL: http://backend:8080
       VITE_HOST: "true"
       CI: "true"
+      ADMIN_USERNAME: ${ADMIN_USERNAME:-admin}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
 
   pgadmin:
     image: dpage/pgadmin4

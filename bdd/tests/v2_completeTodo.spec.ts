@@ -1,10 +1,13 @@
 import { test, expect } from '@playwright/test';
-import { resetState, createTodoViaApi } from './helpers';
+import { resetUsers, registerViaApi, navigateAsUser, createTodoViaApi, TEST_USERNAME, TEST_PASSWORD } from './helpers';
+
+let userToken: string;
 
 test.beforeEach(async ({ page, request }) => {
-  await resetState(request);
-  await createTodoViaApi(request, 'Buy milk');
-  await page.goto('/');
+  await resetUsers(request);
+  userToken = await registerViaApi(request, TEST_USERNAME, TEST_PASSWORD);
+  await createTodoViaApi(request, 'Buy milk', userToken);
+  await navigateAsUser(page, request, TEST_USERNAME, TEST_PASSWORD);
 });
 
 // Feature: Complete a ToDo Item

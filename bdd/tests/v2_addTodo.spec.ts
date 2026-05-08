@@ -1,9 +1,10 @@
 import { test, expect } from '@playwright/test';
-import { resetState, enterTodoText, clickAddButton } from './helpers';
+import { resetUsers, registerViaApi, navigateAsUser, enterTodoText, clickAddButton, TEST_USERNAME, TEST_PASSWORD } from './helpers';
 
 test.beforeEach(async ({ page, request }) => {
-  await resetState(request);
-  await page.goto('/');
+  await resetUsers(request);
+  await registerViaApi(request, TEST_USERNAME, TEST_PASSWORD);
+  await navigateAsUser(page, request, TEST_USERNAME, TEST_PASSWORD);
 });
 
 // Feature: Add a ToDo Item
