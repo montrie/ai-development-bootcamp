@@ -66,7 +66,7 @@ export default function App() {
         <button id="change-password-link" onClick={() => setShowChangePassword((p) => !p)}>
           Change password
         </button>
-        <button onClick={handleLogout}>Log out</button>
+        <button id="logout-button" onClick={handleLogout}>Log out</button>
       </div>
       {error && <p className="error-notice">{error}</p>}
       {showChangePassword && <ChangePasswordForm />}

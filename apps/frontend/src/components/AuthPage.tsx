@@ -46,6 +46,7 @@ export default function AuthPage({ onAuth }: Props) {
             Log in
           </button>
           <button
+            id="register-tab"
             role="tab"
             className="auth-tab"
             aria-selected={tab === 'register'}
@@ -58,7 +59,7 @@ export default function AuthPage({ onAuth }: Props) {
         <div className="auth-field">
           <label htmlFor="username-input">Username</label>
           <input
-            id="username-input"
+            id={tab === 'login' ? 'username-input' : 'reg-username-input'}
             type="text"
             className="auth-input"
             value={username}
@@ -69,7 +70,7 @@ export default function AuthPage({ onAuth }: Props) {
         <div className="auth-field">
           <label htmlFor="password-input">Password</label>
           <input
-            id="password-input"
+            id={tab === 'login' ? 'password-input' : 'reg-password-input'}
             type="password"
             className="auth-input"
             value={password}
@@ -80,7 +81,7 @@ export default function AuthPage({ onAuth }: Props) {
 
         {error && <p className="auth-error">{error}</p>}
 
-        <button className="auth-submit" onClick={handleSubmit}>
+        <button id={tab === 'login' ? 'login-button' : 'register-button'} className="auth-submit" onClick={handleSubmit}>
           {tab === 'login' ? 'Log in' : 'Register'}
         </button>
       </div>

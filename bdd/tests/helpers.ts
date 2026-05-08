@@ -1,5 +1,11 @@
 import type { APIRequestContext, Page } from '@playwright/test';
 
+declare const process: { env: Record<string, string | undefined> };
+export const ADMIN_USERNAME = process.env['ADMIN_USERNAME'] ?? 'admin';
+export const ADMIN_PASSWORD = process.env['ADMIN_PASSWORD'] ?? 'changeme';
+export const TEST_USERNAME = 'testuser';
+export const TEST_PASSWORD = 'testpass123';
+
 export const enterTodoText = (page: Page, text: string) =>
   page.fill('#todo-input', text);
 
@@ -9,7 +15,7 @@ export const getDeleteButton = (page: Page, text: string) =>
   page.getByRole('button', { name: new RegExp(`delete ${text}`, 'i') });
 
 export async function resetState(request: APIRequestContext): Promise<void> {
-  const adminToken = await loginViaApi(request, 'admin', 'changeme');
+  const adminToken = await loginViaApi(request, ADMIN_USERNAME, ADMIN_PASSWORD);
   await request.delete('/api/todos', {
     headers: { Authorization: `Bearer ${adminToken}` },
   });
@@ -63,13 +69,13 @@ export async function loginViaApi(
 }
 
 export async function resetUsers(request: APIRequestContext): Promise<void> {
-  const adminToken = await loginViaApi(request, 'admin', 'changeme');
+  const adminToken = await loginViaApi(request, ADMIN_USERNAME, ADMIN_PASSWORD);
   const response = await request.get('/api/admin/users', {
     headers: { Authorization: `Bearer ${adminToken}` },
   });
   const users: Array<{ id: number; username: string }> = await response.json();
   for (const user of users) {
-    if (user.username !== 'admin') {
+    if (user.username !== ADMIN_USERNAME) {
       await request.delete(`/api/admin/users/${user.id}`, {
         headers: { Authorization: `Bearer ${adminToken}` },
       });
@@ -85,6 +91,6 @@ export async function navigateAsUser(
 ): Promise<void> {
   const token = await loginViaApi(request, username, password);
   await page.goto('/');
-  await page.evaluate((t) => localStorage.setItem('auth_token', t), token);
+  await page.evaluate((t: string) => localStorage.setItem('auth_token', t), token);
   await page.reload();
 }

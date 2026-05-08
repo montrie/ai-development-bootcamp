@@ -1,10 +1,7 @@
 import { test, expect } from '@playwright/test';
-import { resetUsers, loginViaApi } from './helpers';
+import { resetUsers, loginViaApi, ADMIN_USERNAME, ADMIN_PASSWORD } from './helpers';
 
 // Feature: Admin Account Seeding on Startup (F-24)
-
-const ADMIN_USERNAME = 'admin';
-const ADMIN_PASSWORD = 'changeme';
 
 test.beforeEach(async ({ request }) => {
   await resetUsers(request);

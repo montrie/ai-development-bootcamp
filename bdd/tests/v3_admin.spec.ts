@@ -1,10 +1,7 @@
 import { test, expect } from '@playwright/test';
-import { resetUsers, registerViaApi, loginViaApi, createTodoViaApi, navigateAsUser } from './helpers';
+import { resetUsers, registerViaApi, loginViaApi, createTodoViaApi, navigateAsUser, ADMIN_USERNAME, ADMIN_PASSWORD } from './helpers';
 
 // Feature: Admin User Management (F-24, F-25, F-26, F-27, F-28)
-
-const ADMIN_USERNAME = 'admin';
-const ADMIN_PASSWORD = 'changeme';
 
 test.beforeEach(async ({ page, request }) => {
   await resetUsers(request);
@@ -48,6 +45,7 @@ test('Admin can reset a user\'s password', async ({ page, request }) => {
   await page.getByRole('button', { name: /reset password for alice/i }).click();
   await page.fill('#new-password-input', 'newpass123');
   await page.click('#confirm-reset-button');
+  await expect(page.locator('#confirm-reset-button')).not.toBeVisible();
   const newToken = await loginViaApi(request, 'alice', 'newpass123');
   expect(newToken).toBeTruthy();
   const oldLoginResponse = await request.post('/api/auth/login', {

@@ -1,12 +1,13 @@
 import { test, expect, type Page } from '@playwright/test';
-import { resetState, enterTodoText, clickAddButton } from './helpers';
+import { resetUsers, registerViaApi, navigateAsUser, enterTodoText, clickAddButton, TEST_USERNAME, TEST_PASSWORD } from './helpers';
 
 const expectValidationCue = (page: Page) =>
   expect(page.locator('#todo-input')).toHaveAttribute('aria-invalid', 'true');
 
 test.beforeEach(async ({ page, request }) => {
-  await resetState(request);
-  await page.goto('/');
+  await resetUsers(request);
+  await registerViaApi(request, TEST_USERNAME, TEST_PASSWORD);
+  await navigateAsUser(page, request, TEST_USERNAME, TEST_PASSWORD);
 });
 
 // Feature: Behaviour Edge Cases
