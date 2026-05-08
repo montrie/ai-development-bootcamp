@@ -3,8 +3,11 @@ server {
     root /usr/share/nginx/html;
     index index.html;
 
+    resolver 8.8.8.8 valid=300s;
+
     location /api/ {
-        proxy_pass ${BACKEND_URL};
+        set $backend ${BACKEND_URL};
+        proxy_pass $backend;
         proxy_set_header Host $proxy_host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_ssl_server_name on;

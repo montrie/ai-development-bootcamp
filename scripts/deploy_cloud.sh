@@ -100,6 +100,10 @@ echo "    Frontend: ${FRONTEND_URL}"
 echo "    Backend:  ${BACKEND_URL}"
 echo ""
 echo "==> Verifying proxy..."
-# A successful response (any 2xx) confirms nginx can reach the backend.
-# -s silences progress output; -f treats HTTP errors as failures.
-curl -sf "${FRONTEND_URL}/api/todos" && echo " OK (nginx → backend reachable)" || echo " FAIL (502 or unreachable)"
+# 401 from the backend (auth required) confirms nginx successfully proxied the request.
+PROXY_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "${FRONTEND_URL}/api/todos")
+if [[ "${PROXY_STATUS}" == "401" || "${PROXY_STATUS}" == "200" ]]; then
+  echo " OK (nginx → backend reachable, status ${PROXY_STATUS})"
+else
+  echo " FAIL (unexpected status ${PROXY_STATUS})"
+fi

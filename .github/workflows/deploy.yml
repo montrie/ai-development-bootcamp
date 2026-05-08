@@ -74,6 +74,7 @@ jobs:
             SPRING_DATASOURCE_PASSWORD=todo-db-password:latest
 
       - name: Deploy frontend to Cloud Run
+        id: deploy-frontend
         uses: google-github-actions/deploy-cloudrun@v2
         with:
           service: todo-frontend
@@ -85,3 +86,13 @@ jobs:
             --service-account=${{ secrets.GCP_SERVICE_ACCOUNT }}
           env_vars: |
             BACKEND_URL=${{ steps.deploy-backend.outputs.url }}
+
+      - name: Verify proxy
+        run: |
+          PROXY_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "${{ steps.deploy-frontend.outputs.url }}/api/todos")
+          if [[ "${PROXY_STATUS}" == "401" || "${PROXY_STATUS}" == "200" ]]; then
+            echo "OK (nginx → backend reachable, status ${PROXY_STATUS})"
+          else
+            echo "FAIL (unexpected status ${PROXY_STATUS})"
+            exit 1
+          fi
