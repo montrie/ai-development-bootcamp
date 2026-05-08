@@ -57,7 +57,7 @@ export default function AuthPage({ onAuth }: Props) {
         </div>
 
         <div className="auth-field">
-          <label htmlFor="username-input">Username</label>
+          <label htmlFor={tab === 'login' ? 'username-input' : 'reg-username-input'}>Username</label>
           <input
             id={tab === 'login' ? 'username-input' : 'reg-username-input'}
             type="text"
@@ -68,7 +68,7 @@ export default function AuthPage({ onAuth }: Props) {
           />
         </div>
         <div className="auth-field">
-          <label htmlFor="password-input">Password</label>
+          <label htmlFor={tab === 'login' ? 'password-input' : 'reg-password-input'}>Password</label>
           <input
             id={tab === 'login' ? 'password-input' : 'reg-password-input'}
             type="password"
