@@ -18,7 +18,7 @@ beforeAll(() => {
 beforeEach(() => {
   vi.clearAllMocks();
   vi.mocked(auth.getToken).mockReturnValue('test-token');
-  global.fetch = vi.fn();
+  window.fetch = vi.fn();
 });
 
 describe('API auth headers', () => {
