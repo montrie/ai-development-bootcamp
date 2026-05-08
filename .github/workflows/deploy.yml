@@ -97,3 +97,8 @@ jobs:
             echo "FAIL (unexpected status ${PROXY_STATUS})"
             exit 1
           fi
+
+      - name: Emit deployment URL
+        run: |
+          echo "## Deployment" >> $GITHUB_STEP_SUMMARY
+          echo "[Frontend](${{ steps.deploy-frontend.outputs.url }})" >> $GITHUB_STEP_SUMMARY
