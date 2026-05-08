@@ -12,6 +12,7 @@ CLAUDE.local.md
 
 *.env
 *.env.*
+!.env.example
 
 ./results_playwright/
 

@@ -6,9 +6,17 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
 # ── GCP config ────────────────────────────────────────────────────────────────
-PROJECT_ID="todo-app-495408"
-REGION="europe-west3"
-SA_EMAIL="todo-deployer@${PROJECT_ID}.iam.gserviceaccount.com"
+ENV_FILE="${ROOT_DIR}/.env"
+if [[ ! -f "${ENV_FILE}" ]]; then
+  echo "Error: ${ENV_FILE} not found. Copy .env.example and fill in your values." >&2
+  exit 1
+fi
+# shellcheck source=../.env
+source "${ENV_FILE}"
+
+PROJECT_ID="${GCP_PROJECT_ID}"
+REGION="${GCP_REGION}"
+SA_EMAIL="${GCP_SA_EMAIL}"
 
 # Tag images with the current git commit SHA so each deploy is traceable.
 SHORT_SHA=$(git -C "$ROOT_DIR" rev-parse --short HEAD)
@@ -71,7 +79,7 @@ gcloud run deploy todo-backend \
   --port=8080 \
   --add-cloudsql-instances="${CONNECTION_NAME}" \
   --service-account="${SA_EMAIL}" \
-  --set-env-vars="SPRING_DATASOURCE_URL=jdbc:postgresql:///todo_db?cloudSqlInstance=${CONNECTION_NAME}&socketFactory=com.google.cloud.sql.postgres.SocketFactory,SPRING_DATASOURCE_USERNAME=todo_app_user" \
+  --set-env-vars="SPRING_DATASOURCE_URL=jdbc:postgresql:///todo_db?cloudSqlInstance=${CONNECTION_NAME}&socketFactory=com.google.cloud.sql.postgres.SocketFactory,SPRING_DATASOURCE_USERNAME=todo_app_user,SPRING_PROFILES_ACTIVE=prod" \
   --set-secrets="SPRING_DATASOURCE_PASSWORD=todo-db-password:latest"
 
 # Capture the backend's auto-provisioned Cloud Run HTTPS URL.

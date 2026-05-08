@@ -70,6 +70,7 @@ jobs:
           env_vars: |
             SPRING_DATASOURCE_URL=jdbc:postgresql:///todo_db?cloudSqlInstance=${{ secrets.CLOUDSQL_INSTANCE_CONNECTION_NAME }}&socketFactory=com.google.cloud.sql.postgres.SocketFactory
             SPRING_DATASOURCE_USERNAME=${{ secrets.DB_USER }}
+            SPRING_PROFILES_ACTIVE=prod
           secrets: |
             SPRING_DATASOURCE_PASSWORD=todo-db-password:latest
 
