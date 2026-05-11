@@ -4,6 +4,8 @@ import com.todo.model.Todo;
 import com.todo.model.User;
 import com.todo.repository.TodoRepository;
 import com.todo.repository.UserRepository;
+import com.todo.security.AuditAccessDeniedHandler;
+import com.todo.security.AuditAuthenticationEntryPoint;
 import com.todo.service.JwtService;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import com.todo.config.SecurityConfig;
@@ -42,6 +44,12 @@ class V3PerUserTodosTest {
     @MockitoBean
     JwtDecoder jwtDecoder;
 
+    @MockitoBean
+    AuditAuthenticationEntryPoint auditAuthenticationEntryPoint;
+
+    @MockitoBean
+    AuditAccessDeniedHandler auditAccessDeniedHandler;
+
     @Test
     void getAllTodosReturnsOnlyAuthenticatedUsersItems() throws Exception {
         User alice = new User();
@@ -67,7 +75,7 @@ class V3PerUserTodosTest {
         Todo bobTodo = new Todo();
         bobTodo.setUser(bob);
 
-        given(repository.findById(1)).willReturn(Optional.of(bobTodo));
+        given(repository.findById(1L)).willReturn(Optional.of(bobTodo));
 
         mvc.perform(delete("/api/todos/1").with(MockUserFactory.jwtAs("alice")))
                 .andExpect(status().isForbidden());
@@ -75,7 +83,7 @@ class V3PerUserTodosTest {
 
     @Test
     void accessNonExistentTodoReturns403() throws Exception {
-        given(repository.findById(999999)).willReturn(Optional.empty());
+        given(repository.findById(999999L)).willReturn(Optional.empty());
 
         mvc.perform(patch("/api/todos/999999")
                         .with(MockUserFactory.jwtAs("alice"))

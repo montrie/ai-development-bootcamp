@@ -4,6 +4,8 @@ import com.todo.model.Todo;
 import com.todo.model.User;
 import com.todo.repository.TodoRepository;
 import com.todo.repository.UserRepository;
+import com.todo.security.AuditAccessDeniedHandler;
+import com.todo.security.AuditAuthenticationEntryPoint;
 import com.todo.service.JwtService;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import com.todo.config.SecurityConfig;
@@ -42,6 +44,12 @@ class V2DeleteTodoTest {
     @MockitoBean
     JwtDecoder jwtDecoder;
 
+    @MockitoBean
+    AuditAuthenticationEntryPoint auditAuthenticationEntryPoint;
+
+    @MockitoBean
+    AuditAccessDeniedHandler auditAccessDeniedHandler;
+
     Todo existingTodo;
 
     @BeforeEach
@@ -56,7 +64,7 @@ class V2DeleteTodoTest {
 
     @Test
     void deletesTodoByIdAndReturnsNoContent() throws Exception {
-        given(repository.findById(1)).willReturn(Optional.of(existingTodo));
+        given(repository.findById(1L)).willReturn(Optional.of(existingTodo));
 
         mvc.perform(delete("/api/todos/1").with(MockUserFactory.jwtAs("user")))
                 .andExpect(status().isNoContent());

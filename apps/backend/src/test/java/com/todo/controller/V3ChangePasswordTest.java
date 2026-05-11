@@ -1,6 +1,8 @@
 package com.todo.controller;
 
 import com.todo.config.SecurityConfig;
+import com.todo.security.AuditAccessDeniedHandler;
+import com.todo.security.AuditAuthenticationEntryPoint;
 import com.todo.service.JwtService;
 import com.todo.service.UserService;
 import com.todo.support.MockUserFactory;
@@ -32,6 +34,12 @@ class V3ChangePasswordTest {
 
     @MockitoBean
     JwtDecoder jwtDecoder;
+
+    @MockitoBean
+    AuditAuthenticationEntryPoint auditAuthenticationEntryPoint;
+
+    @MockitoBean
+    AuditAccessDeniedHandler auditAccessDeniedHandler;
 
     @Test
     void changePasswordWithCorrectCurrentPasswordReturns204() throws Exception {
