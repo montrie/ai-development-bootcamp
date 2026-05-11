@@ -107,3 +107,43 @@ export async function changePassword(currentPassword: string, newPassword: strin
   if (res.status === 401) { clearToken(); window.location.reload(); throw new Error('Unauthorized'); }
   if (!res.ok) throw new Error('Current password is incorrect');
 }
+
+export type AuditLog = {
+  id: number;
+  timestamp: string;
+  actionType: string;
+  actorUsername: string;
+  outcome: string;
+  resourceId: number | null;
+};
+
+export type AuditLogFilter = {
+  actionType?: string;
+  username?: string;
+  startDate?: string;
+  endDate?: string;
+};
+
+export async function fetchAuditLogs(filter?: AuditLogFilter): Promise<AuditLog[]> {
+  const res = await fetch(`${ADMIN_BASE}/audit-logs/search`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...authHeaders() },
+    body: JSON.stringify(filter ?? {}),
+  });
+  if (!res.ok) throw new Error('Failed to fetch audit logs');
+  return res.json();
+}
+
+export async function fetchAuditLogActionTypes(): Promise<string[]> {
+  const res = await fetch(`${ADMIN_BASE}/audit-logs/action-types`, { headers: authHeaders() });
+  if (!res.ok) throw new Error('Failed to fetch action types');
+  return res.json();
+}
+
+export async function clearAuditLogs(): Promise<void> {
+  const res = await fetch(`${ADMIN_BASE}/audit-logs`, {
+    method: 'DELETE',
+    headers: authHeaders(),
+  });
+  if (!res.ok) throw new Error('Failed to clear audit logs');
+}
