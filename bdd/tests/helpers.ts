@@ -9,6 +9,18 @@ export const TEST_PASSWORD = 'testpass123';
 export const enterTodoText = (page: Page, text: string) =>
   page.fill('#todo-input', text);
 
+// react-datepicker expects MM/dd/yyyy; accepts an ISO date string and handles conversion
+export const isoToPickerFormat = (isoDate: string): string => {
+  const [year, month, day] = isoDate.split('-');
+  return `${month}/${day}/${year}`;
+};
+
+export const fillDueDateInput = (page: Page, isoDate: string) =>
+  page.fill('#due-date-input', isoToPickerFormat(isoDate));
+
+export const fillEditDueDateInput = (page: Page, isoDate: string) =>
+  page.fill('.edit-due-date-input', isoToPickerFormat(isoDate));
+
 export const clickAddButton = (page: Page) => page.click('#add-button');
 
 export const getDeleteButton = (page: Page, text: string) =>
@@ -26,7 +38,7 @@ export async function createTodoViaApi(
   text: string,
   token?: string
 ): Promise<number> {
-  const headers = token ? { Authorization: `Bearer ${token}` } : {};
+  const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
   const response = await request.post('/api/todos', {
     data: { text },
     headers,
@@ -40,7 +52,7 @@ export async function completeTodoViaApi(
   id: number,
   token?: string
 ): Promise<void> {
-  const headers = token ? { Authorization: `Bearer ${token}` } : {};
+  const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
   await request.patch(`/api/todos/${id}`, { data: { done: true }, headers });
 }
 
@@ -83,14 +95,30 @@ export async function resetUsers(request: APIRequestContext): Promise<void> {
   }
 }
 
+export async function createTodoWithDueDateViaApi(
+  request: APIRequestContext,
+  text: string,
+  dueDate: string,
+  token?: string
+): Promise<number> {
+  const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
+  const response = await request.post('/api/todos', {
+    data: { text, dueDate },
+    headers,
+  });
+  const todo = await response.json();
+  return todo.id as number;
+}
+
 export async function navigateAsUser(
   page: Page,
   request: APIRequestContext,
   username: string,
   password: string
-): Promise<void> {
+): Promise<string> {
   const token = await loginViaApi(request, username, password);
   await page.goto('/');
   await page.evaluate((t: string) => localStorage.setItem('auth_token', t), token);
   await page.reload();
+  return token;
 }
