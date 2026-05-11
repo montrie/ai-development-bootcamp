@@ -94,3 +94,33 @@ export async function navigateAsUser(
   await page.evaluate((t: string) => localStorage.setItem('auth_token', t), token);
   await page.reload();
 }
+
+export type AuditLog = {
+  id: number;
+  timestamp: string;
+  actionType: string;
+  actorUsername: string;
+  outcome: string;
+  resourceId: number | null;
+};
+
+export async function getAuditLogsViaApi(
+  request: APIRequestContext,
+  adminToken: string,
+  filter?: Record<string, string>
+): Promise<AuditLog[]> {
+  const response = await request.post('/api/admin/audit-logs/search', {
+    headers: { Authorization: `Bearer ${adminToken}` },
+    data: filter ?? {},
+  });
+  return response.json() as Promise<AuditLog[]>;
+}
+
+export async function clearAuditLogsViaApi(
+  request: APIRequestContext,
+  adminToken: string
+): Promise<void> {
+  await request.delete('/api/admin/audit-logs', {
+    headers: { Authorization: `Bearer ${adminToken}` },
+  });
+}
