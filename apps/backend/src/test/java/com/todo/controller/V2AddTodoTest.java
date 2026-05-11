@@ -56,7 +56,7 @@ class V2AddTodoTest {
                         .with(MockUserFactory.jwtAs("user"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"text\":\"Buy milk\"}"))
-                .andExpect(status().isOk())
+                .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.text").value("Buy milk"))
                 .andExpect(jsonPath("$.done").value(false));
     }

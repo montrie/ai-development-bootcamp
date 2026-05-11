@@ -38,7 +38,8 @@ public class TodoController {
     }
 
     @Operation(summary = "Create a todo", description = "Creates a new todo item for the authenticated user")
-    @ApiResponse(responseCode = "200", description = "Created todo")
+    @ApiResponse(responseCode = "201", description = "Created todo")
+    @ResponseStatus(HttpStatus.CREATED)
     @PostMapping
     public Todo createTodo(@RequestBody Todo todo) {
         todo.setUser(resolveUser());
