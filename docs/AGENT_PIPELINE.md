@@ -8,6 +8,7 @@ This document describes the six-agent pipeline used to develop features in this 
 
 ```mermaid
 flowchart TD
+    FDS[feature-discovery] --> CR[context-reader]
     CR[context-reader] --> GA[gherkin-author]
     GA --> E2E[e2e-spec-author]
     E2E --> BD[backend-dev]
@@ -24,6 +25,33 @@ flowchart TD
 ---
 
 ## Stage-by-Stage Reference
+
+### Stage 0 — feature-discovery
+
+**Role:** Intake agent. Takes raw feature ideas from the user, decides the PRD target, runs a structured Q&A loop, and writes finalised requirements into the chosen PRD file before any implementation agent is invoked.
+
+**Inputs:** Raw feature description(s) from the user.
+
+**Sub-steps:**
+
+1. **Version decision** — Read `docs/PRD.md` and all `docs/product-requirements/PRD_V{N}.md` files to find the latest version. Decide whether the new features extend it in-place or warrant a new `PRD_V{N+1}.md`:
+   - Extend in-place if the features are small additions to a version still marked *In Progress*.
+   - Create a new version if the latest version is *Complete* or the features constitute a distinct product increment.
+
+2. **Open questions** — Surface ambiguities as a numbered list covering: data model impact, auth requirements, API shape, UI interactions, and out-of-scope boundaries.
+
+3. **Q&A loop** — Present questions to the user one batch at a time. After each answer, reason about the consequences of that decision — what new constraints it implies, what edge cases it opens, what downstream agents (data model, API shape, auth, UI) it affects — and derive follow-up questions from that reasoning. Update the working feature definition after each exchange. Loop until no unresolved questions remain and the definition is unambiguous enough to hand off to `context-reader`.
+
+4. **Write requirements** — Append the new feature rows (with IDs continuing from the last F-N in the chosen file) to the target PRD, following the existing table format. If a new `PRD_V{N+1}.md` was created, update the version table in `docs/PRD.md` accordingly.
+
+**Output:**
+- Updated `docs/product-requirements/PRD_V{N}.md` (or new `PRD_V{N+1}.md`) with new F-N rows.
+- Updated `docs/PRD.md` version table (only if a new PRD file was created).
+- A summary of the finalised feature IDs for the orchestrator to pass to `context-reader`.
+
+**Can be skipped:** Yes — if the feature is already fully described in a PRD file, go straight to Stage 1.
+
+---
 
 ### Stage 1 — context-reader
 
@@ -148,7 +176,8 @@ E2E failures are triaged by failure type: API failures go to `backend-dev`, DOM/
 
 | Agent | Skippable? | Condition |
 |---|---|---|
-| context-reader | No | Always first |
+| feature-discovery | Yes | Feature already fully described in PRD |
+| context-reader | No | Always first after discovery |
 | gherkin-author | Rarely | `.feature` file already exists and is current |
 | e2e-spec-author | Rarely | `.spec.ts` file already exists and covers all scenarios |
 | backend-dev | No | Backend always needs implementation |
@@ -158,6 +187,13 @@ E2E failures are triaged by failure type: API failures go to `backend-dev`, DOM/
 ---
 
 ## How to Invoke Each Agent
+
+**Step 0 — Discover and define features:**
+```
+Describe the feature idea(s) in plain language. feature-discovery will
+determine the PRD target, ask clarifying questions, and write the
+finalised requirements before the pipeline proceeds.
+```
 
 **Step 1 — Gather context:**
 ```
