@@ -3,6 +3,9 @@ package com.todo.controller;
 import com.todo.config.SecurityConfig;
 import com.todo.model.Role;
 import com.todo.model.User;
+import com.todo.security.AuditAccessDeniedHandler;
+import com.todo.security.AuditAuthenticationEntryPoint;
+import com.todo.service.AuditService;
 import com.todo.service.JwtService;
 import com.todo.service.UserService;
 import com.todo.support.MockUserFactory;
@@ -35,6 +38,15 @@ class V3AdminListUsersTest {
 
     @MockitoBean
     JwtDecoder jwtDecoder;
+
+    @MockitoBean
+    AuditService auditService;
+
+    @MockitoBean
+    AuditAuthenticationEntryPoint auditAuthenticationEntryPoint;
+
+    @MockitoBean
+    AuditAccessDeniedHandler auditAccessDeniedHandler;
 
     @Test
     void listUsersReturnsAllUsers() throws Exception {

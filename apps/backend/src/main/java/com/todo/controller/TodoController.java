@@ -36,7 +36,7 @@ public class TodoController {
     }
 
     @PatchMapping("/{id}")
-    public Todo updateCompletedStatus(@PathVariable Integer id, @RequestBody Todo patch) {
+    public Todo updateCompletedStatus(@PathVariable Long id, @RequestBody Todo patch) {
         Todo todo = repository.findById(id)
                 .filter(t -> t.getUser().getUsername().equals(getAuthenticatedUsername()))
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN));
@@ -46,7 +46,7 @@ public class TodoController {
 
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @DeleteMapping("/{id}")
-    public void deleteTodo(@PathVariable Integer id) {
+    public void deleteTodo(@PathVariable Long id) {
         Todo todo = repository.findById(id)
                 .filter(t -> t.getUser().getUsername().equals(getAuthenticatedUsername()))
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN));
