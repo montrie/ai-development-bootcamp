@@ -61,8 +61,8 @@ All endpoints are prefixed `/api`.
 | Method | Path | Request Body | Description |
 |---|---|---|---|
 | GET | `/api/todos` | — | Return all ToDo items ordered by creation time (ascending) |
-| POST | `/api/todos` | `{ "text": "string" }` | Create a new ToDo item |
-| PATCH | `/api/todos/{id}` | `{ "done": boolean }` | Toggle the done state of a ToDo item |
+| POST | `/api/todos` | `{ "text": "string", "dueDate"?: string }` | Create a new ToDo item (dueDate added in V5) |
+| PATCH | `/api/todos/{id}` | `{ "done"?: boolean, "text"?: string, "dueDate"?: string\|null }` | Partially update a ToDo item; all fields optional (text and dueDate added in V5) |
 | DELETE | `/api/todos/{id}` | — | Permanently delete a ToDo item |
 | DELETE | `/api/todos` | — | Delete all ToDo items (E2E test state reset; foundation for future "Clear list" feature) |
 
