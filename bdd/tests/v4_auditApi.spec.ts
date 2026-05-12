@@ -78,8 +78,7 @@ test('Admin can filter audit log entries by date range via the API', async ({ re
 test('Regular user cannot retrieve audit log entries via the API', async ({ request }) => {
   const aliceToken = await registerViaApi(request, 'alice', 'secret123');
 
-  const response = await request.post('/api/admin/audit-logs/search', {
-    data: {},
+  const response = await request.get('/api/admin/audit-logs', {
     headers: { Authorization: `Bearer ${aliceToken}` },
   });
 

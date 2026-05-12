@@ -140,3 +140,23 @@ describe('Audit Logs page — F-40 clear', () => {
     expect(tbody?.children.length).toBe(0);
   });
 });
+
+describe('Audit Logs page — error handling', () => {
+  it('shows error message when fetchAuditLogs fails on initial load', async () => {
+    vi.mocked(api.fetchAuditLogs).mockRejectedValue(new Error('Failed to fetch audit logs'));
+    await navigateToAuditLogs();
+    await waitFor(() => {
+      expect(document.querySelector('.audit-error')).toBeInTheDocument();
+    });
+  });
+
+  it('shows error message when clearAuditLogs fails', async () => {
+    vi.spyOn(window, 'confirm').mockReturnValue(true);
+    vi.mocked(api.clearAuditLogs).mockRejectedValue(new Error('Failed to clear audit logs'));
+    const user = await navigateToAuditLogs();
+    await user.click(document.getElementById('clear-audit-logs-button')!);
+    await waitFor(() => {
+      expect(document.querySelector('.audit-error')).toBeInTheDocument();
+    });
+  });
+});

@@ -2,6 +2,16 @@
   padding: 1rem;
 }
 
+.audit-error {
+  color: #c62828;
+  background: #ffebee;
+  border: 1px solid #ef9a9a;
+  border-radius: 4px;
+  padding: 0.5rem 0.75rem;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+}
+
 .audit-filter-bar {
   display: flex;
   gap: 0.5rem;

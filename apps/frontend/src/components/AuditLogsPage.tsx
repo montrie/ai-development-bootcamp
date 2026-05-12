@@ -15,6 +15,7 @@ export default function AuditLogsPage() {
   const [usernameFilter, setUsernameFilter] = useState('');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
+  const [error, setError] = useState<string | null>(null);
 
   const loadLogs = useCallback(() => {
     const filter: AuditLogFilter = {};
@@ -22,22 +23,34 @@ export default function AuditLogsPage() {
     if (usernameFilter) filter.username = usernameFilter;
     if (startDate) filter.startDate = startDate + 'T00:00:00Z';
     if (endDate) filter.endDate = endDate + 'T23:59:59Z';
-    fetchAuditLogs(filter).then(setLogs).catch(console.error);
+    fetchAuditLogs(filter)
+      .then(data => { setError(null); setLogs(data); })
+      .catch((e: Error) => setError(e.message));
   }, [actionTypeFilter, usernameFilter, startDate, endDate]);
 
   useEffect(() => {
-    fetchAuditLogActionTypes().then(setActionTypes).catch(console.error);
-    fetchAuditLogs({}).then(setLogs).catch(console.error);
+    fetchAuditLogActionTypes()
+      .then(setActionTypes)
+      .catch((e: Error) => setError(e.message));
+    fetchAuditLogs({})
+      .then(data => { setError(null); setLogs(data); })
+      .catch((e: Error) => setError(e.message));
   }, []);
 
   async function handleClear() {
     if (!window.confirm('Clear all audit log entries? This cannot be undone.')) return;
-    await clearAuditLogs();
-    setLogs([]);
+    try {
+      await clearAuditLogs();
+      setError(null);
+      setLogs([]);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Failed to clear audit logs');
+    }
   }
 
   return (
     <div className="audit-logs-page">
+      {error && <p className="audit-error" role="alert">{error}</p>}
       <div className="audit-filter-bar">
         <select
           id="audit-action-type"

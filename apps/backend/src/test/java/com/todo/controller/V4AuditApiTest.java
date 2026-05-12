@@ -1,6 +1,5 @@
 package com.todo.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.todo.config.SecurityConfig;
 import com.todo.model.AuditLog;
 import com.todo.security.AuditAccessDeniedHandler;
@@ -16,14 +15,12 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
-import org.springframework.http.MediaType;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.OffsetDateTime;
 import java.util.List;
-import java.util.Map;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.isNull;
@@ -37,7 +34,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class V4AuditApiTest {
 
     @Autowired MockMvc mvc;
-    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @MockitoBean UserService userService;
     @MockitoBean AuditService auditService;
@@ -77,10 +73,8 @@ class V4AuditApiTest {
         given(auditService.search(isNull(), isNull(), isNull(), isNull()))
             .willReturn(List.of(sampleLog()));
 
-        mvc.perform(post("/api/admin/audit-logs/search")
-                .with(MockUserFactory.jwtAsAdmin("admin"))
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("{}"))
+        mvc.perform(get("/api/admin/audit-logs")
+                .with(MockUserFactory.jwtAsAdmin("admin")))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$[0].actionType").value("USER_LOGIN"))
             .andExpect(jsonPath("$[0].actorUsername").value("alice"))
@@ -92,10 +86,9 @@ class V4AuditApiTest {
         given(auditService.search(any(), isNull(), isNull(), isNull()))
             .willReturn(List.of(sampleLog()));
 
-        mvc.perform(post("/api/admin/audit-logs/search")
+        mvc.perform(get("/api/admin/audit-logs")
                 .with(MockUserFactory.jwtAsAdmin("admin"))
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(Map.of("actionType", "USER_LOGIN"))))
+                .param("actionType", "USER_LOGIN"))
             .andExpect(status().isOk());
 
         verify(auditService).search("USER_LOGIN", null, null, null);
@@ -103,10 +96,8 @@ class V4AuditApiTest {
 
     @Test
     void searchAuditLogsReturns403ForRegularUser() throws Exception {
-        mvc.perform(post("/api/admin/audit-logs/search")
-                .with(MockUserFactory.jwtAs("alice"))
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("{}"))
+        mvc.perform(get("/api/admin/audit-logs")
+                .with(MockUserFactory.jwtAs("alice")))
             .andExpect(status().isForbidden());
     }
 

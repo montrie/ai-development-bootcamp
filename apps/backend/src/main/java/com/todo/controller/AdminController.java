@@ -58,13 +58,15 @@ public class AdminController {
         userService.resetPassword(id, request.newPassword());
     }
 
-    @PostMapping("/audit-logs/search")
-    public List<AuditLogResponse> searchAuditLogs(@RequestBody AuditLogFilterRequest filter) {
-        OffsetDateTime start = filter.startDate() != null
-            ? OffsetDateTime.parse(filter.startDate()) : null;
-        OffsetDateTime end = filter.endDate() != null
-            ? OffsetDateTime.parse(filter.endDate()) : null;
-        return auditService.search(filter.actionType(), filter.username(), start, end).stream()
+    @GetMapping("/audit-logs")
+    public List<AuditLogResponse> searchAuditLogs(
+            @RequestParam(required = false) String actionType,
+            @RequestParam(required = false) String username,
+            @RequestParam(required = false) String startDate,
+            @RequestParam(required = false) String endDate) {
+        OffsetDateTime start = startDate != null ? OffsetDateTime.parse(startDate) : null;
+        OffsetDateTime end = endDate != null ? OffsetDateTime.parse(endDate) : null;
+        return auditService.search(actionType, username, start, end).stream()
             .map(a -> new AuditLogResponse(
                 a.getId(), a.getTimestamp().toString(),
                 a.getActionType(), a.getActorUsername(),
@@ -95,7 +97,6 @@ public class AdminController {
 
     record UserResponse(Long id, String username, String role) {}
     record ResetPasswordRequest(String newPassword) {}
-    record AuditLogFilterRequest(String actionType, String username, String startDate, String endDate) {}
     record AuditLogResponse(Long id, String timestamp, String actionType,
                              String actorUsername, String outcome, Long resourceId) {}
 }

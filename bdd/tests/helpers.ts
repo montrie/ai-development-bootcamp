@@ -109,9 +109,10 @@ export async function getAuditLogsViaApi(
   adminToken: string,
   filter?: Record<string, string>
 ): Promise<AuditLog[]> {
-  const response = await request.post('/api/admin/audit-logs/search', {
+  const params = new URLSearchParams(filter ?? {});
+  const query = params.toString();
+  const response = await request.get(`/api/admin/audit-logs${query ? `?${query}` : ''}`, {
     headers: { Authorization: `Bearer ${adminToken}` },
-    data: filter ?? {},
   });
   return response.json() as Promise<AuditLog[]>;
 }

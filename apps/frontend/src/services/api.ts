@@ -125,10 +125,14 @@ export type AuditLogFilter = {
 };
 
 export async function fetchAuditLogs(filter?: AuditLogFilter): Promise<AuditLog[]> {
-  const res = await fetch(`${ADMIN_BASE}/audit-logs/search`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', ...authHeaders() },
-    body: JSON.stringify(filter ?? {}),
+  const params = new URLSearchParams();
+  if (filter?.actionType) params.set('actionType', filter.actionType);
+  if (filter?.username) params.set('username', filter.username);
+  if (filter?.startDate) params.set('startDate', filter.startDate);
+  if (filter?.endDate) params.set('endDate', filter.endDate);
+  const query = params.toString();
+  const res = await fetch(`${ADMIN_BASE}/audit-logs${query ? `?${query}` : ''}`, {
+    headers: authHeaders(),
   });
   if (!res.ok) throw new Error('Failed to fetch audit logs');
   return res.json();
