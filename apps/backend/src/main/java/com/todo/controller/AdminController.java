@@ -61,6 +61,9 @@ public class AdminController {
         userService.resetPassword(id, request.newPassword());
     }
 
+    @Operation(summary = "Search audit logs", description = "Returns audit log entries filtered by action type, username, and date range")
+    @ApiResponse(responseCode = "200", description = "List of matching audit log entries")
+    @ApiResponse(responseCode = "400", description = "Invalid date format")
     @GetMapping("/audit-logs")
     public List<AuditLogResponse> searchAuditLogs(
             @RequestParam(required = false) String actionType,
@@ -77,11 +80,15 @@ public class AdminController {
             .toList();
     }
 
+    @Operation(summary = "List audit action types", description = "Returns all valid action type values for use as filter options")
+    @ApiResponse(responseCode = "200", description = "List of action type names")
     @GetMapping("/audit-logs/action-types")
     public List<String> getActionTypes() {
         return auditService.actionTypes();
     }
 
+    @Operation(summary = "Clear audit logs", description = "Deletes all audit log entries. Used for test state reset.")
+    @ApiResponse(responseCode = "204", description = "Audit logs cleared")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @DeleteMapping("/audit-logs")
     public void deleteAuditLogs() {
