@@ -63,6 +63,8 @@ public class TodoController {
     @ApiResponse(responseCode = "400", description = "Invalid input: blank text, non-string text, or malformed dueDate", content = @Content)
     @ApiResponse(responseCode = "403", description = "Todo not found or belongs to another user", content = @Content)
     @AuditAction(AuditActionType.TODO_UPDATED)
+    // Map<String, Object> is intentional: a typed record cannot distinguish an absent key from an
+    // explicit null, which is required to support clearing dueDate with "dueDate": null.
     @PatchMapping("/{id}")
     public Todo updateTodo(
             @Parameter(description = "ID of the todo to update") @PathVariable Long id,
