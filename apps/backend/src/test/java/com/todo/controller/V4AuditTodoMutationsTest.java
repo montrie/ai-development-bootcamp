@@ -27,6 +27,7 @@ import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -62,7 +63,10 @@ class V4AuditTodoMutationsTest {
 
     @Test
     void createTodoLogsAuditEvent() throws Exception {
-        Todo saved = todoOwnedByUser();
+        // Todo.id has no setter — @GeneratedValue assigns it at persist time.
+        // A spy lets us stub getId() so the assertion covers a real non-null ID.
+        Todo saved = spy(todoOwnedByUser());
+        given(saved.getId()).willReturn(42L);
 
         given(todoRepository.save(any(Todo.class))).willReturn(saved);
 
@@ -72,12 +76,15 @@ class V4AuditTodoMutationsTest {
                 .content("{\"text\":\"task\"}"))
             .andExpect(status().isCreated());
 
-        verify(auditService).log(AuditActionType.TODO_CREATED.name(), "user", "SUCCESS", saved.getId());
+        verify(auditService).log(AuditActionType.TODO_CREATED.name(), "user", "SUCCESS", 42L);
     }
 
     @Test
     void toggleTodoLogsAuditEvent() throws Exception {
-        Todo todo = todoOwnedByUser();
+        // Todo.id has no setter — @GeneratedValue assigns it at persist time.
+        // A spy lets us stub getId() so the assertion covers a real non-null ID.
+        Todo todo = spy(todoOwnedByUser());
+        given(todo.getId()).willReturn(7L);
 
         given(todoRepository.findById(7L)).willReturn(Optional.of(todo));
         given(todoRepository.save(any(Todo.class))).willReturn(todo);
@@ -88,7 +95,7 @@ class V4AuditTodoMutationsTest {
                 .content("{\"done\":true}"))
             .andExpect(status().isOk());
 
-        verify(auditService).log(AuditActionType.TODO_TOGGLED.name(), "user", "SUCCESS", todo.getId());
+        verify(auditService).log(AuditActionType.TODO_TOGGLED.name(), "user", "SUCCESS", 7L);
     }
 
     @Test
