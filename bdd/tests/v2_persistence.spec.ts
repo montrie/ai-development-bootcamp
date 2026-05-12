@@ -31,6 +31,7 @@ test('A deleted todo item does not reappear after page reload', async ({ page, r
   await createTodoViaApi(request, 'Buy milk', userToken);
   await page.goto('/');
   await page.getByRole('button', { name: /delete buy milk/i }).click();
+  await expect(page.getByText('Buy milk')).not.toBeVisible();
   await page.reload();
   await expect(page.getByText('Buy milk')).not.toBeVisible();
 });
