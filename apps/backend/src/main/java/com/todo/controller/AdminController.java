@@ -6,6 +6,10 @@ import com.todo.service.AuditService;
 import com.todo.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
@@ -81,7 +85,11 @@ public class AdminController {
     }
 
     @Operation(summary = "List audit action types", description = "Returns all valid action type values for use as filter options")
-    @ApiResponse(responseCode = "200", description = "List of action type names")
+    @ApiResponse(responseCode = "200", description = "List of action type names",
+        content = @Content(array = @ArraySchema(schema = @Schema(type = "string")),
+            examples = @ExampleObject(value = "[\"TODO_CREATED\",\"TODO_UPDATED\",\"TODO_DELETED\"," +
+                "\"USER_REGISTERED\",\"USER_LOGIN\",\"ADMIN_DELETE_USER\",\"ADMIN_RESET_PASSWORD\"," +
+                "\"UNAUTHENTICATED\",\"ACCESS_DENIED\"]")))
     @GetMapping("/audit-logs/action-types")
     public List<String> getActionTypes() {
         return auditService.actionTypes();
