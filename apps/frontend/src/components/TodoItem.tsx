@@ -1,12 +1,118 @@
+import { useState } from 'react';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
 import type { Todo } from '../services/api';
 
 type Props = {
   todo: Todo;
   onToggle: (id: number, done: boolean) => void;
   onDelete: (id: number) => void;
+  isEditing: boolean;
+  onEditStart: (id: number) => void;
+  onEditCancel: () => void;
+  onEdit: (id: number, patch: { text: string; dueDate: string | null }) => void;
 };
 
-export default function TodoItem({ todo, onToggle, onDelete }: Props) {
+function formatDueDate(dueDate: string): string {
+  // Parse date as local to avoid timezone shifts
+  const [year, month, day] = dueDate.split('-').map(Number);
+  const date = new Date(year, month - 1, day);
+  const currentYear = new Date().getFullYear();
+  const options: Intl.DateTimeFormatOptions =
+    date.getFullYear() === currentYear
+      ? { day: 'numeric', month: 'short' }
+      : { day: 'numeric', month: 'short', year: 'numeric' };
+  return date.toLocaleDateString('en-GB', options);
+}
+
+function isOverdue(dueDate: string): boolean {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const [year, month, day] = dueDate.split('-').map(Number);
+  const due = new Date(year, month - 1, day);
+  return due < today;
+}
+
+function toLocalIso(date: Date): string {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+
+export default function TodoItem({
+  todo,
+  onToggle,
+  onDelete,
+  isEditing,
+  onEditStart,
+  onEditCancel,
+  onEdit,
+}: Props) {
+  const [editText, setEditText] = useState(todo.text);
+  const [editDueDate, setEditDueDate] = useState<Date | null>(
+    todo.dueDate ? (() => { const [y, m, d] = todo.dueDate!.split('-').map(Number); return new Date(y, m - 1, d); })() : null
+  );
+  const [editInvalid, setEditInvalid] = useState(false);
+
+  // Reset local edit state whenever we enter edit mode
+  function handleEditStart() {
+    setEditText(todo.text);
+    setEditDueDate(
+      todo.dueDate
+        ? (() => { const [y, m, d] = todo.dueDate!.split('-').map(Number); return new Date(y, m - 1, d); })()
+        : null
+    );
+    setEditInvalid(false);
+    onEditStart(todo.id);
+  }
+
+  function handleSave() {
+    const trimmed = editText.trim();
+    if (!trimmed) {
+      setEditInvalid(true);
+      return;
+    }
+    const dueDateIso = editDueDate ? toLocalIso(editDueDate) : null;
+    onEdit(todo.id, { text: trimmed, dueDate: dueDateIso });
+  }
+
+  function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
+    if (e.key === 'Enter') handleSave();
+    if (e.key === 'Escape') onEditCancel();
+  }
+
+  if (isEditing) {
+    return (
+      <li className="todo-item editing">
+        <input
+          className={`edit-input${editInvalid ? ' invalid' : ''}`}
+          type="text"
+          value={editText}
+          onChange={(e) => {
+            setEditText(e.target.value);
+            if (editInvalid) setEditInvalid(false);
+          }}
+          onKeyDown={handleKeyDown}
+          autoFocus
+        />
+        <DatePicker
+          className="edit-due-date-input"
+          wrapperClassName="edit-due-date-wrapper"
+          selected={editDueDate}
+          onChange={(date) => setEditDueDate(date)}
+          placeholderText="Due date (optional)"
+          dateFormat="yyyy-MM-dd"
+        />
+        <button className="btn-save" aria-label="Save" onClick={handleSave}>Save</button>
+        <button className="btn-cancel" aria-label="Cancel" onClick={onEditCancel}>Cancel</button>
+      </li>
+    );
+  }
+
+  const overdue = !todo.done && todo.dueDate ? isOverdue(todo.dueDate) : false;
+  const dueDateClass = `due-date-label${overdue ? ' overdue' : ''}`;
+
   return (
     <li className="todo-item">
       <input
@@ -16,7 +122,11 @@ export default function TodoItem({ todo, onToggle, onDelete }: Props) {
         onChange={() => onToggle(todo.id, !todo.done)}
       />
       <span className={todo.done ? 'completed' : undefined}>{todo.text}</span>
-      <button aria-label={`Delete ${todo.text}`} onClick={() => onDelete(todo.id)}>
+      {todo.dueDate && (
+        <span className={dueDateClass}>{formatDueDate(todo.dueDate)}</span>
+      )}
+      <button className="btn-edit" aria-label="Edit" onClick={handleEditStart}>Edit</button>
+      <button className="btn-delete" aria-label={`Delete ${todo.text}`} onClick={() => onDelete(todo.id)}>
         Delete
       </button>
     </li>

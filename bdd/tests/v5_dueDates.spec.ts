@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test';
 import {
   resetState,
+  resetUsers,
   registerViaApi,
   navigateAsUser,
   TEST_USERNAME,
@@ -15,6 +16,7 @@ let token: string;
 
 test.beforeEach(async ({ page, request }) => {
   await resetState(request);
+  await resetUsers(request);
   await registerViaApi(request, TEST_USERNAME, TEST_PASSWORD);
   token = await navigateAsUser(page, request, TEST_USERNAME, TEST_PASSWORD);
 });
@@ -69,7 +71,8 @@ test('A completed item does not show the overdue indicator even when past due', 
   await page.reload();
 
   const todoItem = page.locator('.todo-item').filter({ hasText: 'Pay taxes' });
-  await todoItem.getByRole('checkbox').check();
+  await todoItem.getByRole('checkbox').click();
+  await expect(todoItem.getByRole('checkbox')).toBeChecked();
 
   await expect(todoItem.locator('.due-date-label')).not.toHaveClass(/overdue/);
 });

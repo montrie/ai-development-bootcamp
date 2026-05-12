@@ -9,17 +9,18 @@ export const TEST_PASSWORD = 'testpass123';
 export const enterTodoText = (page: Page, text: string) =>
   page.fill('#todo-input', text);
 
-// react-datepicker expects MM/dd/yyyy; accepts an ISO date string and handles conversion
-export const isoToPickerFormat = (isoDate: string): string => {
-  const [year, month, day] = isoDate.split('-');
-  return `${month}/${day}/${year}`;
+// react-datepicker is configured with dateFormat="yyyy-MM-dd"; ISO strings are used directly
+export const isoToPickerFormat = (isoDate: string): string => isoDate;
+
+export const fillDueDateInput = async (page: Page, isoDate: string) => {
+  await page.fill('#due-date-input', isoDate);
+  await page.keyboard.press('Escape');
 };
 
-export const fillDueDateInput = (page: Page, isoDate: string) =>
-  page.fill('#due-date-input', isoToPickerFormat(isoDate));
-
-export const fillEditDueDateInput = (page: Page, isoDate: string) =>
-  page.fill('.edit-due-date-input', isoToPickerFormat(isoDate));
+export const fillEditDueDateInput = async (page: Page, isoDate: string) => {
+  await page.fill('.edit-due-date-input', isoDate);
+  await page.keyboard.press('Escape');
+};
 
 export const clickAddButton = (page: Page) => page.click('#add-button');
 

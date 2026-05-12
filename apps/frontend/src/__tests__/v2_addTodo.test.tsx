@@ -7,7 +7,7 @@ vi.mock('../services/api');
 vi.mock('../services/auth', () => ({ getToken: () => 'fake-token', setToken: vi.fn(), clearToken: vi.fn(), getRole: () => null }));
 
 const todo = (id: number, text: string, done = false) => ({ id, text, done });
-const getInput = () => screen.getByRole('textbox');
+const getInput = () => document.getElementById('todo-input') as HTMLInputElement;
 const getAddButton = () => screen.getByRole('button', { name: /add/i });
 
 beforeEach(() => {
@@ -30,7 +30,7 @@ describe('Add ToDo Item', () => {
     render(<App />);
     await user.type(getInput(), 'Buy milk');
     await user.click(getAddButton());
-    expect(api.createTodo).toHaveBeenCalledWith('Buy milk');
+    expect(api.createTodo).toHaveBeenCalledWith('Buy milk', null);
   });
 
   it('calls createTodo when Enter is pressed in the input', async () => {
@@ -38,7 +38,7 @@ describe('Add ToDo Item', () => {
     render(<App />);
     await user.type(getInput(), 'Buy milk');
     await user.keyboard('{Enter}');
-    expect(api.createTodo).toHaveBeenCalledWith('Buy milk');
+    expect(api.createTodo).toHaveBeenCalledWith('Buy milk', null);
   });
 
   it('new todo items are appended to the bottom of the list', async () => {

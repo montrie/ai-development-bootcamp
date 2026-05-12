@@ -6,16 +6,37 @@ type Props = {
   todos: Todo[];
   onToggle: (id: number, done: boolean) => void;
   onDelete: (id: number) => void;
+  editingId: number | null;
+  onEditStart: (id: number) => void;
+  onEditCancel: () => void;
+  onEdit: (id: number, patch: { text: string; dueDate: string | null }) => void;
 };
 
-export default function TodoList({ todos, onToggle, onDelete }: Props) {
+export default function TodoList({
+  todos,
+  onToggle,
+  onDelete,
+  editingId,
+  onEditStart,
+  onEditCancel,
+  onEdit,
+}: Props) {
   if (todos.length === 0) {
     return <p className="empty-placeholder">No tasks yet — add one above!</p>;
   }
   return (
     <ul className="todo-list">
       {todos.map((todo) => (
-        <TodoItem key={todo.id} todo={todo} onToggle={onToggle} onDelete={onDelete} />
+        <TodoItem
+          key={todo.id}
+          todo={todo}
+          onToggle={onToggle}
+          onDelete={onDelete}
+          isEditing={editingId === todo.id}
+          onEditStart={onEditStart}
+          onEditCancel={onEditCancel}
+          onEdit={onEdit}
+        />
       ))}
     </ul>
   );
