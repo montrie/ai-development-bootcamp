@@ -45,6 +45,8 @@ public class TodoController {
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping
     public Todo createTodo(@RequestBody CreateTodoRequest req) {
+        if (req.text() == null || req.text().isBlank())
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "text must be a non-blank string");
         User user = resolveUser();
         Todo todo = new Todo();
         todo.setText(req.text());

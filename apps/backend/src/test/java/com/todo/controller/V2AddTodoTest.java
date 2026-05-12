@@ -54,6 +54,24 @@ class V2AddTodoTest {
     }
 
     @Test
+    void createTodoWithNullTextReturns400() throws Exception {
+        mvc.perform(post("/api/todos")
+                        .with(MockUserFactory.jwtAs("user"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"text\":null}"))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void createTodoWithBlankTextReturns400() throws Exception {
+        mvc.perform(post("/api/todos")
+                        .with(MockUserFactory.jwtAs("user"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"text\":\"   \"}"))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
     void createsNewTodoAndReturnsItWithDoneFalse() throws Exception {
         Todo saved = new Todo();
         saved.setText("Buy milk");
