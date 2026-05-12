@@ -7,10 +7,12 @@ import com.todo.repository.UserRepository;
 import com.todo.security.AuditAccessDeniedHandler;
 import com.todo.security.AuditAuthenticationEntryPoint;
 import com.todo.service.JwtService;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import com.todo.config.SecurityConfig;
 import com.todo.support.MockUserFactory;
 import org.junit.jupiter.api.BeforeEach;
+import org.mockito.Mockito;
 import org.springframework.context.annotation.Import;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +22,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.Optional;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
@@ -53,13 +56,19 @@ class V2DeleteTodoTest {
     Todo existingTodo;
 
     @BeforeEach
-    void setUp() {
+    void setUp() throws Exception {
         User owner = new User();
         owner.setUsername("user");
 
         existingTodo = new Todo();
         existingTodo.setText("Buy milk");
         existingTodo.setUser(owner);
+
+        Mockito.doAnswer(inv -> {
+            HttpServletResponse resp = inv.getArgument(1);
+            resp.setStatus(403);
+            return null;
+        }).when(auditAccessDeniedHandler).handle(any(), any(), any());
     }
 
     @Test

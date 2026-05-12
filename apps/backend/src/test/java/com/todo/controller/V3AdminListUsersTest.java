@@ -9,7 +9,10 @@ import com.todo.service.AuditService;
 import com.todo.service.JwtService;
 import com.todo.service.UserService;
 import com.todo.support.MockUserFactory;
+import jakarta.servlet.http.HttpServletResponse;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
@@ -19,6 +22,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -47,6 +51,15 @@ class V3AdminListUsersTest {
 
     @MockitoBean
     AuditAccessDeniedHandler auditAccessDeniedHandler;
+
+    @BeforeEach
+    void setupSecurityMocks() throws Exception {
+        Mockito.doAnswer(inv -> {
+            HttpServletResponse resp = inv.getArgument(1);
+            resp.setStatus(403);
+            return null;
+        }).when(auditAccessDeniedHandler).handle(any(), any(), any());
+    }
 
     @Test
     void listUsersReturnsAllUsers() throws Exception {

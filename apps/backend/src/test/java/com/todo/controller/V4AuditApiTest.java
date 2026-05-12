@@ -9,7 +9,10 @@ import com.todo.service.AuditService;
 import com.todo.service.JwtService;
 import com.todo.service.UserService;
 import com.todo.support.MockUserFactory;
+import jakarta.servlet.http.HttpServletResponse;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
@@ -34,7 +37,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class V4AuditApiTest {
 
     @Autowired MockMvc mvc;
-    @Autowired ObjectMapper objectMapper;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @MockitoBean UserService userService;
     @MockitoBean AuditService auditService;
@@ -42,6 +45,21 @@ class V4AuditApiTest {
     @MockitoBean JwtDecoder jwtDecoder;
     @MockitoBean AuditAuthenticationEntryPoint auditAuthenticationEntryPoint;
     @MockitoBean AuditAccessDeniedHandler auditAccessDeniedHandler;
+
+    @BeforeEach
+    void setupSecurityMocks() throws Exception {
+        Mockito.doAnswer(inv -> {
+            HttpServletResponse resp = inv.getArgument(1);
+            resp.setStatus(401);
+            return null;
+        }).when(auditAuthenticationEntryPoint).commence(any(), any(), any());
+
+        Mockito.doAnswer(inv -> {
+            HttpServletResponse resp = inv.getArgument(1);
+            resp.setStatus(403);
+            return null;
+        }).when(auditAccessDeniedHandler).handle(any(), any(), any());
+    }
 
     private AuditLog sampleLog() {
         AuditLog log = new AuditLog();

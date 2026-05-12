@@ -6,7 +6,10 @@ import com.todo.security.AuditAuthenticationEntryPoint;
 import com.todo.service.JwtService;
 import com.todo.service.UserService;
 import com.todo.support.MockUserFactory;
+import jakarta.servlet.http.HttpServletResponse;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
@@ -15,6 +18,7 @@ import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -40,6 +44,15 @@ class V3ChangePasswordTest {
 
     @MockitoBean
     AuditAccessDeniedHandler auditAccessDeniedHandler;
+
+    @BeforeEach
+    void setupSecurityMocks() throws Exception {
+        Mockito.doAnswer(inv -> {
+            HttpServletResponse resp = inv.getArgument(1);
+            resp.setStatus(401);
+            return null;
+        }).when(auditAuthenticationEntryPoint).commence(any(), any(), any());
+    }
 
     @Test
     void changePasswordWithCorrectCurrentPasswordReturns204() throws Exception {

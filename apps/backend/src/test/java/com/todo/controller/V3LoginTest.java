@@ -1,5 +1,7 @@
 package com.todo.controller;
 
+import com.todo.security.AuditAccessDeniedHandler;
+import com.todo.security.AuditAuthenticationEntryPoint;
 import com.todo.service.AuditService;
 import com.todo.service.JwtService;
 import com.todo.service.UserService;
@@ -29,6 +31,12 @@ class V3LoginTest {
 
     @MockitoBean
     JwtService jwtService;
+
+    @MockitoBean
+    AuditAuthenticationEntryPoint auditAuthenticationEntryPoint;
+
+    @MockitoBean
+    AuditAccessDeniedHandler auditAccessDeniedHandler;
 
     @Test
     void loginWithValidCredentialsReturns200WithToken() throws Exception {

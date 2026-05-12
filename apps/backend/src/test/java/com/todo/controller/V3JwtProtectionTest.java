@@ -5,9 +5,12 @@ import com.todo.repository.UserRepository;
 import com.todo.security.AuditAccessDeniedHandler;
 import com.todo.security.AuditAuthenticationEntryPoint;
 import com.todo.service.JwtService;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import com.todo.config.SecurityConfig;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
@@ -15,6 +18,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -42,6 +46,15 @@ class V3JwtProtectionTest {
 
     @MockitoBean
     AuditAccessDeniedHandler auditAccessDeniedHandler;
+
+    @BeforeEach
+    void setupSecurityMocks() throws Exception {
+        Mockito.doAnswer(inv -> {
+            HttpServletResponse resp = inv.getArgument(1);
+            resp.setStatus(401);
+            return null;
+        }).when(auditAuthenticationEntryPoint).commence(any(), any(), any());
+    }
 
     @Test
     void getWithoutJwtReturns401() throws Exception {
