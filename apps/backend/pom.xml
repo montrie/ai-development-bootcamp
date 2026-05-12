@@ -50,7 +50,7 @@
     </dependency>
     <dependency>
       <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-aop</artifactId>
+      <artifactId>spring-boot-starter-aspectj</artifactId>
     </dependency>
     <dependency>
       <groupId>org.springframework.boot</groupId>
@@ -64,6 +64,18 @@
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-webmvc-test</artifactId>
       <scope>test</scope>
+      <exclusions>
+        <!--
+          aspectjweaver on the classpath triggers Mockito's inline Byte Buddy mock maker,
+          which needs JVM self-attachment — blocked on Java 26. Excluding the agent forces
+          Mockito to use the subclass mock maker (configured in mockito-extensions/), which
+          generates subclasses instead and needs no agent.
+        -->
+        <exclusion>
+          <groupId>net.bytebuddy</groupId>
+          <artifactId>byte-buddy-agent</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.springframework.security</groupId>
