@@ -2,6 +2,7 @@ package com.todo.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+import java.time.LocalDate;
 import java.time.OffsetDateTime;
 
 @Entity
@@ -18,6 +19,9 @@ public class Todo {
 
     @Column(name = "done", nullable = false)
     private boolean done = false;
+
+    @Column(name = "due_date")
+    private LocalDate dueDate;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private OffsetDateTime createdAt;
@@ -37,6 +41,8 @@ public class Todo {
     public void setText(String text) { this.text = text; }
     public boolean isDone() { return done; }
     public void setDone(boolean done) { this.done = done; }
+    public LocalDate getDueDate() { return dueDate; }
+    public void setDueDate(LocalDate dueDate) { this.dueDate = dueDate; }
     public OffsetDateTime getCreatedAt() { return createdAt; }
     public User getUser() { return user; }
     public void setUser(User user) { this.user = user; }

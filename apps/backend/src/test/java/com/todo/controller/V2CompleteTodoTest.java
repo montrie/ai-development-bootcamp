@@ -4,6 +4,7 @@ import com.todo.model.Todo;
 import com.todo.model.User;
 import com.todo.repository.TodoRepository;
 import com.todo.repository.UserRepository;
+import com.todo.service.AuditService;
 import com.todo.service.JwtService;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import com.todo.config.SecurityConfig;
@@ -42,6 +43,9 @@ class V2CompleteTodoTest {
 
     @MockitoBean
     JwtDecoder jwtDecoder;
+
+    @MockitoBean
+    AuditService auditService;
 
     Todo existing;
 

@@ -4,6 +4,7 @@ import com.todo.model.Todo;
 import com.todo.model.User;
 import com.todo.repository.TodoRepository;
 import com.todo.repository.UserRepository;
+import com.todo.service.AuditService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -14,7 +15,9 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 @Tag(name = "Todos", description = "Manage the authenticated user's todo items")
 @RestController
@@ -23,10 +26,12 @@ public class TodoController {
 
     private final TodoRepository repository;
     private final UserRepository userRepository;
+    private final AuditService auditService;
 
-    public TodoController(TodoRepository repository, UserRepository userRepository) {
+    public TodoController(TodoRepository repository, UserRepository userRepository, AuditService auditService) {
         this.repository = repository;
         this.userRepository = userRepository;
+        this.auditService = auditService;
     }
 
     @Operation(summary = "Get all todos", description = "Returns all todo items for the authenticated user, ordered by creation time")
@@ -41,23 +46,60 @@ public class TodoController {
     @ApiResponse(responseCode = "201", description = "Created todo")
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping
-    public Todo createTodo(@RequestBody Todo todo) {
+    public Todo createTodo(@RequestBody CreateTodoRequest req) {
+        String username = getAuthenticatedUsername();
+        Todo todo = new Todo();
+        todo.setText(req.text());
+        if (req.dueDate() != null) {
+            todo.setDueDate(LocalDate.parse(req.dueDate()));
+        }
         todo.setUser(resolveUser());
-        return repository.save(todo);
+        Todo saved = repository.save(todo);
+        auditService.log("TODO_CREATED", username, "SUCCESS", saved.getId() == null ? null : saved.getId().longValue());
+        return saved;
     }
 
-    @Operation(summary = "Update done state", description = "Toggles the done state of a todo item owned by the authenticated user")
+    @Operation(summary = "Update todo", description = "Partially updates a todo item owned by the authenticated user")
     @ApiResponse(responseCode = "200", description = "Updated todo")
+    @ApiResponse(responseCode = "400", description = "Blank text provided", content = @Content)
     @ApiResponse(responseCode = "403", description = "Todo not found or belongs to another user", content = @Content)
     @PatchMapping("/{id}")
-    public Todo updateCompletedStatus(
+    public Todo updateTodo(
             @Parameter(description = "ID of the todo to update") @PathVariable Integer id,
-            @RequestBody Todo patch) {
+            @RequestBody Map<String, Object> patch) {
+        String username = getAuthenticatedUsername();
         Todo todo = repository.findById(id)
-                .filter(t -> t.getUser().getUsername().equals(getAuthenticatedUsername()))
+                .filter(t -> t.getUser().getUsername().equals(username))
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN));
-        todo.setDone(patch.isDone());
-        return repository.save(todo);
+
+        boolean edited = false;
+
+        if (patch.containsKey("done")) {
+            todo.setDone(Boolean.TRUE.equals(patch.get("done")));
+        }
+
+        if (patch.containsKey("text")) {
+            String text = (String) patch.get("text");
+            if (text == null || text.isBlank()) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "text must not be blank");
+            }
+            todo.setText(text);
+            edited = true;
+        }
+
+        if (patch.containsKey("dueDate")) {
+            Object rawDueDate = patch.get("dueDate");
+            todo.setDueDate(rawDueDate == null ? null : LocalDate.parse((String) rawDueDate));
+            edited = true;
+        }
+
+        Todo saved = repository.save(todo);
+
+        if (edited) {
+            auditService.log("TODO_EDITED", username, "SUCCESS", saved.getId() == null ? null : saved.getId().longValue());
+        }
+
+        return saved;
     }
 
     @Operation(summary = "Delete a todo", description = "Permanently deletes a todo item owned by the authenticated user")
@@ -80,6 +122,8 @@ public class TodoController {
     public void deleteAll() {
         repository.deleteAll();
     }
+
+    record CreateTodoRequest(String text, String dueDate) {}
 
     private User resolveUser() {
         return userRepository.findByUsername(getAuthenticatedUsername())

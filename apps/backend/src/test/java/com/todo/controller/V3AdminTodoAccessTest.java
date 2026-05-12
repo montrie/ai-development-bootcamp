@@ -3,6 +3,7 @@ package com.todo.controller;
 import com.todo.config.SecurityConfig;
 import com.todo.repository.TodoRepository;
 import com.todo.repository.UserRepository;
+import com.todo.service.AuditService;
 import com.todo.service.JwtService;
 import com.todo.support.MockUserFactory;
 import org.junit.jupiter.api.Test;
@@ -35,6 +36,9 @@ class V3AdminTodoAccessTest {
 
     @MockitoBean
     JwtDecoder jwtDecoder;
+
+    @MockitoBean
+    AuditService auditService;
 
     @Test
     void adminCannotGetTodos() throws Exception {

@@ -2,6 +2,7 @@ package com.todo.controller;
 
 import com.todo.repository.TodoRepository;
 import com.todo.repository.UserRepository;
+import com.todo.service.AuditService;
 import com.todo.service.JwtService;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import com.todo.config.SecurityConfig;
@@ -34,6 +35,9 @@ class V3JwtProtectionTest {
 
     @MockitoBean
     JwtDecoder jwtDecoder;
+
+    @MockitoBean
+    AuditService auditService;
 
     @Test
     void getWithoutJwtReturns401() throws Exception {

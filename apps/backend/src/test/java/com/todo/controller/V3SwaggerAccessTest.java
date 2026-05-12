@@ -3,6 +3,7 @@ package com.todo.controller;
 import com.todo.config.SecurityConfig;
 import com.todo.repository.TodoRepository;
 import com.todo.repository.UserRepository;
+import com.todo.service.AuditService;
 import com.todo.service.JwtService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,6 +35,9 @@ class V3SwaggerAccessTest {
 
     @MockitoBean
     JwtDecoder jwtDecoder;
+
+    @MockitoBean
+    AuditService auditService;
 
     @Test
     void openApiDocsArePubliclyAccessible() throws Exception {
