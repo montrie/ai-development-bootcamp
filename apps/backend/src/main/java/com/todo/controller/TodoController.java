@@ -50,9 +50,7 @@ public class TodoController {
         User user = resolveUser();
         Todo todo = new Todo();
         todo.setText(req.text());
-        if (req.dueDate() != null) {
-            todo.setDueDate(LocalDate.parse(req.dueDate()));
-        }
+        todo.setDueDate(req.dueDate());
         todo.setUser(user);
         Todo saved = repository.save(todo);
         auditService.log("TODO_CREATED", user.getUsername(), "SUCCESS", saved.getId() == null ? null : saved.getId().longValue());
@@ -123,7 +121,7 @@ public class TodoController {
         repository.deleteAll();
     }
 
-    record CreateTodoRequest(String text, String dueDate) {}
+    record CreateTodoRequest(String text, LocalDate dueDate) {}
 
     private User resolveUser() {
         return userRepository.findByUsername(getAuthenticatedUsername())
