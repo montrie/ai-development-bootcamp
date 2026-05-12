@@ -51,7 +51,7 @@ public class TodoController {
     @ApiResponse(responseCode = "403", description = "Todo not found or belongs to another user", content = @Content)
     @PatchMapping("/{id}")
     public Todo updateCompletedStatus(
-            @Parameter(description = "ID of the todo to update") @PathVariable Integer id,
+            @Parameter(description = "ID of the todo to update") @PathVariable Long id,
             @RequestBody Todo patch) {
         Todo todo = repository.findById(id)
                 .filter(t -> t.getUser().getUsername().equals(getAuthenticatedUsername()))
@@ -66,7 +66,7 @@ public class TodoController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @DeleteMapping("/{id}")
     public void deleteTodo(
-            @Parameter(description = "ID of the todo to delete") @PathVariable Integer id) {
+            @Parameter(description = "ID of the todo to delete") @PathVariable Long id) {
         Todo todo = repository.findById(id)
                 .filter(t -> t.getUser().getUsername().equals(getAuthenticatedUsername()))
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN));

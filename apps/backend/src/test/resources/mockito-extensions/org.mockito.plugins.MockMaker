@@ -1,0 +1,5 @@
+# Use subclass mocking instead of the default inline mock maker.
+# The inline maker needs byte-buddy-agent to attach to the JVM at runtime,
+# which Java 26 blocks when aspectjweaver is on the classpath.
+# Subclass mocking generates a CGLIB subclass and needs no agent.
+mock-maker-subclass
