@@ -5,6 +5,8 @@ import com.todo.model.Todo;
 import com.todo.model.User;
 import com.todo.repository.TodoRepository;
 import com.todo.repository.UserRepository;
+import com.todo.security.AuditAccessDeniedHandler;
+import com.todo.security.AuditAuthenticationEntryPoint;
 import com.todo.service.AuditService;
 import com.todo.service.JwtService;
 import com.todo.support.MockUserFactory;
@@ -47,6 +49,12 @@ class V5EditTodoTest {
 
     @MockitoBean
     AuditService auditService;
+
+    @MockitoBean
+    AuditAuthenticationEntryPoint auditAuthenticationEntryPoint;
+
+    @MockitoBean
+    AuditAccessDeniedHandler auditAccessDeniedHandler;
 
     Todo existing;
 

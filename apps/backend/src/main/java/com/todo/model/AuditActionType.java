@@ -2,7 +2,7 @@ package com.todo.model;
 
 public enum AuditActionType {
     TODO_CREATED,
-    TODO_TOGGLED,
+    TODO_UPDATED,
     TODO_DELETED,
     USER_REGISTERED,
     USER_LOGIN,

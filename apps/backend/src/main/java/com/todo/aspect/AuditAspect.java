@@ -31,7 +31,7 @@ public class AuditAspect {
     )
     public void afterUpdateTodo(Object result) {
         Todo todo = (Todo) result;
-        auditService.log(AuditActionType.TODO_TOGGLED.name(), actor(), "SUCCESS", todo.getId());
+        auditService.log(AuditActionType.TODO_UPDATED.name(), actor(), "SUCCESS", todo.getId());
     }
 
     @AfterReturning("execution(* com.todo.controller.TodoController.deleteTodo(..))")

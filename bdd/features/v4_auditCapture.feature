@@ -17,7 +17,7 @@ Feature: Audit Log Capture
     Given I am logged in as "alice"
     And "alice" has a todo "Buy groceries"
     When I mark "Buy groceries" as done
-    Then the audit log contains a "TODO_TOGGLED" entry with outcome "SUCCESS" for "alice"
+    Then the audit log contains a "TODO_UPDATED" entry with outcome "SUCCESS" for "alice"
 
   Scenario: Deleting a todo produces an audit log entry
     Given I am logged in as "alice"

@@ -95,7 +95,7 @@ class V4AuditTodoMutationsTest {
                 .content("{\"done\":true}"))
             .andExpect(status().isOk());
 
-        verify(auditService).log(AuditActionType.TODO_TOGGLED.name(), "user", "SUCCESS", 7L);
+        verify(auditService).log(AuditActionType.TODO_UPDATED.name(), "user", "SUCCESS", 7L);
     }
 
     @Test

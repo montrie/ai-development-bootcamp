@@ -1,6 +1,5 @@
 package com.todo.controller;
 
-import com.todo.model.AuditLog;
 import com.todo.service.AuditService;
 import com.todo.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
