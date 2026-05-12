@@ -123,3 +123,34 @@ export async function navigateAsUser(
   await page.reload();
   return token;
 }
+
+export type AuditLog = {
+  id: number;
+  timestamp: string;
+  actionType: string;
+  actorUsername: string;
+  outcome: string;
+  resourceId: number | null;
+};
+
+export async function getAuditLogsViaApi(
+  request: APIRequestContext,
+  adminToken: string,
+  filter?: Record<string, string>
+): Promise<AuditLog[]> {
+  const params = new URLSearchParams(filter ?? {});
+  const query = params.toString();
+  const response = await request.get(`/api/admin/audit-logs${query ? `?${query}` : ''}`, {
+    headers: { Authorization: `Bearer ${adminToken}` },
+  });
+  return response.json() as Promise<AuditLog[]>;
+}
+
+export async function clearAuditLogsViaApi(
+  request: APIRequestContext,
+  adminToken: string
+): Promise<void> {
+  await request.delete('/api/admin/audit-logs', {
+    headers: { Authorization: `Bearer ${adminToken}` },
+  });
+}

@@ -1,5 +1,7 @@
 package com.todo.controller;
 
+import com.todo.model.AuditLog;
+import com.todo.service.AuditService;
 import com.todo.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -9,6 +11,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.OffsetDateTime;
+import java.time.format.DateTimeParseException;
 import java.util.List;
 
 @Tag(name = "Admin", description = "User management operations. Requires ADMIN role.")
@@ -17,9 +21,11 @@ import java.util.List;
 public class AdminController {
 
     private final UserService userService;
+    private final AuditService auditService;
 
-    public AdminController(UserService userService) {
+    public AdminController(UserService userService, AuditService auditService) {
         this.userService = userService;
+        this.auditService = auditService;
     }
 
     @Operation(summary = "List all users", description = "Returns all registered users with their roles")
@@ -52,11 +58,45 @@ public class AdminController {
         userService.resetPassword(id, request.newPassword());
     }
 
+    @GetMapping("/audit-logs")
+    public List<AuditLogResponse> searchAuditLogs(
+            @RequestParam(required = false) String actionType,
+            @RequestParam(required = false) String username,
+            @RequestParam(required = false) String startDate,
+            @RequestParam(required = false) String endDate) {
+        OffsetDateTime start = startDate != null ? OffsetDateTime.parse(startDate) : null;
+        OffsetDateTime end = endDate != null ? OffsetDateTime.parse(endDate) : null;
+        return auditService.search(actionType, username, start, end).stream()
+            .map(a -> new AuditLogResponse(
+                a.getId(), a.getTimestamp().toString(),
+                a.getActionType(), a.getActorUsername(),
+                a.getOutcome(), a.getResourceId()))
+            .toList();
+    }
+
+    @GetMapping("/audit-logs/action-types")
+    public List<String> getActionTypes() {
+        return auditService.actionTypes();
+    }
+
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @DeleteMapping("/audit-logs")
+    public void deleteAuditLogs() {
+        auditService.clearAll();
+    }
+
     @ExceptionHandler(UserService.UserNotFoundException.class)
     public ResponseEntity<Void> handleUserNotFound() {
         return ResponseEntity.notFound().build();
     }
 
+    @ExceptionHandler(DateTimeParseException.class)
+    public ResponseEntity<Void> handleDateTimeParse() {
+        return ResponseEntity.badRequest().build();
+    }
+
     record UserResponse(Long id, String username, String role) {}
     record ResetPasswordRequest(String newPassword) {}
+    record AuditLogResponse(Long id, String timestamp, String actionType,
+                             String actorUsername, String outcome, Long resourceId) {}
 }

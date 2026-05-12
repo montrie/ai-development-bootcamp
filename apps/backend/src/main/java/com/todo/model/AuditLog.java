@@ -27,13 +27,10 @@ public class AuditLog {
     @Column(name = "resource_id")
     private Long resourceId;
 
-    @PrePersist
-    private void prePersist() {
-        timestamp = OffsetDateTime.now();
-    }
-
     public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
     public OffsetDateTime getTimestamp() { return timestamp; }
+    public void setTimestamp(OffsetDateTime timestamp) { this.timestamp = timestamp; }
     public String getActionType() { return actionType; }
     public void setActionType(String actionType) { this.actionType = actionType; }
     public String getActorUsername() { return actorUsername; }

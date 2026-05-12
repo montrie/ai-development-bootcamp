@@ -4,7 +4,6 @@ import com.todo.model.Todo;
 import com.todo.model.User;
 import com.todo.repository.TodoRepository;
 import com.todo.repository.UserRepository;
-import com.todo.service.AuditService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -26,12 +25,10 @@ public class TodoController {
 
     private final TodoRepository repository;
     private final UserRepository userRepository;
-    private final AuditService auditService;
 
-    public TodoController(TodoRepository repository, UserRepository userRepository, AuditService auditService) {
+    public TodoController(TodoRepository repository, UserRepository userRepository) {
         this.repository = repository;
         this.userRepository = userRepository;
-        this.auditService = auditService;
     }
 
     @Operation(summary = "Get all todos", description = "Returns all todo items for the authenticated user, ordered by creation time")
@@ -53,9 +50,7 @@ public class TodoController {
         todo.setText(req.text());
         todo.setDueDate(req.dueDate());
         todo.setUser(user);
-        Todo saved = repository.save(todo);
-        auditService.log("TODO_CREATED", user.getUsername(), "SUCCESS", saved.getId() == null ? null : saved.getId().longValue());
-        return saved;
+        return repository.save(todo);
     }
 
     @Operation(summary = "Update todo", description = "Partially updates a todo item owned by the authenticated user")
@@ -64,14 +59,12 @@ public class TodoController {
     @ApiResponse(responseCode = "403", description = "Todo not found or belongs to another user", content = @Content)
     @PatchMapping("/{id}")
     public Todo updateTodo(
-            @Parameter(description = "ID of the todo to update") @PathVariable Integer id,
+            @Parameter(description = "ID of the todo to update") @PathVariable Long id,
             @RequestBody Map<String, Object> patch) {
         String username = getAuthenticatedUsername();
         Todo todo = repository.findById(id)
                 .filter(t -> t.getUser().getUsername().equals(username))
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN));
-
-        boolean edited = false;
 
         if (patch.containsKey("done")) {
             todo.setDone(Boolean.TRUE.equals(patch.get("done")));
@@ -83,7 +76,6 @@ public class TodoController {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "text must be a non-blank string");
             }
             todo.setText(text);
-            edited = true;
         }
 
         if (patch.containsKey("dueDate")) {
@@ -96,16 +88,9 @@ public class TodoController {
             } catch (java.time.format.DateTimeParseException e) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "dueDate must be a valid ISO date (yyyy-MM-dd)");
             }
-            edited = true;
         }
 
-        Todo saved = repository.save(todo);
-
-        if (edited) {
-            auditService.log("TODO_EDITED", username, "SUCCESS", saved.getId() == null ? null : saved.getId().longValue());
-        }
-
-        return saved;
+        return repository.save(todo);
     }
 
     @Operation(summary = "Delete a todo", description = "Permanently deletes a todo item owned by the authenticated user")
@@ -114,7 +99,7 @@ public class TodoController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @DeleteMapping("/{id}")
     public void deleteTodo(
-            @Parameter(description = "ID of the todo to delete") @PathVariable Integer id) {
+            @Parameter(description = "ID of the todo to delete") @PathVariable Long id) {
         Todo todo = repository.findById(id)
                 .filter(t -> t.getUser().getUsername().equals(getAuthenticatedUsername()))
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN));

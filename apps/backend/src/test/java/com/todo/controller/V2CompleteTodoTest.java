@@ -4,7 +4,8 @@ import com.todo.model.Todo;
 import com.todo.model.User;
 import com.todo.repository.TodoRepository;
 import com.todo.repository.UserRepository;
-import com.todo.service.AuditService;
+import com.todo.security.AuditAccessDeniedHandler;
+import com.todo.security.AuditAuthenticationEntryPoint;
 import com.todo.service.JwtService;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import com.todo.config.SecurityConfig;
@@ -45,7 +46,10 @@ class V2CompleteTodoTest {
     JwtDecoder jwtDecoder;
 
     @MockitoBean
-    AuditService auditService;
+    AuditAuthenticationEntryPoint auditAuthenticationEntryPoint;
+
+    @MockitoBean
+    AuditAccessDeniedHandler auditAccessDeniedHandler;
 
     Todo existing;
 
@@ -64,7 +68,7 @@ class V2CompleteTodoTest {
         Todo updated = new Todo();
         updated.setText("Buy milk");
 
-        given(repository.findById(1)).willReturn(Optional.of(existing));
+        given(repository.findById(1L)).willReturn(Optional.of(existing));
         given(repository.save(any(Todo.class))).willReturn(updated);
 
         mvc.perform(patch("/api/todos/1")
@@ -77,7 +81,7 @@ class V2CompleteTodoTest {
 
     @Test
     void returnsAccessDeniedWhenIdDoesNotExist() throws Exception {
-        given(repository.findById(99)).willReturn(Optional.empty());
+        given(repository.findById(99L)).willReturn(Optional.empty());
 
         mvc.perform(patch("/api/todos/99")
                         .with(MockUserFactory.jwtAs("user"))

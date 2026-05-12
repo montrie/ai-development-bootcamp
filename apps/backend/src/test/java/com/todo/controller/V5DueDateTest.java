@@ -22,9 +22,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -103,21 +101,5 @@ class V5DueDateTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].text").value("Submit report"))
                 .andExpect(jsonPath("$[0].dueDate").value("2027-12-01"));
-    }
-
-    @Test
-    void createTodoWritesAuditLogEntry() throws Exception {
-        Todo saved = new Todo();
-        saved.setText("Buy milk");
-
-        given(repository.save(any(Todo.class))).willReturn(saved);
-
-        mvc.perform(post("/api/todos")
-                        .with(MockUserFactory.jwtAs("user"))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"text\":\"Buy milk\"}"))
-                .andExpect(status().isCreated());
-
-        verify(auditService).log(eq("TODO_CREATED"), eq("user"), eq("SUCCESS"), any());
     }
 }

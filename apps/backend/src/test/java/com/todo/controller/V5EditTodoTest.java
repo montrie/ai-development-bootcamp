@@ -22,10 +22,7 @@ import java.time.LocalDate;
 import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -62,7 +59,7 @@ class V5EditTodoTest {
         existing.setText("Old text");
         existing.setUser(owner);
 
-        given(repository.findById(1)).willReturn(Optional.of(existing));
+        given(repository.findById(1L)).willReturn(Optional.of(existing));
         given(repository.save(any(Todo.class))).willAnswer(inv -> inv.getArgument(0));
     }
 
@@ -120,27 +117,5 @@ class V5EditTodoTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"text\":\"   \"}"))
                 .andExpect(status().isBadRequest());
-    }
-
-    @Test
-    void patchWithTextOrDueDateWritesAuditLogEntry() throws Exception {
-        mvc.perform(patch("/api/todos/1")
-                        .with(MockUserFactory.jwtAs("user"))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"text\":\"Updated text\"}"))
-                .andExpect(status().isOk());
-
-        verify(auditService).log(eq("TODO_EDITED"), eq("user"), eq("SUCCESS"), any());
-    }
-
-    @Test
-    void patchWithOnlyDoneDoesNotWriteAuditLogEntry() throws Exception {
-        mvc.perform(patch("/api/todos/1")
-                        .with(MockUserFactory.jwtAs("user"))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"done\":true}"))
-                .andExpect(status().isOk());
-
-        verifyNoInteractions(auditService);
     }
 }

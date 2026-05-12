@@ -1,5 +1,7 @@
 package com.todo.controller;
 
+import com.todo.model.AuditActionType;
+import com.todo.service.AuditService;
 import com.todo.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -20,9 +22,11 @@ import java.util.Map;
 public class AuthController {
 
     private final UserService userService;
+    private final AuditService auditService;
 
-    public AuthController(UserService userService) {
+    public AuthController(UserService userService, AuditService auditService) {
         this.userService = userService;
+        this.auditService = auditService;
     }
 
     @Operation(summary = "Register", description = "Creates a new user account and returns a JWT token")
@@ -34,6 +38,7 @@ public class AuthController {
     @PostMapping("/register")
     public ResponseEntity<Map<String, String>> register(@RequestBody AuthRequest request) {
         String token = userService.register(request.username(), request.password());
+        auditService.log(AuditActionType.USER_REGISTERED.name(), request.username(), "SUCCESS", null);
         return ResponseEntity.status(HttpStatus.CREATED).body(Map.of("token", token));
     }
 
@@ -45,8 +50,14 @@ public class AuthController {
     @SecurityRequirements
     @PostMapping("/login")
     public ResponseEntity<Map<String, String>> login(@RequestBody AuthRequest request) {
-        String token = userService.login(request.username(), request.password());
-        return ResponseEntity.ok(Map.of("token", token));
+        try {
+            String token = userService.login(request.username(), request.password());
+            auditService.log(AuditActionType.USER_LOGIN.name(), request.username(), "SUCCESS", null);
+            return ResponseEntity.ok(Map.of("token", token));
+        } catch (UserService.InvalidCredentialsException e) {
+            auditService.log(AuditActionType.USER_LOGIN.name(), request.username(), "FAILURE", null);
+            throw e;
+        }
     }
 
     @ExceptionHandler(UserService.UsernameAlreadyTakenException.class)
