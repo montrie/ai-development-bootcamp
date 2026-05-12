@@ -1,5 +1,6 @@
 package com.todo.service;
 
+import com.todo.model.AuditActionType;
 import com.todo.model.AuditLog;
 import com.todo.repository.AuditLogRepository;
 import org.springframework.stereotype.Service;
@@ -7,6 +8,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.OffsetDateTime;
+import java.util.Arrays;
 import java.util.List;
 
 @Service
@@ -34,11 +36,8 @@ public class AuditService {
     public void clearAll() { repo.deleteAll(); }
 
     public List<String> actionTypes() {
-        return List.of(
-            "TODO_CREATED", "TODO_TOGGLED", "TODO_DELETED",
-            "USER_REGISTERED", "USER_LOGIN",
-            "ADMIN_DELETE_USER", "ADMIN_RESET_PASSWORD",
-            "ACCESS_DENIED"
-        );
+        return Arrays.stream(AuditActionType.values())
+            .map(Enum::name)
+            .toList();
     }
 }

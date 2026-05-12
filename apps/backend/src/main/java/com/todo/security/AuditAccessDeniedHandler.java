@@ -1,5 +1,6 @@
 package com.todo.security;
 
+import com.todo.model.AuditActionType;
 import com.todo.service.AuditService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -21,7 +22,7 @@ public class AuditAccessDeniedHandler implements AccessDeniedHandler {
                        AccessDeniedException ex) throws IOException {
         var authentication = SecurityContextHolder.getContext().getAuthentication();
         String username = authentication != null ? authentication.getName() : "unknown";
-        auditService.log("ACCESS_DENIED", username, "FAILURE", null);
+        auditService.log(AuditActionType.ACCESS_DENIED.name(), username, "FAILURE", null);
         res.sendError(HttpServletResponse.SC_FORBIDDEN);
     }
 }
