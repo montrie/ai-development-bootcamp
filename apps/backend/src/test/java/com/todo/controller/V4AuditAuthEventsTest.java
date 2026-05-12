@@ -39,7 +39,7 @@ class V4AuditAuthEventsTest {
                 .content("{\"username\":\"alice\",\"password\":\"secret123\"}"))
             .andExpect(status().isCreated());
 
-        verify(auditService).log(AuditActionType.USER_REGISTERED.name(), "alice", "SUCCESS", null);
+        verify(auditService).log(AuditActionType.USER_REGISTERED, "alice", "SUCCESS", null);
     }
 
     @Test
@@ -51,7 +51,7 @@ class V4AuditAuthEventsTest {
                 .content("{\"username\":\"alice\",\"password\":\"secret123\"}"))
             .andExpect(status().isOk());
 
-        verify(auditService).log(AuditActionType.USER_LOGIN.name(), "alice", "SUCCESS", null);
+        verify(auditService).log(AuditActionType.USER_LOGIN, "alice", "SUCCESS", null);
     }
 
     @Test
@@ -64,6 +64,6 @@ class V4AuditAuthEventsTest {
                 .content("{\"username\":\"alice\",\"password\":\"wrong\"}"))
             .andExpect(status().isUnauthorized());
 
-        verify(auditService).log(AuditActionType.USER_LOGIN.name(), "alice", "FAILURE", null);
+        verify(auditService).log(AuditActionType.USER_LOGIN, "alice", "FAILURE", null);
     }
 }

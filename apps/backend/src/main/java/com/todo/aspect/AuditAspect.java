@@ -22,7 +22,7 @@ public class AuditAspect {
     )
     public void afterCreateTodo(Object result) {
         Todo todo = (Todo) result;
-        auditService.log(AuditActionType.TODO_CREATED.name(), actor(), "SUCCESS", todo.getId());
+        auditService.log(AuditActionType.TODO_CREATED, actor(), "SUCCESS", todo.getId());
     }
 
     @AfterReturning(
@@ -31,25 +31,25 @@ public class AuditAspect {
     )
     public void afterUpdateTodo(Object result) {
         Todo todo = (Todo) result;
-        auditService.log(AuditActionType.TODO_UPDATED.name(), actor(), "SUCCESS", todo.getId());
+        auditService.log(AuditActionType.TODO_UPDATED, actor(), "SUCCESS", todo.getId());
     }
 
     @AfterReturning("execution(* com.todo.controller.TodoController.deleteTodo(..))")
     public void afterDeleteTodo(JoinPoint jp) {
         Long id = (Long) jp.getArgs()[0];
-        auditService.log(AuditActionType.TODO_DELETED.name(), actor(), "SUCCESS", id);
+        auditService.log(AuditActionType.TODO_DELETED, actor(), "SUCCESS", id);
     }
 
     @AfterReturning("execution(* com.todo.controller.AdminController.deleteUser(..))")
     public void afterDeleteUser(JoinPoint jp) {
         Long id = (Long) jp.getArgs()[0];
-        auditService.log(AuditActionType.ADMIN_DELETE_USER.name(), actor(), "SUCCESS", id);
+        auditService.log(AuditActionType.ADMIN_DELETE_USER, actor(), "SUCCESS", id);
     }
 
     @AfterReturning("execution(* com.todo.controller.AdminController.resetPassword(..))")
     public void afterResetPassword(JoinPoint jp) {
         Long id = (Long) jp.getArgs()[0];
-        auditService.log(AuditActionType.ADMIN_RESET_PASSWORD.name(), actor(), "SUCCESS", id);
+        auditService.log(AuditActionType.ADMIN_RESET_PASSWORD, actor(), "SUCCESS", id);
     }
 
     private String actor() {

@@ -32,7 +32,7 @@ class V4AuditSecurityHandlersTest {
     void authenticationEntryPointLogsUnauthenticatedForAnonymousAndSends401() throws IOException {
         entryPoint.commence(request, response, new BadCredentialsException("bad"));
 
-        verify(auditService).log(AuditActionType.UNAUTHENTICATED.name(), "anonymous", "FAILURE", null);
+        verify(auditService).log(AuditActionType.UNAUTHENTICATED, "anonymous", "FAILURE", null);
         verify(response).sendError(HttpServletResponse.SC_UNAUTHORIZED);
     }
 
@@ -44,7 +44,7 @@ class V4AuditSecurityHandlersTest {
 
         accessDeniedHandler.handle(request, response, new AccessDeniedException("denied"));
 
-        verify(auditService).log(AuditActionType.ACCESS_DENIED.name(), "alice", "FAILURE", null);
+        verify(auditService).log(AuditActionType.ACCESS_DENIED, "alice", "FAILURE", null);
         verify(response).sendError(HttpServletResponse.SC_FORBIDDEN);
     }
 
@@ -52,7 +52,7 @@ class V4AuditSecurityHandlersTest {
     void accessDeniedHandlerLogsUnknownWhenNoAuthenticationPresent() throws IOException {
         accessDeniedHandler.handle(request, response, new AccessDeniedException("denied"));
 
-        verify(auditService).log(AuditActionType.ACCESS_DENIED.name(), "unknown", "FAILURE", null);
+        verify(auditService).log(AuditActionType.ACCESS_DENIED, "unknown", "FAILURE", null);
         verify(response).sendError(HttpServletResponse.SC_FORBIDDEN);
     }
 }
