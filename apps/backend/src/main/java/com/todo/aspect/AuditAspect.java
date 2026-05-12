@@ -1,6 +1,5 @@
 package com.todo.aspect;
 
-import com.todo.model.AuditActionType;
 import com.todo.model.Todo;
 import com.todo.service.AuditService;
 import org.aspectj.lang.JoinPoint;
@@ -17,39 +16,19 @@ public class AuditAspect {
     public AuditAspect(AuditService auditService) { this.auditService = auditService; }
 
     @AfterReturning(
-        pointcut = "execution(* com.todo.controller.TodoController.createTodo(..))",
+        pointcut = "@annotation(auditAction)",
         returning = "result"
     )
-    public void afterCreateTodo(Object result) {
-        Todo todo = (Todo) result;
-        auditService.log(AuditActionType.TODO_CREATED, actor(), "SUCCESS", todo.getId());
-    }
-
-    @AfterReturning(
-        pointcut = "execution(* com.todo.controller.TodoController.updateTodo(..))",
-        returning = "result"
-    )
-    public void afterUpdateTodo(Object result) {
-        Todo todo = (Todo) result;
-        auditService.log(AuditActionType.TODO_UPDATED, actor(), "SUCCESS", todo.getId());
-    }
-
-    @AfterReturning("execution(* com.todo.controller.TodoController.deleteTodo(..))")
-    public void afterDeleteTodo(JoinPoint jp) {
-        Long id = (Long) jp.getArgs()[0];
-        auditService.log(AuditActionType.TODO_DELETED, actor(), "SUCCESS", id);
-    }
-
-    @AfterReturning("execution(* com.todo.controller.AdminController.deleteUser(..))")
-    public void afterDeleteUser(JoinPoint jp) {
-        Long id = (Long) jp.getArgs()[0];
-        auditService.log(AuditActionType.ADMIN_DELETE_USER, actor(), "SUCCESS", id);
-    }
-
-    @AfterReturning("execution(* com.todo.controller.AdminController.resetPassword(..))")
-    public void afterResetPassword(JoinPoint jp) {
-        Long id = (Long) jp.getArgs()[0];
-        auditService.log(AuditActionType.ADMIN_RESET_PASSWORD, actor(), "SUCCESS", id);
+    public void afterAuditedMethod(JoinPoint jp, AuditAction auditAction, Object result) {
+        Long resourceId;
+        if (result instanceof Todo t) {
+            resourceId = t.getId();
+        } else if (jp.getArgs().length > 0 && jp.getArgs()[0] instanceof Long id) {
+            resourceId = id;
+        } else {
+            resourceId = null;
+        }
+        auditService.log(auditAction.value(), actor(), "SUCCESS", resourceId);
     }
 
     private String actor() {

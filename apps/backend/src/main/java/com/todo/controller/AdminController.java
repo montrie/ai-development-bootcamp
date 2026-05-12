@@ -1,5 +1,7 @@
 package com.todo.controller;
 
+import com.todo.aspect.AuditAction;
+import com.todo.model.AuditActionType;
 import com.todo.service.AuditService;
 import com.todo.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -39,6 +41,7 @@ public class AdminController {
     @Operation(summary = "Delete a user", description = "Permanently deletes a user account and all associated todos")
     @ApiResponse(responseCode = "204", description = "User deleted successfully")
     @ApiResponse(responseCode = "404", description = "User not found")
+    @AuditAction(AuditActionType.ADMIN_DELETE_USER)
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @DeleteMapping("/users/{id}")
     public void deleteUser(
@@ -49,6 +52,7 @@ public class AdminController {
     @Operation(summary = "Reset a user's password", description = "Overwrites a user's password without requiring the current one")
     @ApiResponse(responseCode = "204", description = "Password reset successfully")
     @ApiResponse(responseCode = "404", description = "User not found")
+    @AuditAction(AuditActionType.ADMIN_RESET_PASSWORD)
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @PatchMapping("/users/{id}/password")
     public void resetPassword(

@@ -1,5 +1,7 @@
 package com.todo.controller;
 
+import com.todo.aspect.AuditAction;
+import com.todo.model.AuditActionType;
 import com.todo.model.Todo;
 import com.todo.model.User;
 import com.todo.repository.TodoRepository;
@@ -42,6 +44,7 @@ public class TodoController {
     @Operation(summary = "Create a todo", description = "Creates a new todo item for the authenticated user")
     @ApiResponse(responseCode = "201", description = "Created todo")
     @ApiResponse(responseCode = "400", description = "Invalid input: missing text or malformed dueDate", content = @Content)
+    @AuditAction(AuditActionType.TODO_CREATED)
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping
     public Todo createTodo(@RequestBody CreateTodoRequest req) {
@@ -59,6 +62,7 @@ public class TodoController {
     @ApiResponse(responseCode = "200", description = "Updated todo")
     @ApiResponse(responseCode = "400", description = "Invalid input: blank text, non-string text, or malformed dueDate", content = @Content)
     @ApiResponse(responseCode = "403", description = "Todo not found or belongs to another user", content = @Content)
+    @AuditAction(AuditActionType.TODO_UPDATED)
     @PatchMapping("/{id}")
     public Todo updateTodo(
             @Parameter(description = "ID of the todo to update") @PathVariable Long id,
@@ -98,6 +102,7 @@ public class TodoController {
     @Operation(summary = "Delete a todo", description = "Permanently deletes a todo item owned by the authenticated user")
     @ApiResponse(responseCode = "204", description = "Deleted successfully")
     @ApiResponse(responseCode = "403", description = "Todo not found or belongs to another user")
+    @AuditAction(AuditActionType.TODO_DELETED)
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @DeleteMapping("/{id}")
     public void deleteTodo(
