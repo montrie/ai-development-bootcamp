@@ -47,15 +47,15 @@ public class TodoController {
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping
     public Todo createTodo(@RequestBody CreateTodoRequest req) {
-        String username = getAuthenticatedUsername();
+        User user = resolveUser();
         Todo todo = new Todo();
         todo.setText(req.text());
         if (req.dueDate() != null) {
             todo.setDueDate(LocalDate.parse(req.dueDate()));
         }
-        todo.setUser(resolveUser());
+        todo.setUser(user);
         Todo saved = repository.save(todo);
-        auditService.log("TODO_CREATED", username, "SUCCESS", saved.getId() == null ? null : saved.getId().longValue());
+        auditService.log("TODO_CREATED", user.getUsername(), "SUCCESS", saved.getId() == null ? null : saved.getId().longValue());
         return saved;
     }
 
