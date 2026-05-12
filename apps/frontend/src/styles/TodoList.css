@@ -88,8 +88,15 @@
 }
 
 .due-date-label.overdue {
-  color: #b71c1c;
-  background: #ffebee;
+  color: #fff;
+  background: #c62828;
+  font-weight: 600;
+}
+
+.due-date-label.done {
+  color: #9e9e9e;
+  background: #f0f0f0;
+  text-decoration: line-through;
 }
 
 /* Buttons — specific classes override the global blue */

@@ -99,6 +99,7 @@ export default function TodoItem({
         <DatePicker
           className="edit-due-date-input"
           wrapperClassName="edit-due-date-wrapper"
+          portalId="datepicker-portal"
           selected={editDueDate}
           onChange={(date) => setEditDueDate(date)}
           placeholderText="Due date (optional)"
@@ -111,7 +112,7 @@ export default function TodoItem({
   }
 
   const overdue = !todo.done && todo.dueDate ? isOverdue(todo.dueDate) : false;
-  const dueDateClass = `due-date-label${overdue ? ' overdue' : ''}`;
+  const dueDateClass = `due-date-label${todo.done ? ' done' : overdue ? ' overdue' : ''}`;
 
   return (
     <li className="todo-item">

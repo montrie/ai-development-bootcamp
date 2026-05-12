@@ -54,6 +54,7 @@ export default function AddTodoForm({ onAdd }: Props) {
         id="due-date-input"
         className="due-date-picker"
         wrapperClassName="due-date-picker-wrapper"
+        portalId="datepicker-portal"
         selected={dueDate}
         onChange={(date) => setDueDate(date)}
         placeholderText="Due date (optional)"
