@@ -12,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.OffsetDateTime;
+import java.time.format.DateTimeParseException;
 import java.util.List;
 
 @Tag(name = "Admin", description = "User management operations. Requires ADMIN role.")
@@ -85,6 +86,11 @@ public class AdminController {
     @ExceptionHandler(UserService.UserNotFoundException.class)
     public ResponseEntity<Void> handleUserNotFound() {
         return ResponseEntity.notFound().build();
+    }
+
+    @ExceptionHandler(DateTimeParseException.class)
+    public ResponseEntity<Void> handleDateTimeParse() {
+        return ResponseEntity.badRequest().build();
     }
 
     record UserResponse(Long id, String username, String role) {}

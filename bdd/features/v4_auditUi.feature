@@ -22,6 +22,7 @@ Feature: Audit Log UI
     And I log in as admin
     And I navigate to the Audit Logs view in the admin panel
     When I select "USER_LOGIN" from the action type filter
+    And I click the Apply Filters button
     Then the audit log table should only show "USER_LOGIN" entries
 
   Scenario: Admin can filter audit log entries by username in the UI
@@ -30,6 +31,7 @@ Feature: Audit Log UI
     And I log in as admin
     And I navigate to the Audit Logs view in the admin panel
     When I enter "alice" in the username filter
+    And I click the Apply Filters button
     Then the audit log table should only show entries for "alice"
 
   Scenario: Admin can filter audit log entries by date range in the UI
@@ -38,6 +40,7 @@ Feature: Audit Log UI
     And I navigate to the Audit Logs view in the admin panel
     When I set the start date filter to "2026-05-11T00:00:00Z"
     And I set the end date filter to "2026-05-11T23:59:59Z"
+    And I click the Apply Filters button
     Then the audit log table should only show entries within that date range
 
   # F-40: Clear All Logs button

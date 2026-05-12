@@ -52,6 +52,7 @@ public class AuditAspect {
     }
 
     private String actor() {
-        return SecurityContextHolder.getContext().getAuthentication().getName();
+        var auth = SecurityContextHolder.getContext().getAuthentication();
+        return auth != null ? auth.getName() : "unknown";
     }
 }
