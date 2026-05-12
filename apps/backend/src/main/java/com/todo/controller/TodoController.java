@@ -77,9 +77,9 @@ public class TodoController {
         }
 
         if (patch.containsKey("text")) {
-            String text = (String) patch.get("text");
-            if (text == null || text.isBlank()) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "text must not be blank");
+            Object rawText = patch.get("text");
+            if (!(rawText instanceof String text) || text.isBlank()) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "text must be a non-blank string");
             }
             todo.setText(text);
             edited = true;
@@ -87,7 +87,14 @@ public class TodoController {
 
         if (patch.containsKey("dueDate")) {
             Object rawDueDate = patch.get("dueDate");
-            todo.setDueDate(rawDueDate == null ? null : LocalDate.parse((String) rawDueDate));
+            if (rawDueDate != null && !(rawDueDate instanceof String)) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "dueDate must be an ISO date string or null");
+            }
+            try {
+                todo.setDueDate(rawDueDate == null ? null : LocalDate.parse((String) rawDueDate));
+            } catch (java.time.format.DateTimeParseException e) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "dueDate must be a valid ISO date (yyyy-MM-dd)");
+            }
             edited = true;
         }
 
