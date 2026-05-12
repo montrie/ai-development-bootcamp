@@ -27,7 +27,7 @@ export default function AuditLogsPage() {
 
   useEffect(() => {
     fetchAuditLogActionTypes().then(setActionTypes).catch(console.error);
-    loadLogs();
+    fetchAuditLogs({}).then(setLogs).catch(console.error);
   }, []);
 
   async function handleClear() {

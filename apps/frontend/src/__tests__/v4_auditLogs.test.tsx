@@ -107,6 +107,24 @@ describe('Audit Logs page — F-39 filters', () => {
       );
     });
   });
+
+  it('entering start/end date and clicking Apply calls fetchAuditLogs with date params', async () => {
+    const user = await navigateToAuditLogs();
+    vi.mocked(api.fetchAuditLogs).mockClear();
+    const startInput = document.getElementById('audit-start-date') as HTMLInputElement;
+    const endInput = document.getElementById('audit-end-date') as HTMLInputElement;
+    await user.type(startInput, '2026-05-01');
+    await user.type(endInput, '2026-05-31');
+    await user.click(document.getElementById('apply-audit-filters-button')!);
+    await waitFor(() => {
+      expect(api.fetchAuditLogs).toHaveBeenCalledWith(
+        expect.objectContaining({
+          startDate: '2026-05-01T00:00:00Z',
+          endDate: '2026-05-31T23:59:59Z',
+        })
+      );
+    });
+  });
 });
 
 describe('Audit Logs page — F-40 clear', () => {

@@ -19,7 +19,8 @@ public class AuditAccessDeniedHandler implements AccessDeniedHandler {
     @Override
     public void handle(HttpServletRequest req, HttpServletResponse res,
                        AccessDeniedException ex) throws IOException {
-        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        var authentication = SecurityContextHolder.getContext().getAuthentication();
+        String username = authentication != null ? authentication.getName() : "unknown";
         auditService.log("ACCESS_DENIED", username, "FAILURE", null);
         res.sendError(HttpServletResponse.SC_FORBIDDEN);
     }

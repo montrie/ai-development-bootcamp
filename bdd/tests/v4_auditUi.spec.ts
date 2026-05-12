@@ -82,7 +82,9 @@ test('Admin can filter audit log entries by date range in the UI', async ({ page
   await page.fill('#audit-end-date', today);
   await page.click('#apply-audit-filters-button');
 
-  await expect(page.locator('#audit-log-table')).toBeVisible();
+  const rows = page.locator('#audit-log-table tbody tr');
+  await expect(rows).not.toHaveCount(0);
+  await expect(rows.filter({ hasNotText: today })).toHaveCount(0);
 });
 
 // F-40: Clear All Logs button
