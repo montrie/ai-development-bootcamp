@@ -147,11 +147,11 @@ test("Admin resetting a user's password produces an audit log entry", async ({ r
 
 // F-35: Access-denied events
 
-test('A request without a JWT token to a protected endpoint produces an ACCESS_DENIED log', async ({ request }) => {
+test('A request without a JWT token to a protected endpoint produces an UNAUTHENTICATED log', async ({ request }) => {
   await request.get('/api/todos');
 
   const logs = await getAuditLogsViaApi(request, adminToken);
-  const entry = logs.find(l => l.actionType === 'ACCESS_DENIED' && l.actorUsername === 'anonymous');
+  const entry = logs.find(l => l.actionType === 'UNAUTHENTICATED' && l.actorUsername === 'anonymous');
   expect(entry).toBeDefined();
   expect(entry!.outcome).toBe('FAILURE');
 });

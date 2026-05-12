@@ -29,10 +29,10 @@ class V4AuditSecurityHandlersTest {
     }
 
     @Test
-    void authenticationEntryPointLogsAccessDeniedForAnonymousAndSends401() throws IOException {
+    void authenticationEntryPointLogsUnauthenticatedForAnonymousAndSends401() throws IOException {
         entryPoint.commence(request, response, new BadCredentialsException("bad"));
 
-        verify(auditService).log(AuditActionType.ACCESS_DENIED.name(), "anonymous", "FAILURE", null);
+        verify(auditService).log(AuditActionType.UNAUTHENTICATED.name(), "anonymous", "FAILURE", null);
         verify(response).sendError(HttpServletResponse.SC_UNAUTHORIZED);
     }
 

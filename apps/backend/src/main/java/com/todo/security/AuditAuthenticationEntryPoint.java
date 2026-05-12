@@ -19,7 +19,7 @@ public class AuditAuthenticationEntryPoint implements AuthenticationEntryPoint {
     @Override
     public void commence(HttpServletRequest req, HttpServletResponse res,
                          AuthenticationException ex) throws IOException {
-        auditService.log(AuditActionType.ACCESS_DENIED.name(), "anonymous", "FAILURE", null);
+        auditService.log(AuditActionType.UNAUTHENTICATED.name(), "anonymous", "FAILURE", null);
         res.sendError(HttpServletResponse.SC_UNAUTHORIZED);
     }
 }

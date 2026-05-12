@@ -4,9 +4,7 @@ export default defineConfig({
   testDir: './bdd/tests',
   testMatch: '**/*.spec.ts',
   forbidOnly: !!process.env.CI,
-  // Retries intentionally set to 0 in CI to surface flaky tests rather than mask them.
-  // Restore to 2 once async timing issues are resolved.
-  retries: process.env.CI ? 0 : 0,
+  retries: process.env.CI ? 2 : 0,
   workers: 1,
   reporter: 'html',
   use: {

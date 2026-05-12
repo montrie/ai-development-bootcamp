@@ -59,9 +59,9 @@ Feature: Audit Log Capture
 
   # F-35: Access-denied events
 
-  Scenario: A request without a JWT token to a protected endpoint produces an ACCESS_DENIED log
+  Scenario: A request without a JWT token to a protected endpoint produces an UNAUTHENTICATED log
     When an unauthenticated request is made to a protected endpoint
-    Then the audit log contains an "ACCESS_DENIED" entry with outcome "FAILURE" for "anonymous"
+    Then the audit log contains an "UNAUTHENTICATED" entry with outcome "FAILURE" for "anonymous"
 
   Scenario: A regular user accessing an admin endpoint produces an ACCESS_DENIED log with their username
     Given I am logged in as "alice"
