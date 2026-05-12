@@ -59,7 +59,7 @@ services:
     # filesystem, avoiding stale .class files from previous host builds.
     volumes:
       - ./apps/backend/src:/app/src
-    command: mvn test
+    command: mvn clean test
 
   frontend-unit-test:
     profiles: [test]
