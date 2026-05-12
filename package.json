@@ -7,5 +7,8 @@
   },
   "devDependencies": {
     "@playwright/test": "^1.50.0"
+  },
+  "dependencies": {
+    "swagger-ui-express": "^5.0.1"
   }
 }
