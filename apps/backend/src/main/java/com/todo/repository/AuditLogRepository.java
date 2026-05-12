@@ -13,8 +13,8 @@ public interface AuditLogRepository extends JpaRepository<AuditLog, Long> {
         SELECT a FROM AuditLog a
         WHERE (:actionType IS NULL OR a.actionType = :actionType)
           AND (:actorUsername IS NULL OR a.actorUsername = :actorUsername)
-          AND (:startDate IS NULL OR a.timestamp >= :startDate)
-          AND (:endDate IS NULL OR a.timestamp <= :endDate)
+          AND a.timestamp >= COALESCE(:startDate, a.timestamp)
+          AND a.timestamp <= COALESCE(:endDate, a.timestamp)
         ORDER BY a.timestamp DESC
         """)
     List<AuditLog> findWithFilters(
