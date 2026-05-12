@@ -2,6 +2,7 @@ import { useState } from 'react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import type { Todo } from '../services/api';
+import { toLocalIso } from '../utils/date';
 
 type Props = {
   todo: Todo;
@@ -31,13 +32,6 @@ function isOverdue(dueDate: string): boolean {
   const [year, month, day] = dueDate.split('-').map(Number);
   const due = new Date(year, month - 1, day);
   return due < today;
-}
-
-function toLocalIso(date: Date): string {
-  const y = date.getFullYear();
-  const m = String(date.getMonth() + 1).padStart(2, '0');
-  const d = String(date.getDate()).padStart(2, '0');
-  return `${y}-${m}-${d}`;
 }
 
 export default function TodoItem({

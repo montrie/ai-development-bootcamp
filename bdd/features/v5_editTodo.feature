@@ -43,7 +43,7 @@ Feature: Inline Editing of ToDo Items
     When I click the edit button for "Buy milk"
     And I set the edit due date to "2027-08-20"
     And I click the save button
-    Then the todo "Buy oat milk" should display the due date "20 Aug 2027"
+    Then the todo "Buy milk" should display the due date "20 Aug 2027"
 
   Scenario: Saving clears the due date when the date is removed
     Given a todo "Submit report" with due date "2027-06-15" exists in the list

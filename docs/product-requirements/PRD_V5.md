@@ -53,7 +53,7 @@ Features F-01 through F-40 carry over unchanged from Version 4.
 | F-55 | A todo item cannot be saved with empty or whitespace-only text; the save action is blocked and the text input is marked invalid |
 | F-56 | Only one todo item can be in edit mode at a time; activating edit mode on a second item cancels (discards) the currently open edit before opening the new one |
 | F-57 | The `PATCH /api/todos/{id}` endpoint accepts optional `text` and `dueDate` fields; when either field is provided it updates the corresponding column; when either field is omitted it leaves that column unchanged; sending `"dueDate": null` explicitly clears the due date |
-| F-58 | Successfully saving an edited todo item is recorded in the audit log with `action_type = TODO_EDITED`, `outcome = SUCCESS`, and the todo's ID as `resource_id` — a single entry regardless of whether text, due date, or both were changed |
+| F-58 | Successfully saving an edited todo item is recorded in the audit log with `action_type = TODO_UPDATED`, `outcome = SUCCESS`, and the todo's ID as `resource_id` — a single entry regardless of whether text, due date, or both were changed |
 
 ---
 

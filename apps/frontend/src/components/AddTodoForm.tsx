@@ -2,13 +2,7 @@ import { useState } from 'react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import '../styles/AddTodoForm.css';
-
-function toLocalIso(date: Date): string {
-  const y = date.getFullYear();
-  const m = String(date.getMonth() + 1).padStart(2, '0');
-  const d = String(date.getDate()).padStart(2, '0');
-  return `${y}-${m}-${d}`;
-}
+import { toLocalIso } from '../utils/date';
 
 type Props = {
   onAdd: (text: string, dueDate: string | null) => void;
