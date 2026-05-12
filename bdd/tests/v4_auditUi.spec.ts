@@ -51,13 +51,11 @@ test('Admin can filter audit log entries by action type in the UI', async ({ pag
   await navigateToAuditLogs(page);
 
   await page.selectOption('#audit-action-type', 'USER_LOGIN');
+  await page.click('#apply-audit-filters-button');
 
   const rows = page.locator('#audit-log-table tbody tr');
-  await expect(rows.first()).toBeVisible();
-  const count = await rows.count();
-  for (let i = 0; i < count; i++) {
-    await expect(rows.nth(i)).toContainText('USER_LOGIN');
-  }
+  await expect(rows).not.toHaveCount(0);
+  await expect(rows.filter({ hasNotText: 'USER_LOGIN' })).toHaveCount(0);
 });
 
 test('Admin can filter audit log entries by username in the UI', async ({ page, request }) => {
@@ -67,14 +65,11 @@ test('Admin can filter audit log entries by username in the UI', async ({ page, 
   await navigateToAuditLogs(page);
 
   await page.fill('#audit-username', 'alice');
-  await page.keyboard.press('Enter');
+  await page.click('#apply-audit-filters-button');
 
   const rows = page.locator('#audit-log-table tbody tr');
-  await expect(rows.first()).toBeVisible();
-  const count = await rows.count();
-  for (let i = 0; i < count; i++) {
-    await expect(rows.nth(i)).toContainText('alice');
-  }
+  await expect(rows).not.toHaveCount(0);
+  await expect(rows.filter({ hasNotText: 'alice' })).toHaveCount(0);
 });
 
 test('Admin can filter audit log entries by date range in the UI', async ({ page, request }) => {
@@ -85,7 +80,7 @@ test('Admin can filter audit log entries by date range in the UI', async ({ page
   const today = new Date().toISOString().split('T')[0];
   await page.fill('#audit-start-date', today);
   await page.fill('#audit-end-date', today);
-  await page.keyboard.press('Enter');
+  await page.click('#apply-audit-filters-button');
 
   await expect(page.locator('#audit-log-table')).toBeVisible();
 });

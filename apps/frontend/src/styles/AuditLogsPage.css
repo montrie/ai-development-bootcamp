@@ -19,6 +19,20 @@
   font-size: 0.9rem;
 }
 
+#apply-audit-filters-button {
+  background: #1976d2;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  padding: 0.4rem 0.8rem;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+#apply-audit-filters-button:hover {
+  background: #1565c0;
+}
+
 #clear-audit-logs-button {
   background: #e53935;
   color: #fff;

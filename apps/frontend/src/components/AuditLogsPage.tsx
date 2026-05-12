@@ -30,14 +30,6 @@ export default function AuditLogsPage() {
     loadLogs();
   }, []);
 
-  useEffect(() => {
-    loadLogs();
-  }, [actionTypeFilter]);
-
-  function handleKeyDown(e: React.KeyboardEvent) {
-    if (e.key === 'Enter') loadLogs();
-  }
-
   async function handleClear() {
     if (!window.confirm('Clear all audit log entries? This cannot be undone.')) return;
     await clearAuditLogs();
@@ -63,22 +55,22 @@ export default function AuditLogsPage() {
           placeholder="Filter by username"
           value={usernameFilter}
           onChange={e => setUsernameFilter(e.target.value)}
-          onKeyDown={handleKeyDown}
         />
         <input
           id="audit-start-date"
           type="date"
           value={startDate}
           onChange={e => setStartDate(e.target.value)}
-          onKeyDown={handleKeyDown}
         />
         <input
           id="audit-end-date"
           type="date"
           value={endDate}
           onChange={e => setEndDate(e.target.value)}
-          onKeyDown={handleKeyDown}
         />
+        <button id="apply-audit-filters-button" onClick={loadLogs}>
+          Apply Filters
+        </button>
         <button id="clear-audit-logs-button" onClick={handleClear}>
           Clear All Logs
         </button>

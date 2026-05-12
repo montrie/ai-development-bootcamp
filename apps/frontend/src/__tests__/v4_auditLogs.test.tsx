@@ -82,11 +82,12 @@ describe('Audit Logs page — F-38', () => {
 });
 
 describe('Audit Logs page — F-39 filters', () => {
-  it('selecting action type calls fetchAuditLogs with actionType filter', async () => {
+  it('selecting action type and clicking Apply calls fetchAuditLogs with actionType filter', async () => {
     const user = await navigateToAuditLogs();
     vi.mocked(api.fetchAuditLogs).mockClear();
     const select = document.getElementById('audit-action-type') as HTMLSelectElement;
     await user.selectOptions(select, 'USER_LOGIN');
+    await user.click(document.getElementById('apply-audit-filters-button')!);
     await waitFor(() => {
       expect(api.fetchAuditLogs).toHaveBeenCalledWith(
         expect.objectContaining({ actionType: 'USER_LOGIN' })
@@ -94,12 +95,12 @@ describe('Audit Logs page — F-39 filters', () => {
     });
   });
 
-  it('typing username and pressing Enter calls fetchAuditLogs with username filter', async () => {
+  it('typing username and clicking Apply calls fetchAuditLogs with username filter', async () => {
     const user = await navigateToAuditLogs();
     vi.mocked(api.fetchAuditLogs).mockClear();
     const input = document.getElementById('audit-username') as HTMLInputElement;
     await user.type(input, 'alice');
-    await user.keyboard('{Enter}');
+    await user.click(document.getElementById('apply-audit-filters-button')!);
     await waitFor(() => {
       expect(api.fetchAuditLogs).toHaveBeenCalledWith(
         expect.objectContaining({ username: 'alice' })
