@@ -59,7 +59,7 @@ public class TodoController {
 
     @Operation(summary = "Update todo", description = "Partially updates a todo item owned by the authenticated user")
     @ApiResponse(responseCode = "200", description = "Updated todo")
-    @ApiResponse(responseCode = "400", description = "Blank text provided", content = @Content)
+    @ApiResponse(responseCode = "400", description = "Invalid input: blank text, non-string text, or malformed dueDate", content = @Content)
     @ApiResponse(responseCode = "403", description = "Todo not found or belongs to another user", content = @Content)
     @PatchMapping("/{id}")
     public Todo updateTodo(
