@@ -54,6 +54,7 @@ public class SecurityConfig {
                     new HttpSessionSecurityContextRepository()
                 )))
             .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                 // Auth endpoints are public so unauthenticated users can register/login
                 .requestMatchers("/api/auth/**").permitAll()
                 // All /api/admin/** routes require ROLE_ADMIN regardless of HTTP method
