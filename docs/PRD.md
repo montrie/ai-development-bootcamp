@@ -31,6 +31,6 @@ Anyone who needs a straightforward task list in their browser — no account, no
 | Version 1 | Complete | Vanilla browser app (HTML/CSS/JS, localStorage) | [PRD_V1.md](product-requirements/PRD_V1.md) |
 | Version 2 | Complete | Full-stack app (React + Spring Boot + PostgreSQL) | [PRD_V2.md](product-requirements/PRD_V2.md) |
 | Version 3 | Complete | User authentication, per-user todo lists & admin (JWT) | [PRD_V3.md](product-requirements/PRD_V3.md) |
-| Version 4 | In Progress | Admin audit logs for user actions | [PRD_V4.md](product-requirements/PRD_V4.md) |
-| Version 5 | In Progress | Due dates for todo items & inline todo editing | [PRD_V5.md](product-requirements/PRD_V5.md) |
-| Version 6 | In Progress | Drag & drop todo reordering with persistent sort | [PRD_V6.md](product-requirements/PRD_V6.md) |
+| Version 4 | Complete | Admin audit logs for user actions | [PRD_V4.md](product-requirements/PRD_V4.md) |
+| Version 5 | Complete | Due dates for todo items & inline todo editing | [PRD_V5.md](product-requirements/PRD_V5.md) |
+| Version 6 | In Progress | Custom sorting, drag & drop reordering, and todo sharing | [PRD_V6.md](product-requirements/PRD_V6.md) |

@@ -1,7 +1,7 @@
 # Product Requirements Document (PRD)
 ## Version 5 — Due Dates & Todo Editing
 
-**Status:** In Progress
+**Status:** Complete
 
 ---
 
