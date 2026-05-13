@@ -35,7 +35,7 @@ export type Todo = {
   id: number;
   text: string;
   done: boolean;
-  dueDate: string | null;
+  dueDate?: string | null;
 };
 
 export async function fetchTodos(): Promise<Todo[]> {
