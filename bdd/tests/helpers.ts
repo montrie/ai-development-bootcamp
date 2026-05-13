@@ -154,3 +154,15 @@ export async function clearAuditLogsViaApi(
     headers: { Authorization: `Bearer ${adminToken}` },
   });
 }
+
+export async function shareTodoViaApi(
+  request: APIRequestContext,
+  todoId: number,
+  recipientUsername: string,
+  ownerToken: string
+): Promise<void> {
+  await request.post('/api/todos/shares', {
+    data: { todoIds: [todoId], recipientUsername },
+    headers: { Authorization: `Bearer ${ownerToken}` },
+  });
+}
