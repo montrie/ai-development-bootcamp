@@ -44,7 +44,7 @@ class V4AuditAdminActionsTest {
                 .with(MockUserFactory.jwtAsAdmin("admin")))
             .andExpect(status().isNoContent());
 
-        verify(auditService).log(AuditActionType.ADMIN_DELETE_USER.name(), "admin", "SUCCESS", 5L);
+        verify(auditService).log(AuditActionType.ADMIN_DELETE_USER, "admin", "SUCCESS", 5L);
     }
 
     @Test
@@ -55,6 +55,6 @@ class V4AuditAdminActionsTest {
                 .content("{\"newPassword\":\"newpass\"}"))
             .andExpect(status().isNoContent());
 
-        verify(auditService).log(AuditActionType.ADMIN_RESET_PASSWORD.name(), "admin", "SUCCESS", 5L);
+        verify(auditService).log(AuditActionType.ADMIN_RESET_PASSWORD, "admin", "SUCCESS", 5L);
     }
 }

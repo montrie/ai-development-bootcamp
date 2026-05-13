@@ -1,10 +1,15 @@
 package com.todo.controller;
 
-import com.todo.model.AuditLog;
+import com.todo.aspect.AuditAction;
+import com.todo.model.AuditActionType;
 import com.todo.service.AuditService;
 import com.todo.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
@@ -40,6 +45,7 @@ public class AdminController {
     @Operation(summary = "Delete a user", description = "Permanently deletes a user account and all associated todos")
     @ApiResponse(responseCode = "204", description = "User deleted successfully")
     @ApiResponse(responseCode = "404", description = "User not found")
+    @AuditAction(AuditActionType.ADMIN_DELETE_USER)
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @DeleteMapping("/users/{id}")
     public void deleteUser(
@@ -50,6 +56,7 @@ public class AdminController {
     @Operation(summary = "Reset a user's password", description = "Overwrites a user's password without requiring the current one")
     @ApiResponse(responseCode = "204", description = "Password reset successfully")
     @ApiResponse(responseCode = "404", description = "User not found")
+    @AuditAction(AuditActionType.ADMIN_RESET_PASSWORD)
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @PatchMapping("/users/{id}/password")
     public void resetPassword(
@@ -58,6 +65,9 @@ public class AdminController {
         userService.resetPassword(id, request.newPassword());
     }
 
+    @Operation(summary = "Search audit logs", description = "Returns audit log entries filtered by action type, username, and date range")
+    @ApiResponse(responseCode = "200", description = "List of matching audit log entries")
+    @ApiResponse(responseCode = "400", description = "Invalid date format")
     @GetMapping("/audit-logs")
     public List<AuditLogResponse> searchAuditLogs(
             @RequestParam(required = false) String actionType,
@@ -74,11 +84,19 @@ public class AdminController {
             .toList();
     }
 
+    @Operation(summary = "List audit action types", description = "Returns all valid action type values for use as filter options")
+    @ApiResponse(responseCode = "200", description = "List of action type names",
+        content = @Content(array = @ArraySchema(schema = @Schema(type = "string")),
+            examples = @ExampleObject(value = "[\"TODO_CREATED\",\"TODO_UPDATED\",\"TODO_DELETED\"," +
+                "\"USER_REGISTERED\",\"USER_LOGIN\",\"ADMIN_DELETE_USER\",\"ADMIN_RESET_PASSWORD\"," +
+                "\"UNAUTHENTICATED\",\"ACCESS_DENIED\"]")))
     @GetMapping("/audit-logs/action-types")
     public List<String> getActionTypes() {
         return auditService.actionTypes();
     }
 
+    @Operation(summary = "Clear audit logs", description = "Deletes all audit log entries. Used for test state reset.")
+    @ApiResponse(responseCode = "204", description = "Audit logs cleared")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @DeleteMapping("/audit-logs")
     public void deleteAuditLogs() {

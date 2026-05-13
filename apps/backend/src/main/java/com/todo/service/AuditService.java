@@ -18,10 +18,10 @@ public class AuditService {
     public AuditService(AuditLogRepository repo) { this.repo = repo; }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void log(String actionType, String actorUsername, String outcome, Long resourceId) {
+    public void log(AuditActionType actionType, String actorUsername, String outcome, Long resourceId) {
         AuditLog entry = new AuditLog();
         entry.setTimestamp(OffsetDateTime.now());
-        entry.setActionType(actionType);
+        entry.setActionType(actionType.name());
         entry.setActorUsername(actorUsername);
         entry.setOutcome(outcome);
         entry.setResourceId(resourceId);

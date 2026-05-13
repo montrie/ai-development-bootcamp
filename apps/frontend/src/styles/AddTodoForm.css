@@ -1,18 +1,50 @@
 .add-todo-form {
   display: flex;
   gap: 0.5rem;
-  margin-bottom: 1rem;
+  margin-bottom: 1.5rem;
+  align-items: center;
 }
 
 .todo-input {
   flex: 1;
+  min-width: 0;
   padding: 0.5rem 0.75rem;
-  border: 1px solid #ccc;
+  border: 1px solid #d0d0d0;
   border-radius: 4px;
   font-size: 1rem;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.todo-input:focus {
+  border-color: #1976d2;
+  box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.12);
 }
 
 .todo-input[aria-invalid='true'] {
   border-color: #d32f2f;
-  outline-color: #d32f2f;
+  box-shadow: 0 0 0 2px rgba(211, 47, 47, 0.12);
+}
+
+.due-date-picker-wrapper {
+  flex-shrink: 0;
+}
+
+.due-date-picker {
+  width: 150px;
+  padding: 0.5rem 0.65rem;
+  border: 1px solid #d0d0d0;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  font-family: inherit;
+  color: #555;
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.due-date-picker:focus {
+  border-color: #1976d2;
+  box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.12);
 }

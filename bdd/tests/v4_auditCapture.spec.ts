@@ -42,7 +42,7 @@ test('Toggling a todo produces an audit log entry', async ({ request }) => {
   await completeTodoViaApi(request, todoId, aliceToken);
 
   const logs = await getAuditLogsViaApi(request, adminToken);
-  const entry = logs.find(l => l.actionType === 'TODO_TOGGLED' && l.actorUsername === 'alice');
+  const entry = logs.find(l => l.actionType === 'TODO_UPDATED' && l.actorUsername === 'alice');
   expect(entry).toBeDefined();
   expect(entry!.outcome).toBe('SUCCESS');
   expect(entry!.resourceId).toBe(todoId);

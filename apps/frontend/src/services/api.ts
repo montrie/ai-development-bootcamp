@@ -35,6 +35,7 @@ export type Todo = {
   id: number;
   text: string;
   done: boolean;
+  dueDate: string | null;
 };
 
 export async function fetchTodos(): Promise<Todo[]> {
@@ -44,11 +45,13 @@ export async function fetchTodos(): Promise<Todo[]> {
   return res.json();
 }
 
-export async function createTodo(text: string): Promise<Todo> {
+export async function createTodo(text: string, dueDate?: string | null): Promise<Todo> {
+  const body: { text: string; dueDate?: string | null } = { text };
+  if (dueDate !== undefined) body.dueDate = dueDate;
   const res = await fetch(BASE, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', ...authHeaders() },
-    body: JSON.stringify({ text }),
+    body: JSON.stringify(body),
   });
   if (res.status === 401) { clearToken(); window.location.reload(); throw new Error('Unauthorized'); }
   if (!res.ok) throw new Error('Failed to create todo');
@@ -63,6 +66,20 @@ export async function updateTodo(id: number, done: boolean): Promise<Todo> {
   });
   if (res.status === 401) { clearToken(); window.location.reload(); throw new Error('Unauthorized'); }
   if (!res.ok) throw new Error('Failed to update todo');
+  return res.json();
+}
+
+export async function editTodo(
+  id: number,
+  patch: { text?: string; dueDate?: string | null; done?: boolean }
+): Promise<Todo> {
+  const res = await fetch(`${BASE}/${id}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...authHeaders() },
+    body: JSON.stringify(patch),
+  });
+  if (res.status === 401) { clearToken(); window.location.reload(); throw new Error('Unauthorized'); }
+  if (!res.ok) throw new Error('Failed to edit todo');
   return res.json();
 }
 

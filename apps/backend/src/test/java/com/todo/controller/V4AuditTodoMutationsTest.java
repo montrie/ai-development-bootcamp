@@ -76,7 +76,7 @@ class V4AuditTodoMutationsTest {
                 .content("{\"text\":\"task\"}"))
             .andExpect(status().isCreated());
 
-        verify(auditService).log(AuditActionType.TODO_CREATED.name(), "user", "SUCCESS", 42L);
+        verify(auditService).log(AuditActionType.TODO_CREATED, "user", "SUCCESS", 42L);
     }
 
     @Test
@@ -95,7 +95,7 @@ class V4AuditTodoMutationsTest {
                 .content("{\"done\":true}"))
             .andExpect(status().isOk());
 
-        verify(auditService).log(AuditActionType.TODO_TOGGLED.name(), "user", "SUCCESS", 7L);
+        verify(auditService).log(AuditActionType.TODO_UPDATED, "user", "SUCCESS", 7L);
     }
 
     @Test
@@ -108,6 +108,6 @@ class V4AuditTodoMutationsTest {
                 .with(MockUserFactory.jwtAs("user")))
             .andExpect(status().isNoContent());
 
-        verify(auditService).log(AuditActionType.TODO_DELETED.name(), "user", "SUCCESS", 7L);
+        verify(auditService).log(AuditActionType.TODO_DELETED, "user", "SUCCESS", 7L);
     }
 }

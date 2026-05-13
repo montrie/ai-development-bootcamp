@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event';
 import AddTodoForm from '../components/AddTodoForm';
 import TodoList from '../components/TodoList';
 
-const getInput = () => screen.getByRole('textbox');
+const getInput = () => document.getElementById('todo-input') as HTMLInputElement;
 const getAddButton = () => screen.getByRole('button', { name: /add/i });
 
 describe('Edge Cases — AddTodoForm validation', () => {
@@ -34,7 +34,17 @@ describe('Edge Cases — AddTodoForm validation', () => {
 
 describe('Edge Cases — TodoList empty state', () => {
   it('renders the empty placeholder when the todo list is empty', () => {
-    render(<TodoList todos={[]} onToggle={vi.fn()} onDelete={vi.fn()} />);
+    render(
+      <TodoList
+        todos={[]}
+        onToggle={vi.fn()}
+        onDelete={vi.fn()}
+        editingId={null}
+        onEditStart={vi.fn()}
+        onEditCancel={vi.fn()}
+        onEdit={vi.fn()}
+      />
+    );
     expect(screen.getByText('No tasks yet — add one above!')).toBeInTheDocument();
   });
 });

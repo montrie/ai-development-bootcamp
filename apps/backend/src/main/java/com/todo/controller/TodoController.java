@@ -1,5 +1,7 @@
 package com.todo.controller;
 
+import com.todo.aspect.AuditAction;
+import com.todo.model.AuditActionType;
 import com.todo.model.Todo;
 import com.todo.model.User;
 import com.todo.repository.TodoRepository;
@@ -14,7 +16,9 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 @Tag(name = "Todos", description = "Manage the authenticated user's todo items")
 @RestController
@@ -39,30 +43,68 @@ public class TodoController {
 
     @Operation(summary = "Create a todo", description = "Creates a new todo item for the authenticated user")
     @ApiResponse(responseCode = "201", description = "Created todo")
+    @ApiResponse(responseCode = "400", description = "Invalid input: missing text or malformed dueDate", content = @Content)
+    @AuditAction(AuditActionType.TODO_CREATED)
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping
-    public Todo createTodo(@RequestBody Todo todo) {
-        todo.setUser(resolveUser());
+    public Todo createTodo(@RequestBody CreateTodoRequest req) {
+        if (req.text() == null || req.text().isBlank())
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "text must be a non-blank string");
+        User user = resolveUser();
+        Todo todo = new Todo();
+        todo.setText(req.text());
+        todo.setDueDate(req.dueDate());
+        todo.setUser(user);
         return repository.save(todo);
     }
 
-    @Operation(summary = "Update done state", description = "Toggles the done state of a todo item owned by the authenticated user")
+    @Operation(summary = "Update todo", description = "Partially updates a todo item owned by the authenticated user")
     @ApiResponse(responseCode = "200", description = "Updated todo")
+    @ApiResponse(responseCode = "400", description = "Invalid input: blank text, non-string text, or malformed dueDate", content = @Content)
     @ApiResponse(responseCode = "403", description = "Todo not found or belongs to another user", content = @Content)
+    @AuditAction(AuditActionType.TODO_UPDATED)
+    // Map<String, Object> is intentional: a typed record cannot distinguish an absent key from an
+    // explicit null, which is required to support clearing dueDate with "dueDate": null.
     @PatchMapping("/{id}")
-    public Todo updateCompletedStatus(
+    public Todo updateTodo(
             @Parameter(description = "ID of the todo to update") @PathVariable Long id,
-            @RequestBody Todo patch) {
+            @RequestBody Map<String, Object> patch) {
+        String username = getAuthenticatedUsername();
         Todo todo = repository.findById(id)
-                .filter(t -> t.getUser().getUsername().equals(getAuthenticatedUsername()))
+                .filter(t -> t.getUser().getUsername().equals(username))
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN));
-        todo.setDone(patch.isDone());
+
+        if (patch.containsKey("done")) {
+            todo.setDone(Boolean.TRUE.equals(patch.get("done")));
+        }
+
+        if (patch.containsKey("text")) {
+            Object rawText = patch.get("text");
+            if (!(rawText instanceof String text) || text.isBlank()) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "text must be a non-blank string");
+            }
+            todo.setText(text);
+        }
+
+        if (patch.containsKey("dueDate")) {
+            Object rawDueDate = patch.get("dueDate");
+            if (rawDueDate != null && !(rawDueDate instanceof String)) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "dueDate must be an ISO date string or null");
+            }
+            try {
+                todo.setDueDate(rawDueDate == null ? null : LocalDate.parse((String) rawDueDate));
+            } catch (java.time.format.DateTimeParseException e) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "dueDate must be a valid ISO date (yyyy-MM-dd)");
+            }
+        }
+
         return repository.save(todo);
     }
 
     @Operation(summary = "Delete a todo", description = "Permanently deletes a todo item owned by the authenticated user")
     @ApiResponse(responseCode = "204", description = "Deleted successfully")
     @ApiResponse(responseCode = "403", description = "Todo not found or belongs to another user")
+    @AuditAction(AuditActionType.TODO_DELETED)
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @DeleteMapping("/{id}")
     public void deleteTodo(
@@ -80,6 +122,8 @@ public class TodoController {
     public void deleteAll() {
         repository.deleteAll();
     }
+
+    record CreateTodoRequest(String text, LocalDate dueDate) {}
 
     private User resolveUser() {
         return userRepository.findByUsername(getAuthenticatedUsername())
