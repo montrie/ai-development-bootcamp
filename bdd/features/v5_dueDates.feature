@@ -12,7 +12,7 @@ Feature: Due Dates on ToDo Items
     And I select a due date of "2027-06-15"
     And I click the add button
     Then I should see a todo item with text "Submit report"
-    And the todo "Submit report" should display the due date "15 Jun 2027"
+    And the todo "Submit report" should display the due date "Due 15 Jun 2027"
 
   Scenario: Due date in the current year is displayed without the year
     When I enter "Call dentist" into the todo input
@@ -46,5 +46,5 @@ Feature: Due Dates on ToDo Items
     And I select a due date of "2027-04-30"
     And I click the add button
     And I reload the page
-    Then the todo "File taxes" should display the due date "30 Apr 2027"
+    Then the todo "File taxes" should display the due date "Due 30 Apr 2027"
 

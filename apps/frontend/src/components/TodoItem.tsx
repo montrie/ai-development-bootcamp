@@ -23,7 +23,7 @@ function formatDueDate(dueDate: string): string {
     date.getFullYear() === currentYear
       ? { day: 'numeric', month: 'short' }
       : { day: 'numeric', month: 'short', year: 'numeric' };
-  return date.toLocaleDateString('en-GB', options);
+  return 'Due ' + date.toLocaleDateString('en-GB', options);
 }
 
 function isOverdue(dueDate: string): boolean {

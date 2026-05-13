@@ -82,7 +82,7 @@ describe('Due Dates — display', () => {
     await screen.findByText('Submit report');
     const label = document.querySelector('.due-date-label');
     expect(label).toBeInTheDocument();
-    expect(label!.textContent).toBe('15 Jun 2027');
+    expect(label!.textContent).toBe('Due 15 Jun 2027');
   });
 
   it('createTodo is called with dueDate when a date is selected', async () => {

@@ -90,7 +90,7 @@ test('Saving updates the due date on the item', async ({ page }) => {
   await fillEditDueDateInput(page, '2027-08-20');
   await page.getByRole('button', { name: /save/i }).click();
 
-  await expect(todoItem.locator('.due-date-label')).toHaveText('20 Aug 2027');
+  await expect(todoItem.locator('.due-date-label')).toHaveText('Due 20 Aug 2027');
 });
 
 // Scenario: Saving clears the due date when the date is removed

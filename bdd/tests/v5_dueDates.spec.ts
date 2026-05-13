@@ -31,7 +31,7 @@ test('A todo item can be created with a due date', async ({ page }) => {
   await expect(page.locator('.todo-item').filter({ hasText: 'Submit report' })).toBeVisible();
   await expect(
     page.locator('.todo-item').filter({ hasText: 'Submit report' }).locator('.due-date-label')
-  ).toHaveText('15 Jun 2027');
+  ).toHaveText('Due 15 Jun 2027');
 });
 
 // Scenario: Due date in the current year is displayed without the year
@@ -101,5 +101,5 @@ test('Due date is persisted and visible after a page reload', async ({ page }) =
     .locator('.todo-item')
     .filter({ hasText: 'File taxes' })
     .locator('.due-date-label');
-  await expect(dueDateLabel).toHaveText('30 Apr 2027');
+  await expect(dueDateLabel).toHaveText('Due 30 Apr 2027');
 });
