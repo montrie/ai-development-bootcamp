@@ -33,3 +33,4 @@ Anyone who needs a straightforward task list in their browser — no account, no
 | Version 3 | Complete | User authentication, per-user todo lists & admin (JWT) | [PRD_V3.md](product-requirements/PRD_V3.md) |
 | Version 4 | In Progress | Admin audit logs for user actions | [PRD_V4.md](product-requirements/PRD_V4.md) |
 | Version 5 | In Progress | Due dates for todo items & inline todo editing | [PRD_V5.md](product-requirements/PRD_V5.md) |
+| Version 6 | In Progress | Drag & drop todo reordering with persistent sort | [PRD_V6.md](product-requirements/PRD_V6.md) |
