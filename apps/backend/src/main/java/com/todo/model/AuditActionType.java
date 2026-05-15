@@ -9,5 +9,6 @@ public enum AuditActionType {
     ADMIN_DELETE_USER,
     ADMIN_RESET_PASSWORD,
     UNAUTHENTICATED,
-    ACCESS_DENIED
+    ACCESS_DENIED,
+    TODO_SHARED
 }

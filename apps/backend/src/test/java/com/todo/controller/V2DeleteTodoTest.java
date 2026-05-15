@@ -2,23 +2,15 @@ package com.todo.controller;
 
 import com.todo.model.Todo;
 import com.todo.model.User;
-import com.todo.repository.TodoRepository;
-import com.todo.repository.UserRepository;
-import com.todo.security.AuditAccessDeniedHandler;
-import com.todo.security.AuditAuthenticationEntryPoint;
-import com.todo.service.JwtService;
-import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.security.oauth2.jwt.JwtDecoder;
 import com.todo.config.SecurityConfig;
 import com.todo.support.MockUserFactory;
+import com.todo.support.TodoControllerTestBase;
+import jakarta.servlet.http.HttpServletResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.mockito.Mockito;
 import org.springframework.context.annotation.Import;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.Optional;
 
@@ -30,28 +22,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(TodoController.class)
 @Import(SecurityConfig.class)
-class V2DeleteTodoTest {
-
-    @Autowired
-    MockMvc mvc;
-
-    @MockitoBean
-    TodoRepository repository;
-
-    @MockitoBean
-    UserRepository userRepository;
-
-    @MockitoBean
-    JwtService jwtService;
-
-    @MockitoBean
-    JwtDecoder jwtDecoder;
-
-    @MockitoBean
-    AuditAuthenticationEntryPoint auditAuthenticationEntryPoint;
-
-    @MockitoBean
-    AuditAccessDeniedHandler auditAccessDeniedHandler;
+class V2DeleteTodoTest extends TodoControllerTestBase {
 
     Todo existingTodo;
 
@@ -73,12 +44,12 @@ class V2DeleteTodoTest {
 
     @Test
     void deletesTodoByIdAndReturnsNoContent() throws Exception {
-        given(repository.findById(1L)).willReturn(Optional.of(existingTodo));
+        given(todoRepository.findById(1L)).willReturn(Optional.of(existingTodo));
 
         mvc.perform(delete("/api/todos/1").with(MockUserFactory.jwtAs("user")))
                 .andExpect(status().isNoContent());
 
-        verify(repository).delete(existingTodo);
+        verify(todoRepository).delete(existingTodo);
     }
 
     @Test
@@ -92,6 +63,6 @@ class V2DeleteTodoTest {
         mvc.perform(delete("/api/todos").with(MockUserFactory.jwtAsAdmin("admin")))
                 .andExpect(status().isNoContent());
 
-        verify(repository).deleteAll();
+        verify(todoRepository).deleteAll();
     }
 }

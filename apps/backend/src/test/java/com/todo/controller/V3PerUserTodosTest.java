@@ -2,21 +2,13 @@ package com.todo.controller;
 
 import com.todo.model.Todo;
 import com.todo.model.User;
-import com.todo.repository.TodoRepository;
-import com.todo.repository.UserRepository;
-import com.todo.security.AuditAccessDeniedHandler;
-import com.todo.security.AuditAuthenticationEntryPoint;
-import com.todo.service.JwtService;
-import org.springframework.security.oauth2.jwt.JwtDecoder;
 import com.todo.config.SecurityConfig;
 import com.todo.support.MockUserFactory;
+import com.todo.support.TodoControllerTestBase;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.annotation.Import;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
 import java.util.Optional;
@@ -27,28 +19,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(TodoController.class)
 @Import(SecurityConfig.class)
-class V3PerUserTodosTest {
-
-    @Autowired
-    MockMvc mvc;
-
-    @MockitoBean
-    TodoRepository repository;
-
-    @MockitoBean
-    UserRepository userRepository;
-
-    @MockitoBean
-    JwtService jwtService;
-
-    @MockitoBean
-    JwtDecoder jwtDecoder;
-
-    @MockitoBean
-    AuditAuthenticationEntryPoint auditAuthenticationEntryPoint;
-
-    @MockitoBean
-    AuditAccessDeniedHandler auditAccessDeniedHandler;
+class V3PerUserTodosTest extends TodoControllerTestBase {
 
     @Test
     void getAllTodosReturnsOnlyAuthenticatedUsersItems() throws Exception {
@@ -59,7 +30,7 @@ class V3PerUserTodosTest {
         aliceTodo.setText("Alice task");
 
         given(userRepository.findByUsername("alice")).willReturn(Optional.of(alice));
-        given(repository.findAllByUserOrderByCreatedAtAsc(alice)).willReturn(List.of(aliceTodo));
+        given(todoRepository.findAllByUserOrderByCreatedAtAsc(alice)).willReturn(List.of(aliceTodo));
 
         mvc.perform(get("/api/todos").with(MockUserFactory.jwtAs("alice")))
                 .andExpect(status().isOk())
@@ -75,7 +46,7 @@ class V3PerUserTodosTest {
         Todo bobTodo = new Todo();
         bobTodo.setUser(bob);
 
-        given(repository.findById(1L)).willReturn(Optional.of(bobTodo));
+        given(todoRepository.findById(1L)).willReturn(Optional.of(bobTodo));
 
         mvc.perform(delete("/api/todos/1").with(MockUserFactory.jwtAs("alice")))
                 .andExpect(status().isForbidden());
@@ -83,7 +54,7 @@ class V3PerUserTodosTest {
 
     @Test
     void accessNonExistentTodoReturns403() throws Exception {
-        given(repository.findById(999999L)).willReturn(Optional.empty());
+        given(todoRepository.findById(999999L)).willReturn(Optional.empty());
 
         mvc.perform(patch("/api/todos/999999")
                         .with(MockUserFactory.jwtAs("alice"))
