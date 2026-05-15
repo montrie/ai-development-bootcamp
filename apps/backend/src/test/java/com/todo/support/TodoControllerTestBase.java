@@ -7,6 +7,7 @@ import com.todo.security.AuditAccessDeniedHandler;
 import com.todo.security.AuditAuthenticationEntryPoint;
 import com.todo.service.AuditService;
 import com.todo.service.JwtService;
+import com.todo.service.TodoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -32,6 +33,9 @@ public abstract class TodoControllerTestBase {
 
     @MockitoBean
     protected AuditService auditService;
+
+    @MockitoBean
+    protected TodoService todoService;
 
     @MockitoBean
     protected JwtService jwtService;

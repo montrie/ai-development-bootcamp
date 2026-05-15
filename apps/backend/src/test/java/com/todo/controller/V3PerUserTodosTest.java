@@ -30,7 +30,7 @@ class V3PerUserTodosTest extends TodoControllerTestBase {
         aliceTodo.setText("Alice task");
 
         given(userRepository.findByUsername("alice")).willReturn(Optional.of(alice));
-        given(todoRepository.findAllByUserOrderByCreatedAtAsc(alice)).willReturn(List.of(aliceTodo));
+        given(todoService.getTodosForUser(alice)).willReturn(List.of(aliceTodo));
 
         mvc.perform(get("/api/todos").with(MockUserFactory.jwtAs("alice")))
                 .andExpect(status().isOk())

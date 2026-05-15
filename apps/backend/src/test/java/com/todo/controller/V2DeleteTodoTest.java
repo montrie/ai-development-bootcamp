@@ -35,6 +35,8 @@ class V2DeleteTodoTest extends TodoControllerTestBase {
         existingTodo.setText("Buy milk");
         existingTodo.setUser(owner);
 
+        given(userRepository.findByUsername("user")).willReturn(Optional.of(owner));
+
         Mockito.doAnswer(inv -> {
             HttpServletResponse resp = inv.getArgument(1);
             resp.setStatus(403);

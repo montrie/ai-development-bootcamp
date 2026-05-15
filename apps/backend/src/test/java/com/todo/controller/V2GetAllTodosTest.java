@@ -29,7 +29,7 @@ class V2GetAllTodosTest extends TodoControllerTestBase {
 
     @Test
     void returnsEmptyArrayWhenNoTodosExist() throws Exception {
-        given(todoRepository.findAllByUserOrderByCreatedAtAsc(mockUser)).willReturn(List.of());
+        given(todoService.getTodosForUser(mockUser)).willReturn(List.of());
 
         mvc.perform(get("/api/todos").with(MockUserFactory.jwtAs("user")))
                 .andExpect(status().isOk())
@@ -43,7 +43,7 @@ class V2GetAllTodosTest extends TodoControllerTestBase {
         Todo second = new Todo();
         second.setText("Call dentist");
 
-        given(todoRepository.findAllByUserOrderByCreatedAtAsc(mockUser)).willReturn(List.of(first, second));
+        given(todoService.getTodosForUser(mockUser)).willReturn(List.of(first, second));
 
         mvc.perform(get("/api/todos").with(MockUserFactory.jwtAs("user")))
                 .andExpect(status().isOk())

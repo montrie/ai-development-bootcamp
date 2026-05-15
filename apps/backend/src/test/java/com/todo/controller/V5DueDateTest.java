@@ -70,7 +70,7 @@ class V5DueDateTest extends TodoControllerTestBase {
         todo.setText("Submit report");
         todo.setDueDate(LocalDate.of(2027, 12, 1));
 
-        given(todoRepository.findAllByUserOrderByCreatedAtAsc(mockUser)).willReturn(List.of(todo));
+        given(todoService.getTodosForUser(mockUser)).willReturn(List.of(todo));
 
         mvc.perform(get("/api/todos").with(MockUserFactory.jwtAs("user")))
                 .andExpect(status().isOk())

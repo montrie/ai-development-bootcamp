@@ -37,13 +37,13 @@ export async function resetState(request: APIRequestContext): Promise<void> {
 export async function createTodoViaApi(
   request: APIRequestContext,
   text: string,
-  token?: string
+  token?: string,
+  dueDate?: string
 ): Promise<number> {
   const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
-  const response = await request.post('/api/todos', {
-    data: { text },
-    headers,
-  });
+  const data: Record<string, string> = { text };
+  if (dueDate !== undefined) data['dueDate'] = dueDate;
+  const response = await request.post('/api/todos', { data, headers });
   const todo = await response.json();
   return todo.id as number;
 }
@@ -94,21 +94,6 @@ export async function resetUsers(request: APIRequestContext): Promise<void> {
       });
     }
   }
-}
-
-export async function createTodoWithDueDateViaApi(
-  request: APIRequestContext,
-  text: string,
-  dueDate: string,
-  token?: string
-): Promise<number> {
-  const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
-  const response = await request.post('/api/todos', {
-    data: { text, dueDate },
-    headers,
-  });
-  const todo = await response.json();
-  return todo.id as number;
 }
 
 export async function navigateAsUser(
@@ -165,4 +150,36 @@ export async function shareTodoViaApi(
     data: { todoIds: [todoId], recipientUsername },
     headers: { Authorization: `Bearer ${ownerToken}` },
   });
+}
+
+export async function updateSortModeViaApi(
+  request: APIRequestContext,
+  token: string,
+  sortMode: string
+): Promise<import('@playwright/test').APIResponse> {
+  return request.patch('/api/users/me/sort-mode', {
+    data: { sortMode },
+    headers: { Authorization: `Bearer ${token}` },
+  });
+}
+
+export async function reorderTodosViaApi(
+  request: APIRequestContext,
+  token: string,
+  orderedIds: number[]
+): Promise<import('@playwright/test').APIResponse> {
+  return request.patch('/api/todos/reorder', {
+    data: { order: orderedIds },
+    headers: { Authorization: `Bearer ${token}` },
+  });
+}
+
+export async function getUserProfileViaApi(
+  request: APIRequestContext,
+  token: string
+): Promise<{ sortMode: string }> {
+  const response = await request.get('/api/users/me', {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return response.json() as Promise<{ sortMode: string }>;
 }

@@ -157,7 +157,7 @@ class V6TodoSharingTest extends TodoControllerTestBase {
         share.setTodo(sharedTodo);
         share.setRecipientUser(owner);
 
-        given(todoRepository.findAllByUserOrderByCreatedAtAsc(owner)).willReturn(List.of(ownTodo));
+        given(todoService.getTodosForUser(owner)).willReturn(List.of(ownTodo));
         given(todoShareRepository.findAllByRecipientUser(owner)).willReturn(List.of(share));
 
         mvc.perform(get("/api/todos").with(MockUserFactory.jwtAs("user")))

@@ -1,6 +1,7 @@
 package com.todo.controller;
 
 import com.todo.config.SecurityConfig;
+import com.todo.model.User;
 import com.todo.repository.UserRepository;
 import com.todo.security.AuditAccessDeniedHandler;
 import com.todo.security.AuditAuthenticationEntryPoint;
@@ -14,28 +15,29 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
-import org.springframework.http.MediaType;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.util.Optional;
+
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doThrow;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.mockito.BDDMockito.given;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(UserController.class)
 @Import(SecurityConfig.class)
-class V3ChangePasswordTest {
+class V6GetUserProfileTest {
 
     @Autowired
     MockMvc mvc;
 
     @MockitoBean
-    UserRepository userRepository;
+    UserService userService;
 
     @MockitoBean
-    UserService userService;
+    UserRepository userRepository;
 
     @MockitoBean
     JwtService jwtService;
@@ -59,31 +61,34 @@ class V3ChangePasswordTest {
     }
 
     @Test
-    void changePasswordWithCorrectCurrentPasswordReturns204() throws Exception {
-        mvc.perform(patch("/api/users/self/password")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"currentPassword\":\"secret123\",\"newPassword\":\"newpass456\"}")
-                        .with(MockUserFactory.jwtAs("alice")))
-                .andExpect(status().isNoContent());
+    void getMeReturnsSortModeForAuthenticatedUser() throws Exception {
+        User alice = new User();
+        alice.setUsername("alice");
+        alice.setSortMode("CREATED_ASC");
+
+        given(userRepository.findByUsername("alice")).willReturn(Optional.of(alice));
+
+        mvc.perform(get("/api/users/me").with(MockUserFactory.jwtAs("alice")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.sortMode").value("CREATED_ASC"));
     }
 
     @Test
-    void changePasswordWithWrongCurrentPasswordReturns400() throws Exception {
-        doThrow(new UserService.InvalidCurrentPasswordException())
-                .when(userService).changeOwnPassword("alice", "wrongpass", "newpass456");
+    void getMeReturnsCustomSortModeWhenSet() throws Exception {
+        User bob = new User();
+        bob.setUsername("bob");
+        bob.setSortMode("CUSTOM");
 
-        mvc.perform(patch("/api/users/self/password")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"currentPassword\":\"wrongpass\",\"newPassword\":\"newpass456\"}")
-                        .with(MockUserFactory.jwtAs("alice")))
-                .andExpect(status().isBadRequest());
+        given(userRepository.findByUsername("bob")).willReturn(Optional.of(bob));
+
+        mvc.perform(get("/api/users/me").with(MockUserFactory.jwtAs("bob")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.sortMode").value("CUSTOM"));
     }
 
     @Test
-    void changePasswordWithoutJwtReturns401() throws Exception {
-        mvc.perform(patch("/api/users/self/password")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"currentPassword\":\"secret123\",\"newPassword\":\"newpass456\"}"))
+    void getMeWithoutJwtReturns401() throws Exception {
+        mvc.perform(get("/api/users/me"))
                 .andExpect(status().isUnauthorized());
     }
 }

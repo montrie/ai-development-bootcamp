@@ -4,7 +4,7 @@ export default defineConfig({
   testDir: './bdd/tests',
   testMatch: '**/*.spec.ts',
   forbidOnly: !!process.env.CI,
-  retries: process.env.CI ? 2 : 0,
+  retries: process.env.CI ? 0 : 0,
   workers: 1,
   reporter: 'html',
   use: {

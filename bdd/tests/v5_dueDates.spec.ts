@@ -6,7 +6,7 @@ import {
   navigateAsUser,
   TEST_USERNAME,
   TEST_PASSWORD,
-  createTodoWithDueDateViaApi,
+  createTodoViaApi,
   enterTodoText,
   clickAddButton,
   fillDueDateInput,
@@ -52,7 +52,7 @@ test('Due date in the current year is displayed without the year', async ({ page
 
 // Scenario: An overdue incomplete item shows the due date label in red
 test('An overdue incomplete item shows the due date label in red', async ({ page, request }) => {
-  await createTodoWithDueDateViaApi(request, 'Pay taxes', '2000-01-01', token);
+  await createTodoViaApi(request, 'Pay taxes', token, '2000-01-01');
   await page.reload();
 
   const dueDateLabel = page
@@ -67,7 +67,7 @@ test('A completed item does not show the overdue indicator even when past due', 
   page,
   request,
 }) => {
-  await createTodoWithDueDateViaApi(request, 'Pay taxes', '2000-01-01', token);
+  await createTodoViaApi(request, 'Pay taxes', token, '2000-01-01');
   await page.reload();
 
   const todoItem = page.locator('.todo-item').filter({ hasText: 'Pay taxes' });
