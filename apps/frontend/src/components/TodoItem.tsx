@@ -120,6 +120,9 @@ export default function TodoItem({
       {todo.dueDate && (
         <span className={dueDateClass}>{formatDueDate(todo.dueDate)}</span>
       )}
+      {todo.sharedBy && (
+        <span className="shared-by-label">Shared by {todo.sharedBy}</span>
+      )}
       <button className="btn-edit" aria-label="Edit" onClick={handleEditStart}>Edit</button>
       <button className="btn-delete" aria-label={`Delete ${todo.text}`} onClick={() => onDelete(todo.id)}>
         Delete

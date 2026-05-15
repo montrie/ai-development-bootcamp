@@ -36,6 +36,7 @@ export type Todo = {
   text: string;
   done: boolean;
   dueDate?: string | null;
+  sharedBy?: string | null;
 };
 
 export async function fetchTodos(): Promise<Todo[]> {
@@ -167,4 +168,17 @@ export async function clearAuditLogs(): Promise<void> {
     headers: authHeaders(),
   });
   if (!res.ok) throw new Error('Failed to clear audit logs');
+}
+
+export async function shareTodos(todoIds: number[], recipientUsername: string): Promise<void> {
+  const res = await fetch(`${BASE}/shares`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...authHeaders() },
+    body: JSON.stringify({ todoIds, recipientUsername }),
+  });
+  if (res.status === 401) { clearToken(); window.location.reload(); throw new Error('Unauthorized'); }
+  if (!res.ok) {
+    const msg = await res.text();
+    throw new Error(msg);
+  }
 }

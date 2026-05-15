@@ -48,17 +48,10 @@ test('Sharing panel shows current todos and own todos become selectable', async 
   await page.locator('#share-todos-button').click();
 
   const sharingPanel = page.locator('#sharing-panel');
-  await expect(sharingPanel.locator('.todo-item').filter({ hasText: 'Buy milk' })).toBeVisible();
-  await expect(
-    sharingPanel.locator('.todo-item').filter({ hasText: 'Buy milk' }).locator('.share-checkbox')
-  ).toBeVisible();
+  await expect(sharingPanel.locator('.todo-item.selectable').filter({ hasText: 'Buy milk' })).toBeVisible();
   await expect(sharingPanel.locator('.sharing-recipient-input')).toBeVisible();
 
-  await sharingPanel
-    .locator('.todo-item')
-    .filter({ hasText: 'Buy milk' })
-    .locator('.share-checkbox')
-    .click();
+  await sharingPanel.locator('.todo-item.selectable').filter({ hasText: 'Buy milk' }).click();
   await expect(
     sharingPanel.locator('.todo-item.selected').filter({ hasText: 'Buy milk' })
   ).toBeVisible();
@@ -77,18 +70,11 @@ test('Share selected todos button is disabled until both a todo and a username a
 
   await expect(page.locator('.share-submit-button')).toBeDisabled();
 
-  await sharingPanel
-    .locator('.todo-item')
-    .filter({ hasText: 'Buy milk' })
-    .locator('.share-checkbox')
-    .click();
+  await sharingPanel.locator('.todo-item.selectable').filter({ hasText: 'Buy milk' }).click();
   await expect(page.locator('.share-submit-button')).toBeDisabled();
 
-  await sharingPanel
-    .locator('.todo-item')
-    .filter({ hasText: 'Buy milk' })
-    .locator('.share-checkbox')
-    .click();
+  // Deselect and fill username — still disabled, no todo selected
+  await sharingPanel.locator('.todo-item.selected').filter({ hasText: 'Buy milk' }).click();
   await sharingPanel.locator('.sharing-recipient-input').fill('alice');
   await expect(page.locator('.share-submit-button')).toBeDisabled();
 });
@@ -105,11 +91,7 @@ test('Successfully sharing selected todos clears selection and username and show
   await page.locator('#share-todos-button').click();
   const sharingPanel = page.locator('#sharing-panel');
 
-  await sharingPanel
-    .locator('.todo-item')
-    .filter({ hasText: 'Buy milk' })
-    .locator('.share-checkbox')
-    .click();
+  await sharingPanel.locator('.todo-item.selectable').filter({ hasText: 'Buy milk' }).click();
   await sharingPanel.locator('.sharing-recipient-input').fill('alice');
   await page.locator('.share-submit-button').click();
 
@@ -131,11 +113,7 @@ test('Sharing with an unknown recipient shows an error toast and preserves state
   await page.locator('#share-todos-button').click();
   const sharingPanel = page.locator('#sharing-panel');
 
-  await sharingPanel
-    .locator('.todo-item')
-    .filter({ hasText: 'Buy milk' })
-    .locator('.share-checkbox')
-    .click();
+  await sharingPanel.locator('.todo-item.selectable').filter({ hasText: 'Buy milk' }).click();
   await sharingPanel.locator('.sharing-recipient-input').fill('unknownuser');
   await page.locator('.share-submit-button').click();
 
@@ -155,11 +133,7 @@ test('Sharing with yourself or an admin shows a cannot-share error', async ({ pa
   await page.locator('#share-todos-button').click();
   const sharingPanel = page.locator('#sharing-panel');
 
-  await sharingPanel
-    .locator('.todo-item')
-    .filter({ hasText: 'Buy milk' })
-    .locator('.share-checkbox')
-    .click();
+  await sharingPanel.locator('.todo-item.selectable').filter({ hasText: 'Buy milk' }).click();
   await sharingPanel.locator('.sharing-recipient-input').fill(TEST_USERNAME);
   await page.locator('.share-submit-button').click();
 
@@ -186,11 +160,7 @@ test('Sharing a todo that is already shared with the same recipient shows a dupl
   await page.locator('#share-todos-button').click();
   const sharingPanel = page.locator('#sharing-panel');
 
-  await sharingPanel
-    .locator('.todo-item')
-    .filter({ hasText: 'Buy milk' })
-    .locator('.share-checkbox')
-    .click();
+  await sharingPanel.locator('.todo-item.selectable').filter({ hasText: 'Buy milk' }).click();
   await sharingPanel.locator('.sharing-recipient-input').fill('alice');
   await page.locator('.share-submit-button').click();
 
@@ -217,8 +187,8 @@ test('Todos shared with me appear in sharing mode but are not selectable', async
 
   await expect(sharingPanel.locator('.todo-item').filter({ hasText: 'Team standup' })).toBeVisible();
   await expect(
-    sharingPanel.locator('.todo-item').filter({ hasText: 'Team standup' }).locator('.share-checkbox')
-  ).not.toBeVisible();
+    sharingPanel.locator('.todo-item.selectable').filter({ hasText: 'Team standup' })
+  ).toHaveCount(0);
 });
 
 // Scenario: A todo shared with me appears in the main list with a shared-by label
@@ -249,13 +219,13 @@ test('A recipient can complete, edit, and delete a shared todo', async ({ page, 
   await standupItem.getByRole('checkbox').click();
   await expect(standupItem.getByRole('checkbox')).toBeChecked();
 
-  await standupItem.locator('.edit-button').click();
+  await standupItem.getByRole('button', { name: /edit/i }).click();
   await page.locator('.edit-input').fill('Weekly standup');
-  await page.locator('.save-button').click();
+  await page.getByRole('button', { name: /save/i }).click();
 
   await expect(page.locator('.todo-item').filter({ hasText: 'Weekly standup' })).toBeVisible();
 
-  await page.locator('.todo-item').filter({ hasText: 'Weekly standup' }).locator('.delete-button').click();
+  await page.locator('.todo-item').filter({ hasText: 'Weekly standup' }).getByRole('button', { name: /delete/i }).click();
   await expect(page.locator('.todo-item').filter({ hasText: 'Weekly standup' })).not.toBeVisible();
 });
 
@@ -273,11 +243,7 @@ test('A successful share is recorded in the audit log for each shared todo', asy
   await page.locator('#share-todos-button').click();
   const sharingPanel = page.locator('#sharing-panel');
 
-  await sharingPanel
-    .locator('.todo-item')
-    .filter({ hasText: 'Buy milk' })
-    .locator('.share-checkbox')
-    .click();
+  await sharingPanel.locator('.todo-item.selectable').filter({ hasText: 'Buy milk' }).click();
   await sharingPanel.locator('.sharing-recipient-input').fill('alice');
   await page.locator('.share-submit-button').click();
 
