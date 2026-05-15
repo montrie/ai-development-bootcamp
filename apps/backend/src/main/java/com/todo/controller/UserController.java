@@ -15,7 +15,6 @@ import org.springframework.web.server.ResponseStatusException;
 import java.security.Principal;
 import java.util.Arrays;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @Tag(name = "Users", description = "Manage the authenticated user's own account")
 @RestController
