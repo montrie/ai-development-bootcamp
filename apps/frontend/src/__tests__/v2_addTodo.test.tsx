@@ -19,8 +19,9 @@ beforeEach(() => {
 });
 
 describe('Add ToDo Item', () => {
-  it('renders a text input and an Add button', () => {
+  it('renders a text input and an Add button', async () => {
     render(<App />);
+    await screen.findByText('No tasks yet — add one above!');
     expect(getInput()).toBeInTheDocument();
     expect(getAddButton()).toBeInTheDocument();
   });
