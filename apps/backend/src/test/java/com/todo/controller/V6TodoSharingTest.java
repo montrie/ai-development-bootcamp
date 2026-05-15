@@ -19,12 +19,15 @@ import org.springframework.http.MediaType;
 import java.util.List;
 import java.util.Optional;
 
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.empty;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -139,7 +142,8 @@ class V6TodoSharingTest extends TodoControllerTestBase {
             .andExpect(content().string(containsString("already shared with user")));
     }
 
-    // Test 6: GET /api/todos returns shared todos with sharedBy field set to the owner's username
+    // Test 6: GET /api/todos returns shared todos with sharedBy field set to the owner's username.
+    // Assertions use JSONPath filter expressions to avoid depending on response order.
     @Test
     void getAllTodosIncludesSharedTodosWithSharedByField() throws Exception {
         Todo ownTodo = todoOwnedBy(owner);
@@ -158,13 +162,51 @@ class V6TodoSharingTest extends TodoControllerTestBase {
 
         mvc.perform(get("/api/todos").with(MockUserFactory.jwtAs("user")))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$[0].text").value("My own task"))
-            .andExpect(jsonPath("$[0].sharedBy").doesNotExist())
-            .andExpect(jsonPath("$[1].text").value("Team standup"))
-            .andExpect(jsonPath("$[1].sharedBy").value("bob"));
+            .andExpect(jsonPath("$.length()").value(2))
+            .andExpect(jsonPath("$[?(@.text == 'Team standup')].sharedBy", contains("bob")))
+            .andExpect(jsonPath("$[?(@.text == 'My own task')].sharedBy", empty()));
     }
 
-    // Test 7: POST /api/todos/shares (success) → AuditService.log called once per todoId with TODO_SHARED
+    // Test 7: POST /api/todos/shares with a todo owned by another user → 403
+    @Test
+    void shareATodoOwnedByAnotherUser_returns403() throws Exception {
+        User bob = userWithUsername("bob");
+        Todo bobsTodo = spy(todoOwnedBy(bob));
+        given(bobsTodo.getId()).willReturn(99L);
+
+        User alice = userWithUsername("alice");
+        given(userRepository.findByUsername("alice")).willReturn(Optional.of(alice));
+        given(todoRepository.findById(99L)).willReturn(Optional.of(bobsTodo));
+        given(todoShareRepository.existsByTodoIdAndRecipientUserId(any(), any())).willReturn(false);
+
+        mvc.perform(post("/api/todos/shares")
+                .with(MockUserFactory.jwtAs("user"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"todoIds\":[99],\"recipientUsername\":\"alice\"}"))
+            .andExpect(status().isForbidden());
+    }
+
+    // Test 8: DELETE /api/todos/{id}/share as a valid recipient → 204
+    @Test
+    void unshareTodo_asRecipient_returns204() throws Exception {
+        given(todoShareRepository.existsByTodoIdAndRecipientUserId(1L, owner.getId())).willReturn(true);
+
+        mvc.perform(delete("/api/todos/1/share").with(MockUserFactory.jwtAs("user")))
+            .andExpect(status().isNoContent());
+
+        verify(todoShareRepository).deleteByTodoIdAndRecipientUser(1L, owner);
+    }
+
+    // Test 9: DELETE /api/todos/{id}/share when todo is not shared with caller → 403
+    @Test
+    void unshareTodo_whenNotSharedWithCaller_returns403() throws Exception {
+        given(todoShareRepository.existsByTodoIdAndRecipientUserId(1L, owner.getId())).willReturn(false);
+
+        mvc.perform(delete("/api/todos/1/share").with(MockUserFactory.jwtAs("user")))
+            .andExpect(status().isForbidden());
+    }
+
+    // Test 10: POST /api/todos/shares (success) → AuditService.log called once per todoId with TODO_SHARED
     @Test
     void shareSuccessfully_logsAuditEventPerTodoId() throws Exception {
         Todo todo1 = spy(todoOwnedBy(owner));

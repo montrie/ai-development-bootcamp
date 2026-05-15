@@ -124,8 +124,12 @@ export default function TodoItem({
         <span className="shared-by-label">Shared by {todo.sharedBy}</span>
       )}
       <button className="btn-edit" aria-label="Edit" onClick={handleEditStart}>Edit</button>
-      <button className="btn-delete" aria-label={`Delete ${todo.text}`} onClick={() => onDelete(todo.id)}>
-        Delete
+      <button
+        className="btn-delete"
+        aria-label={`${todo.sharedBy ? 'Unshare' : 'Delete'} ${todo.text}`}
+        onClick={() => onDelete(todo.id)}
+      >
+        {todo.sharedBy ? 'Unshare' : 'Delete'}
       </button>
     </li>
   );

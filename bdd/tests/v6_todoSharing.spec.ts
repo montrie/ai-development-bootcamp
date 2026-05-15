@@ -207,8 +207,8 @@ test('A todo shared with me appears in the main list with a shared-by label', as
   ).toHaveText('Shared by bob');
 });
 
-// Scenario: A recipient can complete, edit, and delete a shared todo
-test('A recipient can complete, edit, and delete a shared todo', async ({ page, request }) => {
+// Scenario: A recipient can complete, edit, and unshare a shared todo
+test('A recipient can complete, edit, and unshare a shared todo', async ({ page, request }) => {
   const bobToken = await registerViaApi(request, 'bob', 'bobpass123');
   const todoId = await createTodoViaApi(request, 'Team standup', bobToken);
   await shareTodoViaApi(request, todoId, TEST_USERNAME, bobToken);
@@ -225,8 +225,27 @@ test('A recipient can complete, edit, and delete a shared todo', async ({ page, 
 
   await expect(page.locator('.todo-item').filter({ hasText: 'Weekly standup' })).toBeVisible();
 
-  await page.locator('.todo-item').filter({ hasText: 'Weekly standup' }).getByRole('button', { name: /delete/i }).click();
+  await page.locator('.todo-item').filter({ hasText: 'Weekly standup' }).getByRole('button', { name: /unshare/i }).click();
   await expect(page.locator('.todo-item').filter({ hasText: 'Weekly standup' })).not.toBeVisible();
+});
+
+// Scenario: An unshare action is recorded in the audit log
+test('An unshare action is recorded in the audit log', async ({ page, request }) => {
+  const bobToken = await registerViaApi(request, 'bob', 'bobpass123');
+  const todoId = await createTodoViaApi(request, 'Team standup', bobToken);
+  await shareTodoViaApi(request, todoId, TEST_USERNAME, bobToken);
+  const adminToken = await loginViaApi(request, ADMIN_USERNAME, ADMIN_PASSWORD);
+  await clearAuditLogsViaApi(request, adminToken);
+  await page.reload();
+
+  await page.locator('.todo-item').filter({ hasText: 'Team standup' }).getByRole('button', { name: /unshare/i }).click();
+  await expect(page.locator('.todo-item').filter({ hasText: 'Team standup' })).not.toBeVisible();
+
+  const logs = await getAuditLogsViaApi(request, adminToken);
+  const unsharedEntry = logs.find(
+    (l) => l.actionType === 'TODO_UNSHARED' && l.resourceId === todoId && l.outcome === 'SUCCESS'
+  );
+  expect(unsharedEntry).toBeDefined();
 });
 
 // Scenario: A successful share is recorded in the audit log for each shared todo

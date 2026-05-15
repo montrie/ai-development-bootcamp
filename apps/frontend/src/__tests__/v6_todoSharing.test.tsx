@@ -10,6 +10,7 @@ vi.mock('../services/api', () => ({
   createTodo: vi.fn(),
   updateTodo: vi.fn(),
   deleteTodo: vi.fn(),
+  unshareTodo: vi.fn(),
   editTodo: vi.fn(),
 }));
 vi.mock('../services/auth', () => ({
@@ -177,7 +178,7 @@ describe('V6 Todo Sharing', () => {
     expect(label.textContent).toBe('Shared by bob');
   });
 
-  it('TodoItem renders .shared-by-label when sharedBy is set', () => {
+  it('TodoItem renders .shared-by-label and Unshare button when sharedBy is set', () => {
     const sharedTodo = todo(1, 'Team standup', false, 'bob');
     render(
       <TodoItem
@@ -193,5 +194,7 @@ describe('V6 Todo Sharing', () => {
     const label = document.querySelector('.shared-by-label') as HTMLElement;
     expect(label).toBeInTheDocument();
     expect(label.textContent).toBe('Shared by bob');
+    expect(screen.getByRole('button', { name: /unshare/i })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /^delete/i })).not.toBeInTheDocument();
   });
 });

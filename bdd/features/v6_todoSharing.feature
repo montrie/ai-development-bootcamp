@@ -107,7 +107,7 @@ Feature: Todo Sharing
     Then I should see a todo item with text "Team standup"
     And the todo "Team standup" should display the label "Shared by bob"
 
-  Scenario: A recipient can complete, edit, and delete a shared todo
+  Scenario: A recipient can complete, edit, and unshare a shared todo
     Given another registered user exists with username "bob"
     And "bob" has shared a todo "Team standup" with me
     When I mark the todo "Team standup" as completed
@@ -116,10 +116,10 @@ Feature: Todo Sharing
     And I change the edit text to "Weekly standup"
     And I click the save button
     Then I should see a todo item with text "Weekly standup"
-    When I delete the todo "Weekly standup"
+    When I unshare the todo "Weekly standup"
     Then I should not see a todo item with text "Weekly standup"
 
-  # --- F-74: Audit log entry per successful share ---
+  # --- F-74 / F-88: Audit log entries ---
 
   Scenario: A successful share is recorded in the audit log for each shared todo
     Given a todo "Buy milk" exists in the list
@@ -129,3 +129,9 @@ Feature: Todo Sharing
     And I enter "alice" into the recipient username input
     And I click the "Share selected todos" button
     Then the audit log should contain a TODO_SHARED entry for "Buy milk" with outcome "SUCCESS"
+
+  Scenario: An unshare action is recorded in the audit log
+    Given another registered user exists with username "bob"
+    And "bob" has shared a todo "Team standup" with me
+    When I unshare the todo "Team standup"
+    Then the audit log should contain a TODO_UNSHARED entry for "Team standup" with outcome "SUCCESS"

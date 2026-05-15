@@ -90,6 +90,12 @@ export async function deleteTodo(id: number): Promise<void> {
   if (!res.ok) throw new Error('Failed to delete todo');
 }
 
+export async function unshareTodo(id: number): Promise<void> {
+  const res = await fetch(`${BASE}/${id}/share`, { method: 'DELETE', headers: authHeaders() });
+  if (res.status === 401) { clearToken(); window.location.reload(); throw new Error('Unauthorized'); }
+  if (!res.ok) throw new Error('Failed to remove shared todo');
+}
+
 export type User = {
   id: number;
   username: string;
@@ -178,7 +184,10 @@ export async function shareTodos(todoIds: number[], recipientUsername: string): 
   });
   if (res.status === 401) { clearToken(); window.location.reload(); throw new Error('Unauthorized'); }
   if (!res.ok) {
-    const msg = await res.text();
-    throw new Error(msg);
+    if (res.status >= 400 && res.status < 500) {
+      const msg = await res.text();
+      throw new Error(msg);
+    }
+    throw new Error('An unexpected error occurred. Please try again.');
   }
 }

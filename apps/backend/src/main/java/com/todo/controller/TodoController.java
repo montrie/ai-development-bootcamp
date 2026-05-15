@@ -129,9 +129,9 @@ public class TodoController {
         return repository.save(todo);
     }
 
-    @Operation(summary = "Delete a todo", description = "Deletes a todo. Owner deletes the todo permanently; recipient removes the share.")
+    @Operation(summary = "Delete a todo", description = "Permanently deletes a todo owned by the authenticated user")
     @ApiResponse(responseCode = "204", description = "Deleted successfully")
-    @ApiResponse(responseCode = "403", description = "Todo not found or not accessible by this user")
+    @ApiResponse(responseCode = "403", description = "Todo not found or not owned by this user")
     @AuditAction(AuditActionType.TODO_DELETED)
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @DeleteMapping("/{id}")
@@ -140,16 +140,25 @@ public class TodoController {
         String username = getAuthenticatedUsername();
         Todo todo = repository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN));
-
-        if (todo.getUser().getUsername().equals(username)) {
-            repository.delete(todo);
-        } else {
-            User user = resolveUser();
-            if (!todoShareRepository.existsByTodoIdAndRecipientUserId(id, user.getId())) {
-                throw new ResponseStatusException(HttpStatus.FORBIDDEN);
-            }
-            todoShareRepository.deleteByTodoIdAndRecipientUser(id, user);
+        if (!todo.getUser().getUsername().equals(username)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
         }
+        repository.delete(todo);
+    }
+
+    @Operation(summary = "Remove a shared todo", description = "Removes a todo that was shared with the authenticated user from their view")
+    @ApiResponse(responseCode = "204", description = "Share removed")
+    @ApiResponse(responseCode = "403", description = "Todo not found or not shared with this user")
+    @AuditAction(AuditActionType.TODO_UNSHARED)
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @DeleteMapping("/{id}/share")
+    public void unshareTodo(
+            @Parameter(description = "ID of the shared todo to remove") @PathVariable Long id) {
+        User user = resolveUser();
+        if (!todoShareRepository.existsByTodoIdAndRecipientUserId(id, user.getId())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+        }
+        todoShareRepository.deleteByTodoIdAndRecipientUser(id, user);
     }
 
     @Operation(summary = "Delete all todos", description = "Deletes every todo item in the database. Requires ADMIN role.")
@@ -187,6 +196,9 @@ public class TodoController {
         for (Long todoId : req.todoIds()) {
             Todo todo = repository.findById(todoId)
                     .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+            if (!todo.getUser().getUsername().equals(actorUsername)) {
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+            }
             TodoShare share = new TodoShare();
             share.setTodo(todo);
             share.setRecipientUser(recipient);

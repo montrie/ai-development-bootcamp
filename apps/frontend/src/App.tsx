@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { fetchTodos, createTodo, updateTodo, deleteTodo, editTodo, shareTodos, type Todo } from './services/api';
+import { fetchTodos, createTodo, updateTodo, deleteTodo, unshareTodo, editTodo, shareTodos, type Todo } from './services/api';
 import { getToken, setToken, clearToken, getRole } from './services/auth';
 import AddTodoForm from './components/AddTodoForm';
 import AdminPanel from './components/AdminPanel';
@@ -68,7 +68,8 @@ export default function App() {
   }
 
   async function handleDelete(id: number) {
-    await deleteTodo(id);
+    const todo = todos.find((t) => t.id === id);
+    await (todo?.sharedBy ? unshareTodo(id) : deleteTodo(id));
     setTodos((prev) => prev.filter((t) => t.id !== id));
   }
 
