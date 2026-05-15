@@ -6,6 +6,7 @@ import TodoItem from '../components/TodoItem';
 
 vi.mock('../services/api', () => ({
   fetchTodos: vi.fn(),
+  fetchUserProfile: vi.fn().mockResolvedValue({ sortMode: 'CREATED_ASC' }),
   shareTodos: vi.fn(),
   createTodo: vi.fn(),
   updateTodo: vi.fn(),

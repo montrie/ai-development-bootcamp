@@ -24,8 +24,11 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -55,24 +58,58 @@ public class TodoController {
         this.todoService = todoService;
     }
 
-    @Operation(summary = "Get all todos", description = "Returns all todo items for the authenticated user, ordered by the user's current sort mode, followed by shared todos")
+    @Operation(summary = "Get all todos", description = "Returns all todo items for the authenticated user, interleaved with shared todos and sorted by the user's current sort mode. In CUSTOM mode, both owned and shared todos are ordered by the custom order array.")
     @ApiResponse(responseCode = "200", description = "List of todos")
     @GetMapping
     public List<TodoResponseDto> getAllTodos() {
         User user = resolveUser();
 
-        List<TodoResponseDto> result = new ArrayList<>(
-                todoService.getTodosForUser(user).stream()
-                        .map(t -> new TodoResponseDto(t, null))
-                        .toList()
-        );
+        List<TodoResponseDto> ownedDtos = todoService.getTodosForUser(user).stream()
+                .map(t -> new TodoResponseDto(t, null))
+                .toList();
 
-        todoShareRepository.findAllByRecipientUser(user)
-                .forEach(share -> result.add(
-                        new TodoResponseDto(share.getTodo(), share.getTodo().getUser().getUsername())
-                ));
+        List<TodoResponseDto> sharedDtos = todoShareRepository.findAllByRecipientUser(user).stream()
+                .map(share -> new TodoResponseDto(share.getTodo(), share.getTodo().getUser().getUsername()))
+                .toList();
 
-        return result;
+        if ("CUSTOM".equals(user.getSortMode())) {
+            // Build an accessible map; walk customOrder to emit in user-defined position;
+            // todos not yet in the order (e.g. newly shared) are appended at the end.
+            Map<Long, TodoResponseDto> accessible = new LinkedHashMap<>();
+            ownedDtos.forEach(dto -> accessible.put(dto.getId(), dto));
+            sharedDtos.forEach(dto -> accessible.put(dto.getId(), dto));
+
+            List<TodoResponseDto> result = new ArrayList<>();
+            for (Long id : user.getCustomOrder()) {
+                TodoResponseDto dto = accessible.remove(id);
+                if (dto != null) result.add(dto);
+            }
+            result.addAll(accessible.values());
+            return result;
+        }
+
+        List<TodoResponseDto> combined = new ArrayList<>(ownedDtos);
+        combined.addAll(sharedDtos);
+        combined.sort(sortComparator(user.getSortMode()));
+        return combined;
+    }
+
+    private static Comparator<TodoResponseDto> sortComparator(String sortMode) {
+        Comparator<TodoResponseDto> byCreatedAsc = Comparator.comparing(
+                TodoResponseDto::getCreatedAt, Comparator.<OffsetDateTime>nullsLast(Comparator.naturalOrder()));
+        return switch (sortMode) {
+            case "CREATED_DESC" -> Comparator.comparing(
+                    TodoResponseDto::getCreatedAt, Comparator.<OffsetDateTime>nullsLast(Comparator.reverseOrder()));
+            case "ALPHA_ASC"    -> Comparator.comparing(TodoResponseDto::getText);
+            case "ALPHA_DESC"   -> Comparator.<TodoResponseDto, String>comparing(TodoResponseDto::getText).reversed();
+            case "DUE_DATE_EARLIEST_FIRST" -> Comparator.comparing(
+                            TodoResponseDto::getDueDate, Comparator.<LocalDate>nullsLast(Comparator.naturalOrder()))
+                    .thenComparing(byCreatedAsc);
+            case "DUE_DATE_LATEST_FIRST" -> Comparator.comparing(
+                            TodoResponseDto::getDueDate, Comparator.<LocalDate>nullsLast(Comparator.reverseOrder()))
+                    .thenComparing(byCreatedAsc);
+            default -> byCreatedAsc; // CREATED_ASC and any unknown mode
+        };
     }
 
     @Operation(summary = "Create a todo", description = "Creates a new todo item for the authenticated user")
@@ -224,22 +261,26 @@ public class TodoController {
         return ResponseEntity.ok().build();
     }
 
-    @Operation(summary = "Reorder todos", description = "Sets CUSTOM sort mode and saves a new custom order for the authenticated user's todos")
+    @Operation(summary = "Reorder todos", description = "Sets CUSTOM sort mode and saves a new custom order for the authenticated user's todos and shared todos")
     @ApiResponse(responseCode = "200", description = "Order updated")
-    @ApiResponse(responseCode = "403", description = "One or more IDs are unknown or belong to another user", content = @Content)
+    @ApiResponse(responseCode = "403", description = "One or more IDs are unknown or not accessible by this user", content = @Content)
     @PatchMapping("/reorder")
     @Transactional
     public void reorderTodos(@RequestBody ReorderRequest req) {
         User user = resolveUser();
 
-        Set<Long> ownedIds = repository.findAllByUserOrderByCreatedAtAsc(user)
+        Set<Long> accessibleIds = repository.findAllByUserOrderByCreatedAtAsc(user)
                 .stream()
                 .map(Todo::getId)
                 .collect(Collectors.toSet());
 
+        todoShareRepository.findAllByRecipientUser(user).stream()
+                .map(share -> share.getTodo().getId())
+                .forEach(accessibleIds::add);
+
         for (Long requestedId : req.order()) {
-            if (!ownedIds.contains(requestedId)) {
-                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Todo ID not owned by user: " + requestedId);
+            if (!accessibleIds.contains(requestedId)) {
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Todo ID not accessible by user: " + requestedId);
             }
         }
 
