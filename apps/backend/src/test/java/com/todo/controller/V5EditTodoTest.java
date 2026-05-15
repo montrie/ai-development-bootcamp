@@ -9,6 +9,7 @@ import com.todo.security.AuditAccessDeniedHandler;
 import com.todo.security.AuditAuthenticationEntryPoint;
 import com.todo.service.AuditService;
 import com.todo.service.JwtService;
+import com.todo.service.TodoService;
 import com.todo.support.MockUserFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -49,6 +50,9 @@ class V5EditTodoTest {
 
     @MockitoBean
     AuditService auditService;
+
+    @MockitoBean
+    TodoService todoService;
 
     @MockitoBean
     AuditAuthenticationEntryPoint auditAuthenticationEntryPoint;

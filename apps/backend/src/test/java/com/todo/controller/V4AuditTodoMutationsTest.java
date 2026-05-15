@@ -11,6 +11,7 @@ import com.todo.security.AuditAccessDeniedHandler;
 import com.todo.security.AuditAuthenticationEntryPoint;
 import com.todo.service.AuditService;
 import com.todo.service.JwtService;
+import com.todo.service.TodoService;
 import com.todo.support.MockUserFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -40,6 +41,7 @@ class V4AuditTodoMutationsTest {
     @Autowired MockMvc mvc;
 
     @MockitoBean AuditService auditService;
+    @MockitoBean TodoService todoService;
     @MockitoBean TodoRepository todoRepository;
     @MockitoBean UserRepository userRepository;
     @MockitoBean JwtService jwtService;

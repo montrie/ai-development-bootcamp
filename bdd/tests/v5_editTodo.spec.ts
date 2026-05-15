@@ -7,7 +7,6 @@ import {
   TEST_USERNAME,
   TEST_PASSWORD,
   createTodoViaApi,
-  createTodoWithDueDateViaApi,
   fillEditDueDateInput,
   isoToPickerFormat,
 } from './helpers';
@@ -52,7 +51,7 @@ test('Clicking Edit pre-populates the date picker with the existing due date', a
   page,
   request,
 }) => {
-  await createTodoWithDueDateViaApi(request, 'Submit report', '2027-06-15', token);
+  await createTodoViaApi(request, 'Submit report', token, '2027-06-15');
   await page.reload();
 
   const todoItem = page.locator('.todo-item').filter({ hasText: 'Submit report' });
@@ -95,7 +94,7 @@ test('Saving updates the due date on the item', async ({ page }) => {
 
 // Scenario: Saving clears the due date when the date is removed
 test('Saving clears the due date when the date is removed', async ({ page, request }) => {
-  await createTodoWithDueDateViaApi(request, 'Submit report', '2027-06-15', token);
+  await createTodoViaApi(request, 'Submit report', token, '2027-06-15');
   await page.reload();
 
   const todoItem = page.locator('.todo-item').filter({ hasText: 'Submit report' });

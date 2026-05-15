@@ -12,6 +12,16 @@ type Props = {
   onEditStart: (id: number) => void;
   onEditCancel: () => void;
   onEdit: (id: number, patch: { text: string; dueDate: string | null }) => void;
+  // When false (e.g. while any item is in edit mode) drag is fully disabled on this item
+  draggable?: boolean;
+  // Records which todo index is being dragged so App can compute the new order
+  onDragStart?: () => void;
+  // Must call e.preventDefault() to satisfy the HTML5 drag API and allow a drop
+  onDragOver?: (e: React.DragEvent) => void;
+  // Commits the reorder; App calls reorderTodos here
+  onDrop?: () => void;
+  // Cleans up transient drag state regardless of whether the drop succeeded
+  onDragEnd?: () => void;
 };
 
 function formatDueDate(dueDate: string): string {
@@ -42,6 +52,11 @@ export default function TodoItem({
   onEditStart,
   onEditCancel,
   onEdit,
+  draggable: isDraggable = false,
+  onDragStart,
+  onDragOver,
+  onDrop,
+  onDragEnd,
 }: Props) {
   const [editText, setEditText] = useState(todo.text);
   const [editDueDate, setEditDueDate] = useState<Date | null>(
@@ -109,17 +124,29 @@ export default function TodoItem({
   const dueDateClass = `due-date-label${todo.done ? ' done' : overdue ? ' overdue' : ''}`;
 
   return (
-    <li className="todo-item">
+    <li
+      className="todo-item"
+      draggable={isDraggable}
+      onDragStart={onDragStart}
+      onDragOver={onDragOver}
+      onDrop={onDrop}
+      onDragEnd={onDragEnd}
+    >
+      {isDraggable && (
+        <span className="drag-handle" data-testid="drag-handle" aria-hidden="true">⠿</span>
+      )}
       <input
         type="checkbox"
         checked={todo.done}
         aria-label={`Mark ${todo.text} as ${todo.done ? 'incomplete' : 'complete'}`}
         onChange={() => onToggle(todo.id, !todo.done)}
       />
-      <span className={todo.done ? 'completed' : undefined}>{todo.text}</span>
-      {todo.dueDate && (
-        <span className={dueDateClass}>{formatDueDate(todo.dueDate)}</span>
-      )}
+      <div className="todo-content">
+        <span className={todo.done ? 'completed' : undefined}>{todo.text}</span>
+        {todo.dueDate && (
+          <span className={dueDateClass}>{formatDueDate(todo.dueDate)}</span>
+        )}
+      </div>
       <button className="btn-edit" aria-label="Edit" onClick={handleEditStart}>Edit</button>
       <button className="btn-delete" aria-label={`Delete ${todo.text}`} onClick={() => onDelete(todo.id)}>
         Delete

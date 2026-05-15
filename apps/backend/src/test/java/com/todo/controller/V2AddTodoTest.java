@@ -6,6 +6,7 @@ import com.todo.repository.UserRepository;
 import com.todo.security.AuditAccessDeniedHandler;
 import com.todo.security.AuditAuthenticationEntryPoint;
 import com.todo.service.JwtService;
+import com.todo.service.TodoService;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import com.todo.config.SecurityConfig;
 import com.todo.support.MockUserFactory;
@@ -41,6 +42,9 @@ class V2AddTodoTest {
 
     @MockitoBean
     JwtDecoder jwtDecoder;
+
+    @MockitoBean
+    TodoService todoService;
 
     @MockitoBean
     AuditAuthenticationEntryPoint auditAuthenticationEntryPoint;

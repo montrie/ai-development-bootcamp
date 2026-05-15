@@ -1,6 +1,7 @@
 package com.todo.controller;
 
 import com.todo.config.SecurityConfig;
+import com.todo.model.User;
 import com.todo.repository.UserRepository;
 import com.todo.security.AuditAccessDeniedHandler;
 import com.todo.security.AuditAuthenticationEntryPoint;
@@ -19,23 +20,25 @@ import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.util.Optional;
+
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doThrow;
+import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(UserController.class)
 @Import(SecurityConfig.class)
-class V3ChangePasswordTest {
+class V6SortModeTest {
 
     @Autowired
     MockMvc mvc;
 
     @MockitoBean
-    UserRepository userRepository;
+    UserService userService;
 
     @MockitoBean
-    UserService userService;
+    UserRepository userRepository;
 
     @MockitoBean
     JwtService jwtService;
@@ -49,8 +52,17 @@ class V3ChangePasswordTest {
     @MockitoBean
     AuditAccessDeniedHandler auditAccessDeniedHandler;
 
+    User alice;
+
     @BeforeEach
-    void setupSecurityMocks() throws Exception {
+    void setUp() throws Exception {
+        alice = new User();
+        alice.setUsername("alice");
+        alice.setSortMode("CREATED_ASC");
+
+        given(userRepository.findByUsername("alice")).willReturn(Optional.of(alice));
+        given(userRepository.save(any(User.class))).willAnswer(inv -> inv.getArgument(0));
+
         Mockito.doAnswer(inv -> {
             HttpServletResponse resp = inv.getArgument(1);
             resp.setStatus(401);
@@ -59,31 +71,46 @@ class V3ChangePasswordTest {
     }
 
     @Test
-    void changePasswordWithCorrectCurrentPasswordReturns204() throws Exception {
-        mvc.perform(patch("/api/users/self/password")
+    void updateSortModeWithValidValueReturns200() throws Exception {
+        mvc.perform(patch("/api/users/me/sort-mode")
+                        .with(MockUserFactory.jwtAs("alice"))
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"currentPassword\":\"secret123\",\"newPassword\":\"newpass456\"}")
-                        .with(MockUserFactory.jwtAs("alice")))
-                .andExpect(status().isNoContent());
+                        .content("{\"sortMode\":\"ALPHA_ASC\"}"))
+                .andExpect(status().isOk());
     }
 
     @Test
-    void changePasswordWithWrongCurrentPasswordReturns400() throws Exception {
-        doThrow(new UserService.InvalidCurrentPasswordException())
-                .when(userService).changeOwnPassword("alice", "wrongpass", "newpass456");
-
-        mvc.perform(patch("/api/users/self/password")
+    void updateSortModeWithCreatedDescReturns200() throws Exception {
+        mvc.perform(patch("/api/users/me/sort-mode")
+                        .with(MockUserFactory.jwtAs("alice"))
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"currentPassword\":\"wrongpass\",\"newPassword\":\"newpass456\"}")
-                        .with(MockUserFactory.jwtAs("alice")))
+                        .content("{\"sortMode\":\"CREATED_DESC\"}"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void updateSortModeWithDueDateEarliestFirstReturns200() throws Exception {
+        mvc.perform(patch("/api/users/me/sort-mode")
+                        .with(MockUserFactory.jwtAs("alice"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"sortMode\":\"DUE_DATE_EARLIEST_FIRST\"}"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void updateSortModeWithInvalidValueReturns400() throws Exception {
+        mvc.perform(patch("/api/users/me/sort-mode")
+                        .with(MockUserFactory.jwtAs("alice"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"sortMode\":\"INVALID_MODE\"}"))
                 .andExpect(status().isBadRequest());
     }
 
     @Test
-    void changePasswordWithoutJwtReturns401() throws Exception {
-        mvc.perform(patch("/api/users/self/password")
+    void updateSortModeWithoutAuthReturns401() throws Exception {
+        mvc.perform(patch("/api/users/me/sort-mode")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"currentPassword\":\"secret123\",\"newPassword\":\"newpass456\"}"))
+                        .content("{\"sortMode\":\"ALPHA_ASC\"}"))
                 .andExpect(status().isUnauthorized());
     }
 }

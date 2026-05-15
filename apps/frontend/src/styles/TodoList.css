@@ -20,9 +20,31 @@
   margin: 0.25rem 0;
 }
 
-.todo-item > span:not(.due-date-label) {
+.todo-content {
   flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  align-items: flex-start;
+}
+
+.todo-content > span:first-child {
   word-break: break-word;
+}
+
+.drag-handle {
+  color: #c0c0c0;
+  cursor: grab;
+  flex-shrink: 0;
+  user-select: none;
+  margin-right: -0.3rem;
+  line-height: 1;
+  font-size: 1rem;
+}
+
+.drag-handle:active {
+  cursor: grabbing;
 }
 
 .completed {

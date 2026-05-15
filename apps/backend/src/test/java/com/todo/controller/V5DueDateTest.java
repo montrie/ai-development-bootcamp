@@ -9,6 +9,7 @@ import com.todo.security.AuditAccessDeniedHandler;
 import com.todo.security.AuditAuthenticationEntryPoint;
 import com.todo.service.AuditService;
 import com.todo.service.JwtService;
+import com.todo.service.TodoService;
 import com.todo.support.MockUserFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -50,6 +51,9 @@ class V5DueDateTest {
 
     @MockitoBean
     AuditService auditService;
+
+    @MockitoBean
+    TodoService todoService;
 
     @MockitoBean
     AuditAuthenticationEntryPoint auditAuthenticationEntryPoint;
@@ -103,7 +107,7 @@ class V5DueDateTest {
         todo.setText("Submit report");
         todo.setDueDate(LocalDate.of(2027, 12, 1));
 
-        given(repository.findAllByUserOrderByCreatedAtAsc(mockUser)).willReturn(List.of(todo));
+        given(todoService.getTodosForUser(mockUser)).willReturn(List.of(todo));
 
         mvc.perform(get("/api/todos").with(MockUserFactory.jwtAs("user")))
                 .andExpect(status().isOk())

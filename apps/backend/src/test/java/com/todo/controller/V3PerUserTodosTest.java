@@ -7,6 +7,7 @@ import com.todo.repository.UserRepository;
 import com.todo.security.AuditAccessDeniedHandler;
 import com.todo.security.AuditAuthenticationEntryPoint;
 import com.todo.service.JwtService;
+import com.todo.service.TodoService;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import com.todo.config.SecurityConfig;
 import com.todo.support.MockUserFactory;
@@ -45,6 +46,9 @@ class V3PerUserTodosTest {
     JwtDecoder jwtDecoder;
 
     @MockitoBean
+    TodoService todoService;
+
+    @MockitoBean
     AuditAuthenticationEntryPoint auditAuthenticationEntryPoint;
 
     @MockitoBean
@@ -59,7 +63,7 @@ class V3PerUserTodosTest {
         aliceTodo.setText("Alice task");
 
         given(userRepository.findByUsername("alice")).willReturn(Optional.of(alice));
-        given(repository.findAllByUserOrderByCreatedAtAsc(alice)).willReturn(List.of(aliceTodo));
+        given(todoService.getTodosForUser(alice)).willReturn(List.of(aliceTodo));
 
         mvc.perform(get("/api/todos").with(MockUserFactory.jwtAs("alice")))
                 .andExpect(status().isOk())

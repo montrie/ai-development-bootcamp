@@ -7,6 +7,7 @@ import com.todo.repository.UserRepository;
 import com.todo.security.AuditAccessDeniedHandler;
 import com.todo.security.AuditAuthenticationEntryPoint;
 import com.todo.service.JwtService;
+import com.todo.service.TodoService;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import com.todo.config.SecurityConfig;
@@ -48,6 +49,9 @@ class V2DeleteTodoTest {
     JwtDecoder jwtDecoder;
 
     @MockitoBean
+    TodoService todoService;
+
+    @MockitoBean
     AuditAuthenticationEntryPoint auditAuthenticationEntryPoint;
 
     @MockitoBean
@@ -63,6 +67,8 @@ class V2DeleteTodoTest {
         existingTodo = new Todo();
         existingTodo.setText("Buy milk");
         existingTodo.setUser(owner);
+
+        given(userRepository.findByUsername("user")).willReturn(Optional.of(owner));
 
         Mockito.doAnswer(inv -> {
             HttpServletResponse resp = inv.getArgument(1);

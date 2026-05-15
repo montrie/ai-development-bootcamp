@@ -1,12 +1,12 @@
 package com.todo.controller;
 
 import com.todo.config.SecurityConfig;
-import com.todo.repository.TodoRepository;
+import com.todo.model.User;
 import com.todo.repository.UserRepository;
 import com.todo.security.AuditAccessDeniedHandler;
 import com.todo.security.AuditAuthenticationEntryPoint;
 import com.todo.service.JwtService;
-import com.todo.service.TodoService;
+import com.todo.service.UserService;
 import com.todo.support.MockUserFactory;
 import jakarta.servlet.http.HttpServletResponse;
 import org.junit.jupiter.api.BeforeEach;
@@ -19,20 +19,22 @@ import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import java.util.Optional;
 
-@WebMvcTest(TodoController.class)
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.BDDMockito.given;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
+@WebMvcTest(UserController.class)
 @Import(SecurityConfig.class)
-class V3AdminTodoAccessTest {
+class V6GetUserProfileTest {
 
     @Autowired
     MockMvc mvc;
 
     @MockitoBean
-    TodoRepository todoRepository;
+    UserService userService;
 
     @MockitoBean
     UserRepository userRepository;
@@ -44,9 +46,6 @@ class V3AdminTodoAccessTest {
     JwtDecoder jwtDecoder;
 
     @MockitoBean
-    TodoService todoService;
-
-    @MockitoBean
     AuditAuthenticationEntryPoint auditAuthenticationEntryPoint;
 
     @MockitoBean
@@ -56,24 +55,40 @@ class V3AdminTodoAccessTest {
     void setupSecurityMocks() throws Exception {
         Mockito.doAnswer(inv -> {
             HttpServletResponse resp = inv.getArgument(1);
-            resp.setStatus(403);
+            resp.setStatus(401);
             return null;
-        }).when(auditAccessDeniedHandler).handle(any(), any(), any());
+        }).when(auditAuthenticationEntryPoint).commence(any(), any(), any());
     }
 
     @Test
-    void adminCannotGetTodos() throws Exception {
-        mvc.perform(get("/api/todos")
-                        .with(MockUserFactory.jwtAsAdmin("admin")))
-                .andExpect(status().isForbidden());
+    void getMeReturnsSortModeForAuthenticatedUser() throws Exception {
+        User alice = new User();
+        alice.setUsername("alice");
+        alice.setSortMode("CREATED_ASC");
+
+        given(userRepository.findByUsername("alice")).willReturn(Optional.of(alice));
+
+        mvc.perform(get("/api/users/me").with(MockUserFactory.jwtAs("alice")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.sortMode").value("CREATED_ASC"));
     }
 
     @Test
-    void adminCannotCreateTodo() throws Exception {
-        mvc.perform(post("/api/todos")
-                        .contentType("application/json")
-                        .content("{\"text\":\"test\"}")
-                        .with(MockUserFactory.jwtAsAdmin("admin")))
-                .andExpect(status().isForbidden());
+    void getMeReturnsCustomSortModeWhenSet() throws Exception {
+        User bob = new User();
+        bob.setUsername("bob");
+        bob.setSortMode("CUSTOM");
+
+        given(userRepository.findByUsername("bob")).willReturn(Optional.of(bob));
+
+        mvc.perform(get("/api/users/me").with(MockUserFactory.jwtAs("bob")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.sortMode").value("CUSTOM"));
+    }
+
+    @Test
+    void getMeWithoutJwtReturns401() throws Exception {
+        mvc.perform(get("/api/users/me"))
+                .andExpect(status().isUnauthorized());
     }
 }

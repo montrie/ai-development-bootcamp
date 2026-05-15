@@ -7,6 +7,7 @@ import com.todo.repository.UserRepository;
 import com.todo.security.AuditAccessDeniedHandler;
 import com.todo.security.AuditAuthenticationEntryPoint;
 import com.todo.service.JwtService;
+import com.todo.service.TodoService;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import com.todo.config.SecurityConfig;
 import com.todo.support.MockUserFactory;
@@ -44,6 +45,9 @@ class V2GetAllTodosTest {
     JwtDecoder jwtDecoder;
 
     @MockitoBean
+    TodoService todoService;
+
+    @MockitoBean
     AuditAuthenticationEntryPoint auditAuthenticationEntryPoint;
 
     @MockitoBean
@@ -58,7 +62,7 @@ class V2GetAllTodosTest {
 
     @Test
     void returnsEmptyArrayWhenNoTodosExist() throws Exception {
-        given(repository.findAllByUserOrderByCreatedAtAsc(mockUser)).willReturn(List.of());
+        given(todoService.getTodosForUser(mockUser)).willReturn(List.of());
 
         mvc.perform(get("/api/todos").with(MockUserFactory.jwtAs("user")))
                 .andExpect(status().isOk())
@@ -72,7 +76,7 @@ class V2GetAllTodosTest {
         Todo second = new Todo();
         second.setText("Call dentist");
 
-        given(repository.findAllByUserOrderByCreatedAtAsc(mockUser)).willReturn(List.of(first, second));
+        given(todoService.getTodosForUser(mockUser)).willReturn(List.of(first, second));
 
         mvc.perform(get("/api/todos").with(MockUserFactory.jwtAs("user")))
                 .andExpect(status().isOk())

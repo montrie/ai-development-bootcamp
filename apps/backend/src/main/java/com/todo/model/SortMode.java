@@ -1,0 +1,5 @@
+package com.todo.model;
+
+public enum SortMode {
+    CREATED_ASC, CREATED_DESC, DUE_DATE_EARLIEST_FIRST, DUE_DATE_LATEST_FIRST, ALPHA_ASC, ALPHA_DESC, CUSTOM
+}

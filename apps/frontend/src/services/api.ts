@@ -168,3 +168,30 @@ export async function clearAuditLogs(): Promise<void> {
   });
   if (!res.ok) throw new Error('Failed to clear audit logs');
 }
+
+export async function fetchUserProfile(): Promise<{ sortMode: string }> {
+  const res = await fetch('/api/users/me', { headers: authHeaders() });
+  if (res.status === 401) { clearToken(); window.location.reload(); throw new Error('Unauthorized'); }
+  if (!res.ok) throw new Error('Failed to fetch user profile');
+  return res.json();
+}
+
+export async function updateSortMode(sortMode: string): Promise<void> {
+  const res = await fetch('/api/users/me/sort-mode', {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...authHeaders() },
+    body: JSON.stringify({ sortMode }),
+  });
+  if (res.status === 401) { clearToken(); window.location.reload(); throw new Error('Unauthorized'); }
+  if (!res.ok) throw new Error('Failed to update sort mode');
+}
+
+export async function reorderTodos(orderedIds: number[]): Promise<void> {
+  const res = await fetch(`${BASE}/reorder`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...authHeaders() },
+    body: JSON.stringify({ order: orderedIds }),
+  });
+  if (res.status === 401) { clearToken(); window.location.reload(); throw new Error('Unauthorized'); }
+  if (!res.ok) throw new Error('Failed to reorder todos');
+}
