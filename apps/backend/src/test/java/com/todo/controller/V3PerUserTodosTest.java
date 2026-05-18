@@ -40,6 +40,10 @@ class V3PerUserTodosTest extends TodoControllerTestBase {
 
     @Test
     void deleteAnotherUsersTodoReturns403() throws Exception {
+        User alice = new User();
+        alice.setUsername("alice");
+        given(userRepository.findByUsername("alice")).willReturn(Optional.of(alice));
+
         User bob = new User();
         bob.setUsername("bob");
 

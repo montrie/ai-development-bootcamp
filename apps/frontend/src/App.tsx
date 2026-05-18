@@ -177,6 +177,7 @@ export default function App() {
     dragIndexRef.current = null;
     try {
       await reorderTodos(orderedIds);
+      setDragError(null);
       // After a successful reorder the backend switches the user's sort mode to CUSTOM
       setSortMode('CUSTOM');
     } catch {
