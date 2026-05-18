@@ -53,10 +53,12 @@ export default function SharingPanel({
               className={`todo-item${isOwn ? ' selectable' : ''}${isSelected ? ' selected' : ''}`}
               onClick={isOwn ? () => onToggleSelect(todo.id) : undefined}
             >
-              <span className="sharing-item-text">{todo.text}</span>
-              {todo.sharedBy && (
-                <span className="sharing-shared-by">Shared by {todo.sharedBy}</span>
-              )}
+              <div className="sharing-item-content">
+                <span className="sharing-item-text">{todo.text}</span>
+                {todo.sharedBy && (
+                  <span className="sharing-shared-by">Shared by {todo.sharedBy}</span>
+                )}
+              </div>
             </li>
           );
         })}
