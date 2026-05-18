@@ -3,6 +3,7 @@ package com.todo.controller;
 import com.todo.aspect.AuditAspect;
 import com.todo.config.SecurityConfig;
 import com.todo.model.AuditActionType;
+import com.todo.model.Outcome;
 import com.todo.security.AuditAccessDeniedHandler;
 import com.todo.security.AuditAuthenticationEntryPoint;
 import com.todo.service.AuditService;
@@ -44,7 +45,7 @@ class V4AuditAdminActionsTest {
                 .with(MockUserFactory.jwtAsAdmin("admin")))
             .andExpect(status().isNoContent());
 
-        verify(auditService).log(AuditActionType.ADMIN_DELETE_USER, "admin", "SUCCESS", 5L);
+        verify(auditService).log(AuditActionType.ADMIN_DELETE_USER, "admin", Outcome.SUCCESS,5L);
     }
 
     @Test
@@ -55,6 +56,6 @@ class V4AuditAdminActionsTest {
                 .content("{\"newPassword\":\"newpass\"}"))
             .andExpect(status().isNoContent());
 
-        verify(auditService).log(AuditActionType.ADMIN_RESET_PASSWORD, "admin", "SUCCESS", 5L);
+        verify(auditService).log(AuditActionType.ADMIN_RESET_PASSWORD, "admin", Outcome.SUCCESS,5L);
     }
 }

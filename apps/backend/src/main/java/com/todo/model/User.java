@@ -28,8 +28,9 @@ public class User {
     @Column(name = "created_at", nullable = false, updatable = false)
     private OffsetDateTime createdAt;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "sort_mode", nullable = false)
-    private String sortMode = "CREATED_ASC";
+    private SortMode sortMode = SortMode.CREATED_ASC;
 
     @JdbcTypeCode(SqlTypes.ARRAY)
     @Column(name = "custom_order", nullable = false, columnDefinition = "bigint[]")
@@ -48,8 +49,8 @@ public class User {
     public Role getRole() { return role; }
     public void setRole(Role role) { this.role = role; }
     public OffsetDateTime getCreatedAt() { return createdAt; }
-    public String getSortMode() { return sortMode; }
-    public void setSortMode(String sortMode) { this.sortMode = sortMode; }
+    public SortMode getSortMode() { return sortMode; }
+    public void setSortMode(SortMode sortMode) { this.sortMode = sortMode; }
     public Long[] getCustomOrder() { return customOrder; }
     public void setCustomOrder(Long[] customOrder) { this.customOrder = customOrder; }
 }

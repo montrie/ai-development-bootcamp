@@ -1,6 +1,7 @@
 package com.todo.controller;
 
 import com.todo.model.AuditActionType;
+import com.todo.model.Outcome;
 import com.todo.security.AuditAccessDeniedHandler;
 import com.todo.security.AuditAuthenticationEntryPoint;
 import com.todo.service.AuditService;
@@ -39,7 +40,7 @@ class V4AuditAuthEventsTest {
                 .content("{\"username\":\"alice\",\"password\":\"secret123\"}"))
             .andExpect(status().isCreated());
 
-        verify(auditService).log(AuditActionType.USER_REGISTERED, "alice", "SUCCESS", null);
+        verify(auditService).log(AuditActionType.USER_REGISTERED, "alice", Outcome.SUCCESS, null);
     }
 
     @Test
@@ -51,7 +52,7 @@ class V4AuditAuthEventsTest {
                 .content("{\"username\":\"alice\",\"password\":\"secret123\"}"))
             .andExpect(status().isOk());
 
-        verify(auditService).log(AuditActionType.USER_LOGIN, "alice", "SUCCESS", null);
+        verify(auditService).log(AuditActionType.USER_LOGIN, "alice", Outcome.SUCCESS, null);
     }
 
     @Test
@@ -64,6 +65,6 @@ class V4AuditAuthEventsTest {
                 .content("{\"username\":\"alice\",\"password\":\"wrong\"}"))
             .andExpect(status().isUnauthorized());
 
-        verify(auditService).log(AuditActionType.USER_LOGIN, "alice", "FAILURE", null);
+        verify(auditService).log(AuditActionType.USER_LOGIN, "alice", Outcome.FAILURE, null);
     }
 }

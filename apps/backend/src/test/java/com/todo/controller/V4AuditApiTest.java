@@ -1,7 +1,9 @@
 package com.todo.controller;
 
 import com.todo.config.SecurityConfig;
+import com.todo.model.AuditActionType;
 import com.todo.model.AuditLog;
+import com.todo.model.Outcome;
 import com.todo.security.AuditAccessDeniedHandler;
 import com.todo.security.AuditAuthenticationEntryPoint;
 import com.todo.service.AuditService;
@@ -61,9 +63,9 @@ class V4AuditApiTest {
         AuditLog log = new AuditLog();
         log.setId(1L);
         log.setTimestamp(OffsetDateTime.parse("2026-05-11T10:00:00Z"));
-        log.setActionType("USER_LOGIN");
+        log.setActionType(AuditActionType.USER_LOGIN);
         log.setActorUsername("alice");
-        log.setOutcome("SUCCESS");
+        log.setOutcome(Outcome.SUCCESS);
         log.setResourceId(null);
         return log;
     }
@@ -91,7 +93,7 @@ class V4AuditApiTest {
                 .param("actionType", "USER_LOGIN"))
             .andExpect(status().isOk());
 
-        verify(auditService).search("USER_LOGIN", null, null, null);
+        verify(auditService).search(AuditActionType.USER_LOGIN, null, null, null);
     }
 
     @Test

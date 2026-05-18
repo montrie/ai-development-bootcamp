@@ -2,7 +2,9 @@ package com.todo.controller;
 
 import com.todo.aspect.AuditAction;
 import com.todo.model.AuditActionType;
+import com.todo.model.Outcome;
 import com.todo.model.Role;
+import com.todo.model.SortMode;
 import com.todo.model.Todo;
 import com.todo.model.TodoShare;
 import com.todo.model.User;
@@ -72,7 +74,7 @@ public class TodoController {
                 .map(share -> new TodoResponseDto(share.getTodo(), share.getTodo().getUser().getUsername()))
                 .toList();
 
-        if ("CUSTOM".equals(user.getSortMode())) {
+        if (user.getSortMode() == SortMode.CUSTOM) {
             // Build an accessible map; walk customOrder to emit in user-defined position;
             // todos not yet in the order (e.g. newly shared) are appended at the end.
             Map<Long, TodoResponseDto> accessible = new LinkedHashMap<>();
@@ -94,21 +96,27 @@ public class TodoController {
         return combined;
     }
 
-    private static Comparator<TodoResponseDto> sortComparator(String sortMode) {
+    /**
+     * Returns a comparator for the given sort mode.
+     * CUSTOM is handled separately in getAllTodos() before this method is called; it falls through
+     * to the CREATED_ASC case here as a safe fallback (unreachable in normal flow).
+     * Null due dates are ordered last in both DUE_DATE_* modes; ties are broken by creation time ascending.
+     */
+    private static Comparator<TodoResponseDto> sortComparator(SortMode sortMode) {
         Comparator<TodoResponseDto> byCreatedAsc = Comparator.comparing(
                 TodoResponseDto::getCreatedAt, Comparator.<OffsetDateTime>nullsLast(Comparator.naturalOrder()));
         return switch (sortMode) {
-            case "CREATED_DESC" -> Comparator.comparing(
+            case CREATED_DESC -> Comparator.comparing(
                     TodoResponseDto::getCreatedAt, Comparator.<OffsetDateTime>nullsLast(Comparator.reverseOrder()));
-            case "ALPHA_ASC"    -> Comparator.comparing(TodoResponseDto::getText);
-            case "ALPHA_DESC"   -> Comparator.<TodoResponseDto, String>comparing(TodoResponseDto::getText).reversed();
-            case "DUE_DATE_EARLIEST_FIRST" -> Comparator.comparing(
+            case ALPHA_ASC    -> Comparator.comparing(TodoResponseDto::getText);
+            case ALPHA_DESC   -> Comparator.<TodoResponseDto, String>comparing(TodoResponseDto::getText).reversed();
+            case DUE_DATE_EARLIEST_FIRST -> Comparator.comparing(
                             TodoResponseDto::getDueDate, Comparator.<LocalDate>nullsLast(Comparator.naturalOrder()))
                     .thenComparing(byCreatedAsc);
-            case "DUE_DATE_LATEST_FIRST" -> Comparator.comparing(
+            case DUE_DATE_LATEST_FIRST -> Comparator.comparing(
                             TodoResponseDto::getDueDate, Comparator.<LocalDate>nullsLast(Comparator.reverseOrder()))
                     .thenComparing(byCreatedAsc);
-            default -> byCreatedAsc; // CREATED_ASC and any unknown mode
+            case CREATED_ASC, CUSTOM -> byCreatedAsc;
         };
     }
 
@@ -129,7 +137,7 @@ public class TodoController {
         todo.setUser(user);
         Todo saved = repository.save(todo);
 
-        if ("CUSTOM".equals(user.getSortMode())) {
+        if (user.getSortMode() == SortMode.CUSTOM) {
             Long[] existing = user.getCustomOrder();
             Long[] updated = Arrays.copyOf(existing, existing.length + 1);
             updated[existing.length] = saved.getId();
@@ -256,7 +264,7 @@ public class TodoController {
             share.setTodo(todo);
             share.setRecipientUser(recipient);
             todoShareRepository.save(share);
-            auditService.log(AuditActionType.TODO_SHARED, actorUsername, "SUCCESS", todoId);
+            auditService.log(AuditActionType.TODO_SHARED, actorUsername, Outcome.SUCCESS, todoId);
         }
 
         return ResponseEntity.ok().build();
@@ -286,7 +294,7 @@ public class TodoController {
         }
 
         Long[] newOrder = req.order().toArray(new Long[0]);
-        user.setSortMode("CUSTOM");
+        user.setSortMode(SortMode.CUSTOM);
         user.setCustomOrder(newOrder);
         userRepository.save(user);
     }

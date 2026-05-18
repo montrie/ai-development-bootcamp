@@ -18,13 +18,13 @@ public class TodoService {
 
     public List<Todo> getTodosForUser(User user) {
         return switch (user.getSortMode()) {
-            case "CREATED_DESC" -> todoRepository.findAllByUserOrderByCreatedAtDesc(user);
-            case "ALPHA_ASC"    -> todoRepository.findAllByUserOrderByTextAsc(user);
-            case "ALPHA_DESC"   -> todoRepository.findAllByUserOrderByTextDesc(user);
-            case "DUE_DATE_EARLIEST_FIRST" -> todoRepository.findAllByUserOrderByDueDateAscCreatedAtAsc(user);
-            case "DUE_DATE_LATEST_FIRST"  -> todoRepository.findAllByUserOrderByDueDateDescCreatedAtAsc(user);
-            case "CUSTOM"       -> todoRepository.findAllByUserOrderByCustom(user.getId(), user.getCustomOrder());
-            default             -> todoRepository.findAllByUserOrderByCreatedAtAsc(user);
+            case CREATED_DESC            -> todoRepository.findAllByUserOrderByCreatedAtDesc(user);
+            case ALPHA_ASC               -> todoRepository.findAllByUserOrderByTextAsc(user);
+            case ALPHA_DESC              -> todoRepository.findAllByUserOrderByTextDesc(user);
+            case DUE_DATE_EARLIEST_FIRST -> todoRepository.findAllByUserOrderByDueDateAscCreatedAtAsc(user);
+            case DUE_DATE_LATEST_FIRST   -> todoRepository.findAllByUserOrderByDueDateDescCreatedAtAsc(user);
+            case CUSTOM                  -> todoRepository.findAllByUserOrderByCustom(user.getId(), user.getCustomOrder());
+            case CREATED_ASC             -> todoRepository.findAllByUserOrderByCreatedAtAsc(user);
         };
     }
 }

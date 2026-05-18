@@ -3,6 +3,7 @@ package com.todo.controller;
 import com.todo.aspect.AuditAspect;
 import com.todo.config.SecurityConfig;
 import com.todo.model.AuditActionType;
+import com.todo.model.Outcome;
 import com.todo.model.Role;
 import com.todo.model.Todo;
 import com.todo.model.TodoShare;
@@ -195,7 +196,7 @@ class V6TodoSharingTest extends TodoControllerTestBase {
             .andExpect(status().isNoContent());
 
         verify(todoShareRepository).deleteByTodoIdAndRecipientUser(1L, owner);
-        verify(auditService).log(AuditActionType.TODO_UNSHARED, "user", "SUCCESS", 1L);
+        verify(auditService).log(AuditActionType.TODO_UNSHARED, "user", Outcome.SUCCESS,1L);
     }
 
     // Test 9: DELETE /api/todos/{id}/share when todo is not shared with caller → 403
@@ -227,8 +228,8 @@ class V6TodoSharingTest extends TodoControllerTestBase {
                 .content("{\"todoIds\":[10,20],\"recipientUsername\":\"alice\"}"))
             .andExpect(status().isOk());
 
-        verify(auditService).log(AuditActionType.TODO_SHARED, "user", "SUCCESS", 10L);
-        verify(auditService).log(AuditActionType.TODO_SHARED, "user", "SUCCESS", 20L);
+        verify(auditService).log(AuditActionType.TODO_SHARED, "user", Outcome.SUCCESS,10L);
+        verify(auditService).log(AuditActionType.TODO_SHARED, "user", Outcome.SUCCESS,20L);
         verify(auditService, times(2)).log(any(AuditActionType.class), any(), any(), any());
     }
 }
