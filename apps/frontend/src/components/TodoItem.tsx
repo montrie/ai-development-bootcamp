@@ -143,13 +143,15 @@ export default function TodoItem({
       />
       <div className="todo-content">
         <span className={todo.done ? 'completed' : undefined}>{todo.text}</span>
-        {todo.dueDate && (
-          <span className={dueDateClass}>{formatDueDate(todo.dueDate)}</span>
-        )}
+        <div className="todo-meta">
+          {todo.dueDate && (
+            <span className={dueDateClass}>{formatDueDate(todo.dueDate)}</span>
+          )}
+          {todo.sharedBy && (
+            <span className="shared-by-label">Shared by {todo.sharedBy}</span>
+          )}
+        </div>
       </div>
-      {todo.sharedBy && (
-        <span className="shared-by-label">Shared by {todo.sharedBy}</span>
-      )}
       <button className="btn-edit" aria-label="Edit" onClick={handleEditStart}>Edit</button>
       <button
         className="btn-delete"

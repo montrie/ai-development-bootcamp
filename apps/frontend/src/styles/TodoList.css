@@ -33,6 +33,14 @@
   word-break: break-word;
 }
 
+.todo-meta {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
 .drag-handle {
   color: #c0c0c0;
   cursor: grab;
