@@ -1,5 +1,6 @@
 import type { Todo } from '../services/api';
 import '../styles/SharingPanel.css';
+import SortModeSelector from './SortModeSelector';
 
 type Props = {
   todos: Todo[];
@@ -8,6 +9,9 @@ type Props = {
   recipientUsername: string;
   onRecipientChange: (v: string) => void;
   onShare: () => void;
+  sortMode: string;
+  sortModeUpdating: boolean;
+  onSortChange: (mode: string) => void;
 };
 
 export default function SharingPanel({
@@ -17,11 +21,15 @@ export default function SharingPanel({
   recipientUsername,
   onRecipientChange,
   onShare,
+  sortMode,
+  sortModeUpdating,
+  onSortChange,
 }: Props) {
   const isDisabled = selectedIds.size === 0 || recipientUsername.trim() === '';
 
   return (
     <div id="sharing-panel">
+      <SortModeSelector value={sortMode} disabled={sortModeUpdating} onChange={onSortChange} />
       <div className="sharing-controls">
         <input
           type="text"

@@ -13,6 +13,7 @@ vi.mock('../services/api', () => ({
   deleteTodo: vi.fn(),
   unshareTodo: vi.fn(),
   editTodo: vi.fn(),
+  updateSortMode: vi.fn(),
 }));
 vi.mock('../services/auth', () => ({
   getToken: () => 'fake-token',
@@ -200,6 +201,22 @@ describe('V6 Todo Sharing', () => {
     const label = document.querySelector('.shared-by-label') as HTMLElement;
     expect(label).toBeInTheDocument();
     expect(label.textContent).toBe('Shared by bob');
+  });
+
+  it('sort selector is visible in sharing panel and triggers sort change', async () => {
+    vi.mocked(api.fetchTodos).mockResolvedValue([todo(1, 'Buy milk', false, null)]);
+    vi.mocked(api.updateSortMode).mockResolvedValue(undefined);
+    const user = userEvent.setup();
+    render(<App />);
+    await screen.findByText('Buy milk');
+
+    await user.click(document.getElementById('share-todos-button') as HTMLElement);
+
+    const select = document.querySelector('.sort-mode-select') as HTMLSelectElement;
+    expect(select).toBeInTheDocument();
+
+    await user.selectOptions(select, 'ALPHA_ASC');
+    expect(api.updateSortMode).toHaveBeenCalledWith('ALPHA_ASC');
   });
 
   it('TodoItem renders .shared-by-label and Unshare button when sharedBy is set', () => {

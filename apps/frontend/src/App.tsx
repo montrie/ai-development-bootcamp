@@ -210,6 +210,9 @@ export default function App() {
             recipientUsername={shareRecipient}
             onRecipientChange={setShareRecipient}
             onShare={handleShare}
+            sortMode={sortMode}
+            sortModeUpdating={sortModeUpdating}
+            onSortChange={handleSortModeChange}
           />
         ) : (
           <>
