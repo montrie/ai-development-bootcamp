@@ -1,0 +1,39 @@
+.sort-mode-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
+}
+
+.sort-mode-label {
+  font-size: 0.85rem;
+  color: #666;
+  white-space: nowrap;
+}
+
+.sort-mode-select {
+  padding: 0.3rem 0.55rem;
+  border: 1px solid #d0d0d0;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  font-family: inherit;
+  color: #333;
+  background: #fff;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.sort-mode-select:hover {
+  border-color: #9e9e9e;
+}
+
+.sort-mode-select:focus {
+  border-color: #1976d2;
+  box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.12);
+}
+
+.sort-mode-select:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}

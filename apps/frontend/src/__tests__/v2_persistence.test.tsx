@@ -13,8 +13,9 @@ beforeEach(() => {
 });
 
 describe('Database Persistence', () => {
-  it('calls fetchTodos on mount', () => {
+  it('calls fetchTodos on mount', async () => {
     render(<App />);
+    await screen.findByText('No tasks yet — add one above!');
     expect(api.fetchTodos).toHaveBeenCalledTimes(1);
   });
 

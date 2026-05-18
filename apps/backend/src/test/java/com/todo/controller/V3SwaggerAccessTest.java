@@ -1,47 +1,18 @@
 package com.todo.controller;
 
 import com.todo.config.SecurityConfig;
-import com.todo.repository.TodoRepository;
-import com.todo.repository.UserRepository;
-import com.todo.security.AuditAccessDeniedHandler;
-import com.todo.security.AuditAuthenticationEntryPoint;
-import com.todo.service.JwtService;
+import com.todo.support.TodoControllerTestBase;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.oauth2.jwt.JwtDecoder;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.web.servlet.MockMvc;
 
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 
 @WebMvcTest(TodoController.class)
 @Import(SecurityConfig.class)
-class V3SwaggerAccessTest {
-
-    @Autowired
-    MockMvc mvc;
-
-    @MockitoBean
-    TodoRepository todoRepository;
-
-    @MockitoBean
-    UserRepository userRepository;
-
-    @MockitoBean
-    JwtService jwtService;
-
-    @MockitoBean
-    JwtDecoder jwtDecoder;
-
-    @MockitoBean
-    AuditAuthenticationEntryPoint auditAuthenticationEntryPoint;
-
-    @MockitoBean
-    AuditAccessDeniedHandler auditAccessDeniedHandler;
+class V3SwaggerAccessTest extends TodoControllerTestBase {
 
     @Test
     void openApiDocsArePubliclyAccessible() throws Exception {

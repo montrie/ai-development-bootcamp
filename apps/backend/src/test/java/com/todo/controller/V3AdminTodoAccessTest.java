@@ -1,22 +1,14 @@
 package com.todo.controller;
 
 import com.todo.config.SecurityConfig;
-import com.todo.repository.TodoRepository;
-import com.todo.repository.UserRepository;
-import com.todo.security.AuditAccessDeniedHandler;
-import com.todo.security.AuditAuthenticationEntryPoint;
-import com.todo.service.JwtService;
 import com.todo.support.MockUserFactory;
+import com.todo.support.TodoControllerTestBase;
 import jakarta.servlet.http.HttpServletResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
-import org.springframework.security.oauth2.jwt.JwtDecoder;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.web.servlet.MockMvc;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -25,28 +17,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(TodoController.class)
 @Import(SecurityConfig.class)
-class V3AdminTodoAccessTest {
-
-    @Autowired
-    MockMvc mvc;
-
-    @MockitoBean
-    TodoRepository todoRepository;
-
-    @MockitoBean
-    UserRepository userRepository;
-
-    @MockitoBean
-    JwtService jwtService;
-
-    @MockitoBean
-    JwtDecoder jwtDecoder;
-
-    @MockitoBean
-    AuditAuthenticationEntryPoint auditAuthenticationEntryPoint;
-
-    @MockitoBean
-    AuditAccessDeniedHandler auditAccessDeniedHandler;
+class V3AdminTodoAccessTest extends TodoControllerTestBase {
 
     @BeforeEach
     void setupSecurityMocks() throws Exception {

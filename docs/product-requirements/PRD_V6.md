@@ -18,7 +18,7 @@ Same stack as Version 5, with the following additions:
 | Layer | Addition |
 |---|---|
 | Database | `sort_mode VARCHAR` column added to the `users` table (default `'CREATED_ASC'`); `custom_order BIGINT[]` column added to the `users` table (default `'{}'`); `todo_shares` join table linking todos to recipient users |
-| Backend | `PATCH /api/users/me/sort-mode` endpoint to update the authenticated user's sort preference; `PATCH /api/todos/reorder` endpoint to persist a new custom ordering; `GET /api/todos` extended to order results by the user's active sort mode and to return todos shared with the authenticated user; `POST /api/todos/shares` bulk endpoint to create share records |
+| Backend | `PATCH /api/users/me/sort-mode` endpoint to update the authenticated user's sort preference; `PATCH /api/todos/reorder` endpoint to persist a new custom ordering; `GET /api/todos` extended to order results by the user's active sort mode and to return todos shared with the authenticated user; `POST /api/todos/shares` bulk endpoint to create share records; `DELETE /api/todos/{id}/share` endpoint for recipients to remove a shared todo from their view |
 | Frontend | Drag-and-drop library (e.g. `@dnd-kit/core`) added as a dependency for reordering todo items within the list |
 
 ---
@@ -77,6 +77,8 @@ Features F-01 through F-58 carry over unchanged from Version 5.
 | F-72 | `POST /api/todos/shares` returns HTTP 400 with distinct error messages depending on the failure reason: `"user does not exist"` when the recipient username is not found in the system; `"cannot share with user"` when the actor attempts to share with themselves or the recipient is an admin user (both cases use the same opaque message); `"already shared with user"` when any todo in the request has already been shared with the specified recipient |
 | F-73 | `GET /api/todos` returns the authenticated user's own todos AND any todos shared with them by other users, all ordered by creation time ascending; shared todos include a `sharedBy` field containing the original owner's username |
 | F-74 | Each successful share operation is recorded in the audit log with `action_type = TODO_SHARED`, the sharer's username as `actor_username`, `outcome = SUCCESS`, and the shared todo's ID as `resource_id`; one audit log entry is written per shared todo |
+| F-87 | A `DELETE /api/todos/{id}/share` endpoint allows a recipient to remove a shared todo from their own view; the original todo and any other recipients' shares are unaffected; returns HTTP 204 on success; returns HTTP 403 when the authenticated user is not a recipient of the specified todo |
+| F-88 | Each successful unshare operation is recorded in the audit log with `action_type = TODO_UNSHARED`, the recipient's username as `actor_username`, `outcome = SUCCESS`, and the shared todo's ID as `resource_id` |
 
 ### 3.8 Todo Sharing — UI: Selection Mode
 
@@ -98,7 +100,7 @@ Features F-01 through F-58 carry over unchanged from Version 5.
 | ID | Requirement |
 |---|---|
 | F-85 | Todos shared with the authenticated user appear in their main todo list alongside their own todos; each shared todo displays the label `"Shared by <owner_username>"`, where `<owner_username>` is the username of the user who shared the todo |
-| F-86 | Recipients can read, mark done, edit text/due-date, and delete shared todos; all such actions behave identically to the same actions on the recipient's own todos |
+| F-86 | Recipients can read, mark done, and edit (text, due-date) shared todos; these actions behave identically to the same actions on the recipient's own todos; the delete button is labelled "Unshare" for shared todos and calls `DELETE /api/todos/{id}/share`, which removes the share from the recipient's view only — the original todo owned by the sharer and any other recipients' shares are unaffected |
 
 ---
 
@@ -110,7 +112,7 @@ Features F-01 through F-58 carry over unchanged from Version 5.
 - Saving multiple named orderings or "views"
 - Touch-only swipe gestures as an alternative to drag handles (standard drag-and-drop touch support via the chosen library is acceptable)
 - Admin-visible sort preferences in the audit log
-- Revoking or unsharing a todo (once shared, the share is permanent in this version)
+- Owner-initiated revocation of a share (the original sharer cannot retract access; only the recipient can remove a shared todo from their own view via the Unshare action)
 - Limiting the number of users a todo can be shared with
 - Sharing a todo with more than one recipient per API call (single recipient per request)
 - Notifications to the recipient when a todo is shared with them

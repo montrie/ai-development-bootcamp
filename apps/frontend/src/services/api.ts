@@ -36,6 +36,7 @@ export type Todo = {
   text: string;
   done: boolean;
   dueDate?: string | null;
+  sharedBy?: string | null;
 };
 
 export async function fetchTodos(): Promise<Todo[]> {
@@ -87,6 +88,12 @@ export async function deleteTodo(id: number): Promise<void> {
   const res = await fetch(`${BASE}/${id}`, { method: 'DELETE', headers: authHeaders() });
   if (res.status === 401) { clearToken(); window.location.reload(); throw new Error('Unauthorized'); }
   if (!res.ok) throw new Error('Failed to delete todo');
+}
+
+export async function unshareTodo(id: number): Promise<void> {
+  const res = await fetch(`${BASE}/${id}/share`, { method: 'DELETE', headers: authHeaders() });
+  if (res.status === 401) { clearToken(); window.location.reload(); throw new Error('Unauthorized'); }
+  if (!res.ok) throw new Error('Failed to remove shared todo');
 }
 
 export type User = {
@@ -167,4 +174,47 @@ export async function clearAuditLogs(): Promise<void> {
     headers: authHeaders(),
   });
   if (!res.ok) throw new Error('Failed to clear audit logs');
+}
+
+export async function shareTodos(todoIds: number[], recipientUsername: string): Promise<void> {
+  const res = await fetch(`${BASE}/shares`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...authHeaders() },
+    body: JSON.stringify({ todoIds, recipientUsername }),
+  });
+  if (res.status === 401) { clearToken(); window.location.reload(); throw new Error('Unauthorized'); }
+  if (!res.ok) {
+    if (res.status >= 400 && res.status < 500) {
+      const msg = await res.text();
+      throw new Error(msg);
+    }
+    throw new Error('An unexpected error occurred. Please try again.');
+  }
+}
+
+export async function fetchUserProfile(): Promise<{ sortMode: string }> {
+  const res = await fetch('/api/users/me', { headers: authHeaders() });
+  if (res.status === 401) { clearToken(); window.location.reload(); throw new Error('Unauthorized'); }
+  if (!res.ok) throw new Error('Failed to fetch user profile');
+  return res.json();
+}
+
+export async function updateSortMode(sortMode: string): Promise<void> {
+  const res = await fetch('/api/users/me/sort-mode', {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...authHeaders() },
+    body: JSON.stringify({ sortMode }),
+  });
+  if (res.status === 401) { clearToken(); window.location.reload(); throw new Error('Unauthorized'); }
+  if (!res.ok) throw new Error('Failed to update sort mode');
+}
+
+export async function reorderTodos(orderedIds: number[]): Promise<void> {
+  const res = await fetch(`${BASE}/reorder`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...authHeaders() },
+    body: JSON.stringify({ order: orderedIds }),
+  });
+  if (res.status === 401) { clearToken(); window.location.reload(); throw new Error('Unauthorized'); }
+  if (!res.ok) throw new Error('Failed to reorder todos');
 }

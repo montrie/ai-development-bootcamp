@@ -2,23 +2,38 @@ package com.todo.controller;
 
 import com.todo.aspect.AuditAction;
 import com.todo.model.AuditActionType;
+import com.todo.model.Role;
 import com.todo.model.Todo;
+import com.todo.model.TodoShare;
 import com.todo.model.User;
 import com.todo.repository.TodoRepository;
+import com.todo.repository.TodoShareRepository;
 import com.todo.repository.UserRepository;
+import com.todo.service.AuditService;
+import com.todo.service.TodoService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.transaction.Transactional;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
+import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Tag(name = "Todos", description = "Manage the authenticated user's todo items")
 @RestController
@@ -26,19 +41,75 @@ import java.util.Map;
 public class TodoController {
 
     private final TodoRepository repository;
+    private final TodoShareRepository todoShareRepository;
     private final UserRepository userRepository;
+    private final AuditService auditService;
+    private final TodoService todoService;
 
-    public TodoController(TodoRepository repository, UserRepository userRepository) {
+    public TodoController(TodoRepository repository,
+                          TodoShareRepository todoShareRepository,
+                          UserRepository userRepository,
+                          AuditService auditService,
+                          TodoService todoService) {
         this.repository = repository;
+        this.todoShareRepository = todoShareRepository;
         this.userRepository = userRepository;
+        this.auditService = auditService;
+        this.todoService = todoService;
     }
 
-    @Operation(summary = "Get all todos", description = "Returns all todo items for the authenticated user, ordered by creation time")
+    @Operation(summary = "Get all todos", description = "Returns all todo items for the authenticated user, interleaved with shared todos and sorted by the user's current sort mode. In CUSTOM mode, both owned and shared todos are ordered by the custom order array.")
     @ApiResponse(responseCode = "200", description = "List of todos")
     @GetMapping
-    public List<Todo> getAllTodos() {
+    public List<TodoResponseDto> getAllTodos() {
         User user = resolveUser();
-        return repository.findAllByUserOrderByCreatedAtAsc(user);
+
+        List<TodoResponseDto> ownedDtos = todoService.getTodosForUser(user).stream()
+                .map(t -> new TodoResponseDto(t, null))
+                .toList();
+
+        List<TodoResponseDto> sharedDtos = todoShareRepository.findAllByRecipientUser(user).stream()
+                .map(share -> new TodoResponseDto(share.getTodo(), share.getTodo().getUser().getUsername()))
+                .toList();
+
+        if ("CUSTOM".equals(user.getSortMode())) {
+            // Build an accessible map; walk customOrder to emit in user-defined position;
+            // todos not yet in the order (e.g. newly shared) are appended at the end.
+            Map<Long, TodoResponseDto> accessible = new LinkedHashMap<>();
+            ownedDtos.forEach(dto -> accessible.put(dto.getId(), dto));
+            sharedDtos.forEach(dto -> accessible.put(dto.getId(), dto));
+
+            List<TodoResponseDto> result = new ArrayList<>();
+            for (Long id : user.getCustomOrder()) {
+                TodoResponseDto dto = accessible.remove(id);
+                if (dto != null) result.add(dto);
+            }
+            result.addAll(accessible.values());
+            return result;
+        }
+
+        List<TodoResponseDto> combined = new ArrayList<>(ownedDtos);
+        combined.addAll(sharedDtos);
+        combined.sort(sortComparator(user.getSortMode()));
+        return combined;
+    }
+
+    private static Comparator<TodoResponseDto> sortComparator(String sortMode) {
+        Comparator<TodoResponseDto> byCreatedAsc = Comparator.comparing(
+                TodoResponseDto::getCreatedAt, Comparator.<OffsetDateTime>nullsLast(Comparator.naturalOrder()));
+        return switch (sortMode) {
+            case "CREATED_DESC" -> Comparator.comparing(
+                    TodoResponseDto::getCreatedAt, Comparator.<OffsetDateTime>nullsLast(Comparator.reverseOrder()));
+            case "ALPHA_ASC"    -> Comparator.comparing(TodoResponseDto::getText);
+            case "ALPHA_DESC"   -> Comparator.<TodoResponseDto, String>comparing(TodoResponseDto::getText).reversed();
+            case "DUE_DATE_EARLIEST_FIRST" -> Comparator.comparing(
+                            TodoResponseDto::getDueDate, Comparator.<LocalDate>nullsLast(Comparator.naturalOrder()))
+                    .thenComparing(byCreatedAsc);
+            case "DUE_DATE_LATEST_FIRST" -> Comparator.comparing(
+                            TodoResponseDto::getDueDate, Comparator.<LocalDate>nullsLast(Comparator.reverseOrder()))
+                    .thenComparing(byCreatedAsc);
+            default -> byCreatedAsc; // CREATED_ASC and any unknown mode
+        };
     }
 
     @Operation(summary = "Create a todo", description = "Creates a new todo item for the authenticated user")
@@ -47,6 +118,7 @@ public class TodoController {
     @AuditAction(AuditActionType.TODO_CREATED)
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping
+    @Transactional
     public Todo createTodo(@RequestBody CreateTodoRequest req) {
         if (req.text() == null || req.text().isBlank())
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "text must be a non-blank string");
@@ -55,13 +127,23 @@ public class TodoController {
         todo.setText(req.text());
         todo.setDueDate(req.dueDate());
         todo.setUser(user);
-        return repository.save(todo);
+        Todo saved = repository.save(todo);
+
+        if ("CUSTOM".equals(user.getSortMode())) {
+            Long[] existing = user.getCustomOrder();
+            Long[] updated = Arrays.copyOf(existing, existing.length + 1);
+            updated[existing.length] = saved.getId();
+            user.setCustomOrder(updated);
+            userRepository.save(user);
+        }
+
+        return saved;
     }
 
-    @Operation(summary = "Update todo", description = "Partially updates a todo item owned by the authenticated user")
+    @Operation(summary = "Update todo", description = "Partially updates a todo item owned by or shared with the authenticated user")
     @ApiResponse(responseCode = "200", description = "Updated todo")
     @ApiResponse(responseCode = "400", description = "Invalid input: blank text, non-string text, or malformed dueDate", content = @Content)
-    @ApiResponse(responseCode = "403", description = "Todo not found or belongs to another user", content = @Content)
+    @ApiResponse(responseCode = "403", description = "Todo not found or not accessible by this user", content = @Content)
     @AuditAction(AuditActionType.TODO_UPDATED)
     // Map<String, Object> is intentional: a typed record cannot distinguish an absent key from an
     // explicit null, which is required to support clearing dueDate with "dueDate": null.
@@ -70,9 +152,7 @@ public class TodoController {
             @Parameter(description = "ID of the todo to update") @PathVariable Long id,
             @RequestBody Map<String, Object> patch) {
         String username = getAuthenticatedUsername();
-        Todo todo = repository.findById(id)
-                .filter(t -> t.getUser().getUsername().equals(username))
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN));
+        Todo todo = findAccessibleTodo(id, username);
 
         if (patch.containsKey("done")) {
             todo.setDone(Boolean.TRUE.equals(patch.get("done")));
@@ -101,18 +181,36 @@ public class TodoController {
         return repository.save(todo);
     }
 
-    @Operation(summary = "Delete a todo", description = "Permanently deletes a todo item owned by the authenticated user")
+    @Operation(summary = "Delete a todo", description = "Permanently deletes a todo owned by the authenticated user")
     @ApiResponse(responseCode = "204", description = "Deleted successfully")
-    @ApiResponse(responseCode = "403", description = "Todo not found or belongs to another user")
+    @ApiResponse(responseCode = "403", description = "Todo not found or not owned by this user")
     @AuditAction(AuditActionType.TODO_DELETED)
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @DeleteMapping("/{id}")
+    @Transactional
     public void deleteTodo(
             @Parameter(description = "ID of the todo to delete") @PathVariable Long id) {
+        User user = resolveUser();
         Todo todo = repository.findById(id)
-                .filter(t -> t.getUser().getUsername().equals(getAuthenticatedUsername()))
+                .filter(t -> t.getUser().getUsername().equals(user.getUsername()))
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN));
         repository.delete(todo);
+        userRepository.removeFromCustomOrder(user.getId(), id);
+    }
+
+    @Operation(summary = "Remove a shared todo", description = "Removes a todo that was shared with the authenticated user from their view")
+    @ApiResponse(responseCode = "204", description = "Share removed")
+    @ApiResponse(responseCode = "403", description = "Todo not found or not shared with this user")
+    @AuditAction(AuditActionType.TODO_UNSHARED)
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @DeleteMapping("/{id}/share")
+    public void unshareTodo(
+            @Parameter(description = "ID of the shared todo to remove") @PathVariable Long id) {
+        User user = resolveUser();
+        if (!todoShareRepository.existsByTodoIdAndRecipientUserId(id, user.getId())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+        }
+        todoShareRepository.deleteByTodoIdAndRecipientUser(id, user);
     }
 
     @Operation(summary = "Delete all todos", description = "Deletes every todo item in the database. Requires ADMIN role.")
@@ -123,7 +221,81 @@ public class TodoController {
         repository.deleteAll();
     }
 
+    @Operation(summary = "Share todos", description = "Shares one or more todos with another user")
+    @ApiResponse(responseCode = "200", description = "Todos shared successfully")
+    @ApiResponse(responseCode = "400", description = "Invalid recipient or share already exists")
+    @PostMapping("/shares")
+    @Transactional
+    public ResponseEntity<String> shareTodos(@RequestBody ShareTodosRequest req) {
+        String actorUsername = getAuthenticatedUsername();
+
+        Optional<User> recipientOpt = userRepository.findByUsername(req.recipientUsername());
+        if (recipientOpt.isEmpty()) {
+            return ResponseEntity.badRequest().body("user does not exist");
+        }
+
+        User recipient = recipientOpt.get();
+
+        if (recipient.getUsername().equals(actorUsername) || recipient.getRole() == Role.ADMIN) {
+            return ResponseEntity.badRequest().body("cannot share with user");
+        }
+
+        for (Long todoId : req.todoIds()) {
+            if (todoShareRepository.existsByTodoIdAndRecipientUserId(todoId, recipient.getId())) {
+                return ResponseEntity.badRequest().body("already shared with user");
+            }
+        }
+
+        for (Long todoId : req.todoIds()) {
+            Todo todo = repository.findById(todoId)
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+            if (!todo.getUser().getUsername().equals(actorUsername)) {
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+            }
+            TodoShare share = new TodoShare();
+            share.setTodo(todo);
+            share.setRecipientUser(recipient);
+            todoShareRepository.save(share);
+            auditService.log(AuditActionType.TODO_SHARED, actorUsername, "SUCCESS", todoId);
+        }
+
+        return ResponseEntity.ok().build();
+    }
+
+    @Operation(summary = "Reorder todos", description = "Sets CUSTOM sort mode and saves a new custom order for the authenticated user's todos and shared todos")
+    @ApiResponse(responseCode = "200", description = "Order updated")
+    @ApiResponse(responseCode = "403", description = "One or more IDs are unknown or not accessible by this user", content = @Content)
+    @PatchMapping("/reorder")
+    @Transactional
+    public void reorderTodos(@RequestBody ReorderRequest req) {
+        User user = resolveUser();
+
+        Set<Long> accessibleIds = repository.findAllByUserOrderByCreatedAtAsc(user)
+                .stream()
+                .map(Todo::getId)
+                .collect(Collectors.toSet());
+
+        todoShareRepository.findAllByRecipientUser(user).stream()
+                .map(share -> share.getTodo().getId())
+                .forEach(accessibleIds::add);
+
+        for (Long requestedId : req.order()) {
+            if (!accessibleIds.contains(requestedId)) {
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Todo ID not accessible by user: " + requestedId);
+            }
+        }
+
+        Long[] newOrder = req.order().toArray(new Long[0]);
+        user.setSortMode("CUSTOM");
+        user.setCustomOrder(newOrder);
+        userRepository.save(user);
+    }
+
     record CreateTodoRequest(String text, LocalDate dueDate) {}
+
+    record ShareTodosRequest(List<Long> todoIds, String recipientUsername) {}
+
+    record ReorderRequest(List<Long> order) {}
 
     private User resolveUser() {
         return userRepository.findByUsername(getAuthenticatedUsername())
@@ -132,5 +304,27 @@ public class TodoController {
 
     private String getAuthenticatedUsername() {
         return SecurityContextHolder.getContext().getAuthentication().getName();
+    }
+
+    /**
+     * Finds a todo accessible to the given user: either owned by them or shared with them.
+     * Throws 403 if not found or not accessible.
+     */
+    private Todo findAccessibleTodo(Long id, String username) {
+        Todo todo = repository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN));
+
+        if (todo.getUser().getUsername().equals(username)) {
+            return todo;
+        }
+
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN));
+
+        if (todoShareRepository.existsByTodoIdAndRecipientUserId(id, user.getId())) {
+            return todo;
+        }
+
+        throw new ResponseStatusException(HttpStatus.FORBIDDEN);
     }
 }
