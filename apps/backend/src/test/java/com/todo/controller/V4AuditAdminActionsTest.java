@@ -58,7 +58,7 @@ class V4AuditAdminActionsTest {
             mvc.perform(delete("/api/admin/users/5")
                     .with(MockUserFactory.jwtAsAdmin("admin"))));
 
-        verify(auditService).log(AuditActionType.ADMIN_DELETE_USER, "admin", Outcome.FAILURE, null);
+        verify(auditService).log(AuditActionType.ADMIN_DELETE_USER, "admin", Outcome.FAILURE, 5L);
     }
 
     @Test

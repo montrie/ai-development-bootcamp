@@ -75,6 +75,13 @@ test('Admin can filter audit log entries by date range via the API', async ({ re
   }
 });
 
+test('Searching audit logs with an unknown action type returns 400', async ({ request }) => {
+  const response = await request.get('/api/admin/audit-logs?actionType=USER_LOIGN', {
+    headers: { Authorization: `Bearer ${adminToken}` },
+  });
+  expect(response.status()).toBe(400);
+});
+
 test('Regular user cannot retrieve audit log entries via the API', async ({ request }) => {
   const aliceToken = await registerViaApi(request, 'alice', 'secret123');
 

@@ -35,7 +35,8 @@ public class AuditAspect {
 
     @AfterThrowing(pointcut = "@annotation(auditAction)", throwing = "ex")
     public void onAuditedMethodFailure(JoinPoint jp, AuditAction auditAction, Throwable ex) {
-        auditService.log(auditAction.value(), actor(), Outcome.FAILURE, null);
+        Long resourceId = jp.getArgs().length > 0 && jp.getArgs()[0] instanceof Long id ? id : null;
+        auditService.log(auditAction.value(), actor(), Outcome.FAILURE, resourceId);
     }
 
     private String actor() {

@@ -57,10 +57,10 @@ Feature: Audit Log Capture
     When I reset the password for "alice" to "newpass123"
     Then the audit log contains an "ADMIN_RESET_PASSWORD" entry with outcome "SUCCESS"
 
-  Scenario: Admin attempting to delete a non-existent user records a FAILURE audit entry
+  Scenario: Admin attempting to delete a non-existent user records a FAILURE audit entry with the resource ID
     Given I log in as admin
     When an admin attempts to delete a user that does not exist
-    Then the audit log contains an "ADMIN_DELETE_USER" entry with outcome "FAILURE"
+    Then the audit log contains an "ADMIN_DELETE_USER" entry with outcome "FAILURE" and the attempted resource ID
 
   # F-35: Access-denied events
 
