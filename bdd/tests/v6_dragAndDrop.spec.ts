@@ -12,7 +12,7 @@ import {
 test.beforeEach(async ({ page, request }) => {
   await resetState(request);
   await resetUsers(request);
-  const token = await registerViaApi(request, TEST_USERNAME, TEST_PASSWORD);
+  await registerViaApi(request, TEST_USERNAME, TEST_PASSWORD);
   const authedToken = await navigateAsUser(page, request, TEST_USERNAME, TEST_PASSWORD);
 
   await createTodoViaApi(request, 'Alpha', authedToken);
