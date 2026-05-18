@@ -37,6 +37,7 @@ export default function SharingPanel({
           value={recipientUsername}
           onChange={(e) => onRecipientChange(e.target.value)}
           onKeyDown={(e) => { if (e.key === 'Enter' && !isDisabled) onShare(); }}
+          aria-label="Recipient username"
           placeholder="Recipient username"
         />
         <button className="share-submit-button" disabled={isDisabled} onClick={onShare}>

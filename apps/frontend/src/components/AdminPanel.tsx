@@ -90,7 +90,7 @@ export default function AdminPanel({ onLogout }: Props) {
                 onChange={e => setNewPassword(e.target.value)}
                 placeholder="New password"
               />
-              <button id="confirm-reset-button" onClick={handleResetPassword}>
+              <button id="confirm-reset-button" disabled={!newPassword.trim()} onClick={handleResetPassword}>
                 Confirm reset
               </button>
             </div>

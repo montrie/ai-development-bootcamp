@@ -1,4 +1,4 @@
-import { fetchTodos, createTodo, updateTodo, deleteTodo } from '../services/api';
+import { fetchTodos, createTodo, editTodo, deleteTodo } from '../services/api';
 import * as auth from '../services/auth';
 
 vi.mock('../services/auth', () => ({
@@ -58,13 +58,13 @@ describe('API auth headers', () => {
     );
   });
 
-  it('updateTodo sends Bearer token header', async () => {
+  it('editTodo sends Bearer token header', async () => {
     vi.mocked(fetch).mockResolvedValueOnce({
       ok: true,
       status: 200,
       json: async () => ({ id: 1, text: 'Buy milk', done: true }),
     } as Response);
-    await updateTodo(1, true);
+    await editTodo(1, { done: true });
     expect(fetch).toHaveBeenCalledWith(
       expect.any(String),
       expect.objectContaining({

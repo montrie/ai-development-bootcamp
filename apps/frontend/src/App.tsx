@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { fetchTodos, createTodo, updateTodo, deleteTodo, unshareTodo, editTodo, shareTodos, fetchUserProfile, updateSortMode, reorderTodos, type Todo } from './services/api';
+import { fetchTodos, createTodo, deleteTodo, unshareTodo, editTodo, shareTodos, fetchUserProfile, updateSortMode, reorderTodos, type Todo } from './services/api';
 import { getToken, setToken, clearToken, getRole } from './services/auth';
 import AddTodoForm from './components/AddTodoForm';
 import AdminPanel from './components/AdminPanel';
@@ -77,7 +77,7 @@ export default function App() {
   }
 
   async function handleToggle(id: number, done: boolean) {
-    const updated = await updateTodo(id, done);
+    const updated = await editTodo(id, { done });
     setTodos((prev) => prev.map((t) => (t.id === id ? { ...updated, sharedBy: t.sharedBy } : t)));
   }
 

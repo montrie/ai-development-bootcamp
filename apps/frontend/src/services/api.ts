@@ -4,6 +4,12 @@ const BASE = '/api/todos';
 const AUTH_BASE = '/api/auth';
 const ADMIN_BASE = '/api/admin';
 
+function handleUnauthorized(): never {
+  clearToken();
+  window.location.reload();
+  throw new Error('Unauthorized');
+}
+
 function authHeaders(): Record<string, string> {
   const token = getToken();
   return token ? { Authorization: `Bearer ${token}` } : {};
@@ -41,7 +47,7 @@ export type Todo = {
 
 export async function fetchTodos(): Promise<Todo[]> {
   const res = await fetch(BASE, { headers: authHeaders() });
-  if (res.status === 401) { clearToken(); window.location.reload(); throw new Error('Unauthorized'); }
+  if (res.status === 401) handleUnauthorized();
   if (!res.ok) throw new Error('Failed to fetch todos');
   return res.json();
 }
@@ -54,19 +60,8 @@ export async function createTodo(text: string, dueDate?: string | null): Promise
     headers: { 'Content-Type': 'application/json', ...authHeaders() },
     body: JSON.stringify(body),
   });
-  if (res.status === 401) { clearToken(); window.location.reload(); throw new Error('Unauthorized'); }
+  if (res.status === 401) handleUnauthorized();
   if (!res.ok) throw new Error('Failed to create todo');
-  return res.json();
-}
-
-export async function updateTodo(id: number, done: boolean): Promise<Todo> {
-  const res = await fetch(`${BASE}/${id}`, {
-    method: 'PATCH',
-    headers: { 'Content-Type': 'application/json', ...authHeaders() },
-    body: JSON.stringify({ done }),
-  });
-  if (res.status === 401) { clearToken(); window.location.reload(); throw new Error('Unauthorized'); }
-  if (!res.ok) throw new Error('Failed to update todo');
   return res.json();
 }
 
@@ -79,20 +74,20 @@ export async function editTodo(
     headers: { 'Content-Type': 'application/json', ...authHeaders() },
     body: JSON.stringify(patch),
   });
-  if (res.status === 401) { clearToken(); window.location.reload(); throw new Error('Unauthorized'); }
+  if (res.status === 401) handleUnauthorized();
   if (!res.ok) throw new Error('Failed to edit todo');
   return res.json();
 }
 
 export async function deleteTodo(id: number): Promise<void> {
   const res = await fetch(`${BASE}/${id}`, { method: 'DELETE', headers: authHeaders() });
-  if (res.status === 401) { clearToken(); window.location.reload(); throw new Error('Unauthorized'); }
+  if (res.status === 401) handleUnauthorized();
   if (!res.ok) throw new Error('Failed to delete todo');
 }
 
 export async function unshareTodo(id: number): Promise<void> {
   const res = await fetch(`${BASE}/${id}/share`, { method: 'DELETE', headers: authHeaders() });
-  if (res.status === 401) { clearToken(); window.location.reload(); throw new Error('Unauthorized'); }
+  if (res.status === 401) handleUnauthorized();
   if (!res.ok) throw new Error('Failed to remove shared todo');
 }
 
@@ -128,7 +123,7 @@ export async function changePassword(currentPassword: string, newPassword: strin
     headers: { 'Content-Type': 'application/json', ...authHeaders() },
     body: JSON.stringify({ currentPassword, newPassword }),
   });
-  if (res.status === 401) { clearToken(); window.location.reload(); throw new Error('Unauthorized'); }
+  if (res.status === 401) handleUnauthorized();
   if (!res.ok) throw new Error('Current password is incorrect');
 }
 
@@ -182,7 +177,7 @@ export async function shareTodos(todoIds: number[], recipientUsername: string): 
     headers: { 'Content-Type': 'application/json', ...authHeaders() },
     body: JSON.stringify({ todoIds, recipientUsername }),
   });
-  if (res.status === 401) { clearToken(); window.location.reload(); throw new Error('Unauthorized'); }
+  if (res.status === 401) handleUnauthorized();
   if (!res.ok) {
     if (res.status >= 400 && res.status < 500) {
       const msg = await res.text();
@@ -194,7 +189,7 @@ export async function shareTodos(todoIds: number[], recipientUsername: string): 
 
 export async function fetchUserProfile(): Promise<{ sortMode: string }> {
   const res = await fetch('/api/users/me', { headers: authHeaders() });
-  if (res.status === 401) { clearToken(); window.location.reload(); throw new Error('Unauthorized'); }
+  if (res.status === 401) handleUnauthorized();
   if (!res.ok) throw new Error('Failed to fetch user profile');
   return res.json();
 }
@@ -205,7 +200,7 @@ export async function updateSortMode(sortMode: string): Promise<void> {
     headers: { 'Content-Type': 'application/json', ...authHeaders() },
     body: JSON.stringify({ sortMode }),
   });
-  if (res.status === 401) { clearToken(); window.location.reload(); throw new Error('Unauthorized'); }
+  if (res.status === 401) handleUnauthorized();
   if (!res.ok) throw new Error('Failed to update sort mode');
 }
 
@@ -215,6 +210,6 @@ export async function reorderTodos(orderedIds: number[]): Promise<void> {
     headers: { 'Content-Type': 'application/json', ...authHeaders() },
     body: JSON.stringify({ order: orderedIds }),
   });
-  if (res.status === 401) { clearToken(); window.location.reload(); throw new Error('Unauthorized'); }
+  if (res.status === 401) handleUnauthorized();
   if (!res.ok) throw new Error('Failed to reorder todos');
 }
