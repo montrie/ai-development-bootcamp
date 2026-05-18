@@ -61,15 +61,38 @@ describe('Admin panel — F-26 delete user', () => {
   });
 });
 
+async function openResetPasswordForm(user: ReturnType<typeof userEvent.setup>) {
+  render(<App />);
+  await screen.findByRole('button', { name: /reset password for alice/i });
+  await user.click(screen.getByRole('button', { name: /reset password for alice/i }));
+}
+
 describe('Admin panel — F-27 reset password', () => {
+  it('confirm reset button is disabled when password input is empty', async () => {
+    const user = userEvent.setup();
+    await openResetPasswordForm(user);
+    expect(document.getElementById('confirm-reset-button')).toBeDisabled();
+  });
+
+  it('confirm reset button is disabled when password is whitespace only', async () => {
+    const user = userEvent.setup();
+    await openResetPasswordForm(user);
+    await user.type(document.getElementById('new-password-input')!, '   ');
+    expect(document.getElementById('confirm-reset-button')).toBeDisabled();
+  });
+
+  it('confirm reset button is enabled when password input has a value', async () => {
+    const user = userEvent.setup();
+    await openResetPasswordForm(user);
+    await user.type(document.getElementById('new-password-input')!, 'newpass');
+    expect(document.getElementById('confirm-reset-button')).toBeEnabled();
+  });
+
   it('calls resetUserPassword with new password', async () => {
     vi.mocked(api.resetUserPassword).mockResolvedValue(undefined);
     const user = userEvent.setup();
-    render(<App />);
-    await screen.findByRole('button', { name: /reset password for alice/i });
-    await user.click(screen.getByRole('button', { name: /reset password for alice/i }));
-    const input = document.getElementById('new-password-input') as HTMLInputElement;
-    await user.type(input, 'newpass123');
+    await openResetPasswordForm(user);
+    await user.type(document.getElementById('new-password-input')!, 'newpass123');
     await user.click(document.getElementById('confirm-reset-button')!);
     await waitFor(() => {
       expect(api.resetUserPassword).toHaveBeenCalledWith(1, 'newpass123');

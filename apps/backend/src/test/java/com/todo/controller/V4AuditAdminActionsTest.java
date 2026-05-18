@@ -20,7 +20,6 @@ import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
@@ -54,9 +53,9 @@ class V4AuditAdminActionsTest {
     void deleteUserLogsFailureOutcomeWhenServiceThrows() throws Exception {
         doThrow(new RuntimeException("db error")).when(userService).deleteUser(5L);
 
-        assertThrows(Exception.class, () ->
-            mvc.perform(delete("/api/admin/users/5")
-                    .with(MockUserFactory.jwtAsAdmin("admin"))));
+        mvc.perform(delete("/api/admin/users/5")
+                .with(MockUserFactory.jwtAsAdmin("admin")))
+            .andExpect(status().is5xxServerError());
 
         verify(auditService).log(AuditActionType.ADMIN_DELETE_USER, "admin", Outcome.FAILURE, null);
     }

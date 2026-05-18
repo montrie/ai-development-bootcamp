@@ -79,7 +79,7 @@ public class AdminController {
             try {
                 actionTypeFilter = AuditActionType.valueOf(actionType);
             } catch (IllegalArgumentException ignored) {
-                return List.of();
+                throw new IllegalArgumentException("Unknown actionType: " + actionType);
             }
         }
         OffsetDateTime start = startDate != null ? OffsetDateTime.parse(startDate) : null;
@@ -118,6 +118,11 @@ public class AdminController {
 
     @ExceptionHandler(DateTimeParseException.class)
     public ResponseEntity<Void> handleDateTimeParse() {
+        return ResponseEntity.badRequest().build();
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<Void> handleIllegalArgument() {
         return ResponseEntity.badRequest().build();
     }
 

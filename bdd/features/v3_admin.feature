@@ -21,6 +21,16 @@ Feature: Admin User Management
     When I delete user "alice"
     Then I should not see user "alice" in the user list
 
+  Scenario: Confirm reset button is disabled until a non-empty password is entered
+    Given a user "alice" is already registered with password "oldpass"
+    And I log in as admin
+    When I open the password reset form for "alice"
+    Then the confirm reset button should be disabled
+    When I type "newpass123" in the new password field
+    Then the confirm reset button should be enabled
+    When I clear the new password field
+    Then the confirm reset button should be disabled
+
   Scenario: Admin can reset a user's password
     Given a user "alice" is already registered with password "oldpass"
     And I log in as admin

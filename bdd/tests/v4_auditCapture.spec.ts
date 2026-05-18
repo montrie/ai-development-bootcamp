@@ -123,6 +123,16 @@ test('Admin deleting a user produces an audit log entry', async ({ request }) =>
   expect(entry!.resourceId).toBe(alice!.id);
 });
 
+test('Admin attempting to delete a non-existent user records a FAILURE audit entry', async ({ request }) => {
+  await request.delete('/api/admin/users/99999', {
+    headers: { Authorization: `Bearer ${adminToken}` },
+  });
+
+  const logs = await getAuditLogsViaApi(request, adminToken);
+  const entry = logs.find(l => l.actionType === 'ADMIN_DELETE_USER' && l.outcome === 'FAILURE');
+  expect(entry).toBeDefined();
+});
+
 test("Admin resetting a user's password produces an audit log entry", async ({ request }) => {
   await registerViaApi(request, 'alice', 'oldpass');
 

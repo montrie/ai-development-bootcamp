@@ -84,6 +84,14 @@ class V4AuditApiTest {
     }
 
     @Test
+    void searchAuditLogsReturns400ForUnknownActionType() throws Exception {
+        mvc.perform(get("/api/admin/audit-logs")
+                .with(MockUserFactory.jwtAsAdmin("admin"))
+                .param("actionType", "USER_LOIGN"))
+            .andExpect(status().isBadRequest());
+    }
+
+    @Test
     void searchAuditLogsFiltersOnActionType() throws Exception {
         given(auditService.search(any(), isNull(), isNull(), isNull()))
             .willReturn(List.of(sampleLog()));
