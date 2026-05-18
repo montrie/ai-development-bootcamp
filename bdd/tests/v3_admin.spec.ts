@@ -44,6 +44,8 @@ test('Confirm reset button is disabled until a password is entered', async ({ pa
   await expect(page.locator('#confirm-reset-button')).toBeDisabled();
   await page.fill('#new-password-input', 'newpass123');
   await expect(page.locator('#confirm-reset-button')).toBeEnabled();
+  await page.fill('#new-password-input', '   ');
+  await expect(page.locator('#confirm-reset-button')).toBeDisabled();
   await page.fill('#new-password-input', '');
   await expect(page.locator('#confirm-reset-button')).toBeDisabled();
 });
