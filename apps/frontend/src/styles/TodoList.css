@@ -192,10 +192,9 @@
   font-weight: 500;
   color: #555;
   background: #f0f0f0;
-  border-radius: 999px;
+  border-radius: 0.4rem;
   padding: 0.18rem 0.55rem;
-  white-space: nowrap;
-  flex-shrink: 0;
+  word-break: break-all;
 }
 
 .empty-placeholder {
