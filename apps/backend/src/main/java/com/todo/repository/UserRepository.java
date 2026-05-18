@@ -24,7 +24,4 @@ public interface UserRepository extends JpaRepository<User, Long> {
     @Query(value = "UPDATE users SET custom_order = array_remove(custom_order, :todoId) WHERE id = :userId", nativeQuery = true)
     void removeFromCustomOrder(@Param("userId") Long userId, @Param("todoId") Long todoId);
 
-    @Modifying
-    @Query(value = "UPDATE users SET sort_mode = :sortMode, custom_order = :customOrder WHERE id = :userId", nativeQuery = true)
-    void updateSortModeAndCustomOrder(@Param("userId") Long userId, @Param("sortMode") String sortMode, @Param("customOrder") Long[] customOrder);
 }

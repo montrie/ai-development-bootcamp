@@ -186,7 +186,7 @@ class V6TodoSharingTest extends TodoControllerTestBase {
             .andExpect(status().isForbidden());
     }
 
-    // Test 8: DELETE /api/todos/{id}/share as a valid recipient → 204
+    // Test 8: DELETE /api/todos/{id}/share as a valid recipient → 204, logs TODO_UNSHARED audit event
     @Test
     void unshareTodo_asRecipient_returns204() throws Exception {
         given(todoShareRepository.existsByTodoIdAndRecipientUserId(1L, owner.getId())).willReturn(true);
@@ -195,6 +195,7 @@ class V6TodoSharingTest extends TodoControllerTestBase {
             .andExpect(status().isNoContent());
 
         verify(todoShareRepository).deleteByTodoIdAndRecipientUser(1L, owner);
+        verify(auditService).log(AuditActionType.TODO_UNSHARED, "user", "SUCCESS", 1L);
     }
 
     // Test 9: DELETE /api/todos/{id}/share when todo is not shared with caller → 403
