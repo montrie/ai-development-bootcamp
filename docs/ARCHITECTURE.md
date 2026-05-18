@@ -65,6 +65,11 @@ All endpoints are prefixed `/api`.
 | PATCH | `/api/todos/{id}` | `{ "done"?: boolean, "text"?: string, "dueDate"?: string\|null }` | Partially update a ToDo item; all fields optional (text and dueDate added in V5) |
 | DELETE | `/api/todos/{id}` | — | Permanently delete a ToDo item |
 | DELETE | `/api/todos` | — | Delete all ToDo items (E2E test state reset; foundation for future "Clear list" feature) |
+| POST | `/api/todos/shares` | `{ "todoIds": number[], "recipientUsername": string }` | Share one or more todos with another user (V6) |
+| DELETE | `/api/todos/{id}/share` | — | Remove a shared todo from the caller's list (V6) |
+| PATCH | `/api/todos/reorder` | `{ "order": number[] }` | Set CUSTOM sort mode and save a new todo order for the authenticated user (V6) |
+| GET | `/api/users/me` | — | Return the authenticated user's profile including sortMode (V6) |
+| PATCH | `/api/users/me/sort-mode` | `{ "sortMode": string }` | Update the authenticated user's sort mode (V6) |
 
 ### 4.2 Data Model
 

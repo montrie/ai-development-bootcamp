@@ -3,26 +3,15 @@ package com.todo.controller;
 import com.todo.config.SecurityConfig;
 import com.todo.model.Todo;
 import com.todo.model.User;
-import com.todo.repository.TodoRepository;
-import com.todo.repository.TodoShareRepository;
-import com.todo.repository.UserRepository;
-import com.todo.security.AuditAccessDeniedHandler;
-import com.todo.security.AuditAuthenticationEntryPoint;
-import com.todo.service.AuditService;
-import com.todo.service.JwtService;
-import com.todo.service.TodoService;
 import com.todo.support.MockUserFactory;
+import com.todo.support.TodoControllerTestBase;
 import jakarta.servlet.http.HttpServletResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.oauth2.jwt.JwtDecoder;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
 import java.util.Optional;
@@ -34,37 +23,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(TodoController.class)
 @Import(SecurityConfig.class)
-class V6ReorderTodosTest {
-
-    @Autowired
-    MockMvc mvc;
-
-    @MockitoBean
-    TodoRepository repository;
-
-    @MockitoBean
-    TodoShareRepository todoShareRepository;
-
-    @MockitoBean
-    UserRepository userRepository;
-
-    @MockitoBean
-    JwtService jwtService;
-
-    @MockitoBean
-    JwtDecoder jwtDecoder;
-
-    @MockitoBean
-    AuditService auditService;
-
-    @MockitoBean
-    TodoService todoService;
-
-    @MockitoBean
-    AuditAuthenticationEntryPoint auditAuthenticationEntryPoint;
-
-    @MockitoBean
-    AuditAccessDeniedHandler auditAccessDeniedHandler;
+class V6ReorderTodosTest extends TodoControllerTestBase {
 
     User owner;
     Todo todo1;
@@ -92,7 +51,7 @@ class V6ReorderTodosTest {
 
         given(userRepository.findByUsername("user")).willReturn(Optional.of(owner));
         given(userRepository.save(any(User.class))).willAnswer(inv -> inv.getArgument(0));
-        given(repository.findAllByUserOrderByCreatedAtAsc(owner)).willReturn(List.of(todo1, todo2, todo3));
+        given(todoRepository.findAllByUserOrderByCreatedAtAsc(owner)).willReturn(List.of(todo1, todo2, todo3));
 
         Mockito.doAnswer(inv -> {
             HttpServletResponse resp = inv.getArgument(1);
@@ -103,13 +62,7 @@ class V6ReorderTodosTest {
 
     @Test
     void reorderWithAllOwnedIdsReturns200() throws Exception {
-        // Use reflection-like approach: set IDs via the test by mocking the owned set
-        Todo a = new Todo(); a.setText("A"); a.setUser(owner);
-        Todo b = new Todo(); b.setText("B"); b.setUser(owner);
-
-        // We rely on the controller checking findAllByUserOrderByCreatedAtAsc for ownership.
-        // Since these todos have null IDs, we stub the owned list with explicit IDs via a fresh mock.
-        given(repository.findAllByUserOrderByCreatedAtAsc(owner)).willReturn(List.of(todo1, todo2, todo3));
+        given(todoRepository.findAllByUserOrderByCreatedAtAsc(owner)).willReturn(List.of(todo1, todo2, todo3));
 
         mvc.perform(patch("/api/todos/reorder")
                         .with(MockUserFactory.jwtAs("user"))
@@ -120,9 +73,7 @@ class V6ReorderTodosTest {
 
     @Test
     void reorderWithForeignIdReturns403() throws Exception {
-        // The owned IDs are the IDs of todo1/todo2/todo3 (null since not persisted).
-        // We include a non-null ID that is not in the owned set to trigger 403.
-        given(repository.findAllByUserOrderByCreatedAtAsc(owner)).willReturn(List.of(todo1, todo2));
+        given(todoRepository.findAllByUserOrderByCreatedAtAsc(owner)).willReturn(List.of(todo1, todo2));
 
         mvc.perform(patch("/api/todos/reorder")
                         .with(MockUserFactory.jwtAs("user"))
@@ -133,7 +84,7 @@ class V6ReorderTodosTest {
 
     @Test
     void reorderWithNonExistentIdReturns403() throws Exception {
-        given(repository.findAllByUserOrderByCreatedAtAsc(owner)).willReturn(List.of(todo1));
+        given(todoRepository.findAllByUserOrderByCreatedAtAsc(owner)).willReturn(List.of(todo1));
 
         mvc.perform(patch("/api/todos/reorder")
                         .with(MockUserFactory.jwtAs("user"))

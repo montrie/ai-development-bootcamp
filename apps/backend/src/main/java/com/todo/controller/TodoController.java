@@ -225,6 +225,7 @@ public class TodoController {
     @ApiResponse(responseCode = "200", description = "Todos shared successfully")
     @ApiResponse(responseCode = "400", description = "Invalid recipient or share already exists")
     @PostMapping("/shares")
+    @Transactional
     public ResponseEntity<String> shareTodos(@RequestBody ShareTodosRequest req) {
         String actorUsername = getAuthenticatedUsername();
 
