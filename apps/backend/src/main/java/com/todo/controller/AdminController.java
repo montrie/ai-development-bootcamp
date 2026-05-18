@@ -78,7 +78,7 @@ public class AdminController {
         if (actionType != null) {
             try {
                 actionTypeFilter = AuditActionType.valueOf(actionType);
-            } catch (IllegalArgumentException ignored) {
+            } catch (IllegalArgumentException e) {
                 throw new IllegalArgumentException("Unknown actionType: " + actionType);
             }
         }
