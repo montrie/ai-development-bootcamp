@@ -28,6 +28,7 @@ export default function SharingPanel({
           className="sharing-recipient-input"
           value={recipientUsername}
           onChange={(e) => onRecipientChange(e.target.value)}
+          onKeyDown={(e) => { if (e.key === 'Enter' && !isDisabled) onShare(); }}
           placeholder="Recipient username"
         />
         <button className="share-submit-button" disabled={isDisabled} onClick={onShare}>

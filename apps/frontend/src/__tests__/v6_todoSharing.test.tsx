@@ -131,6 +131,29 @@ describe('V6 Todo Sharing', () => {
     expect(recipientInput.value).toBe('');
   });
 
+  it('pressing Enter in recipient input triggers share when todo selected and username filled', async () => {
+    vi.mocked(api.fetchTodos).mockResolvedValue([todo(1, 'Buy milk', false, null)]);
+    vi.mocked(api.shareTodos).mockResolvedValue(undefined);
+    const user = userEvent.setup();
+    render(<App />);
+    await screen.findByText('Buy milk');
+
+    await user.click(document.getElementById('share-todos-button') as HTMLElement);
+    const panel = document.getElementById('sharing-panel') as HTMLElement;
+
+    const buyMilkItem = Array.from(panel.querySelectorAll('.todo-item')).find(
+      (el) => el.textContent?.includes('Buy milk')
+    ) as HTMLElement;
+    await user.click(buyMilkItem);
+
+    const recipientInput = panel.querySelector('.sharing-recipient-input') as HTMLInputElement;
+    await user.type(recipientInput, 'alice');
+    await user.keyboard('{Enter}');
+
+    expect(api.shareTodos).toHaveBeenCalledWith([1], 'alice');
+    expect(document.querySelector('.toast.success')).toBeInTheDocument();
+  });
+
   it('failed share shows error toast and preserves state', async () => {
     vi.mocked(api.fetchTodos).mockResolvedValue([todo(1, 'Buy milk', false, null)]);
     vi.mocked(api.shareTodos).mockRejectedValue(new Error('user does not exist'));
