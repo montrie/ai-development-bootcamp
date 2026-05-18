@@ -74,13 +74,21 @@ public class AdminController {
             @RequestParam(required = false) String username,
             @RequestParam(required = false) String startDate,
             @RequestParam(required = false) String endDate) {
+        AuditActionType actionTypeFilter = null;
+        if (actionType != null) {
+            try {
+                actionTypeFilter = AuditActionType.valueOf(actionType);
+            } catch (IllegalArgumentException e) {
+                throw new IllegalArgumentException("Unknown actionType: " + actionType);
+            }
+        }
         OffsetDateTime start = startDate != null ? OffsetDateTime.parse(startDate) : null;
         OffsetDateTime end = endDate != null ? OffsetDateTime.parse(endDate) : null;
-        return auditService.search(actionType, username, start, end).stream()
+        return auditService.search(actionTypeFilter, username, start, end).stream()
             .map(a -> new AuditLogResponse(
                 a.getId(), a.getTimestamp().toString(),
-                a.getActionType(), a.getActorUsername(),
-                a.getOutcome(), a.getResourceId()))
+                a.getActionType().name(), a.getActorUsername(),
+                a.getOutcome().name(), a.getResourceId()))
             .toList();
     }
 
@@ -110,6 +118,11 @@ public class AdminController {
 
     @ExceptionHandler(DateTimeParseException.class)
     public ResponseEntity<Void> handleDateTimeParse() {
+        return ResponseEntity.badRequest().build();
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<Void> handleIllegalArgument() {
         return ResponseEntity.badRequest().build();
     }
 

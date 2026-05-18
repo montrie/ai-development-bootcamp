@@ -32,6 +32,11 @@ Feature: Audit Log API
     When the admin requests the audit log with startDate "2026-05-11T00:00:00Z" and endDate "2026-05-11T23:59:59Z"
     Then the response contains only entries within that date range
 
+  Scenario: Searching audit logs with an unknown action type returns 400
+    Given I log in as admin
+    When the admin requests audit logs filtered by an unknown action type
+    Then the response status should be 400
+
   Scenario: Regular user cannot retrieve audit log entries via the API
     Given I am logged in as "alice"
     When a regular user requests the audit log via the API

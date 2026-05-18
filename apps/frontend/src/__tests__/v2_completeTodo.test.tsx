@@ -11,7 +11,7 @@ const todo = (id: number, text: string, done = false) => ({ id, text, done });
 beforeEach(() => {
   vi.clearAllMocks();
   vi.mocked(api.fetchTodos).mockResolvedValue([todo(1, 'Buy milk', false)]);
-  vi.mocked(api.updateTodo).mockResolvedValue(todo(1, 'Buy milk', true));
+  vi.mocked(api.editTodo).mockResolvedValue(todo(1, 'Buy milk', true));
 });
 
 describe('Complete ToDo Item', () => {
@@ -34,22 +34,22 @@ describe('Complete ToDo Item', () => {
     expect(screen.getByRole('checkbox')).toBeChecked();
   });
 
-  it('calls updateTodo with done=true when an unchecked checkbox is clicked', async () => {
+  it('calls editTodo with done=true when an unchecked checkbox is clicked', async () => {
     const user = userEvent.setup();
     render(<App />);
     await screen.findByText('Buy milk');
     await user.click(screen.getByRole('checkbox'));
-    expect(api.updateTodo).toHaveBeenCalledWith(1, true);
+    expect(api.editTodo).toHaveBeenCalledWith(1, { done: true });
   });
 
-  it('calls updateTodo with done=false when a checked checkbox is clicked', async () => {
+  it('calls editTodo with done=false when a checked checkbox is clicked', async () => {
     vi.mocked(api.fetchTodos).mockResolvedValue([todo(1, 'Buy milk', true)]);
-    vi.mocked(api.updateTodo).mockResolvedValue(todo(1, 'Buy milk', false));
+    vi.mocked(api.editTodo).mockResolvedValue(todo(1, 'Buy milk', false));
     const user = userEvent.setup();
     render(<App />);
     await screen.findByText('Buy milk');
     await user.click(screen.getByRole('checkbox'));
-    expect(api.updateTodo).toHaveBeenCalledWith(1, false);
+    expect(api.editTodo).toHaveBeenCalledWith(1, { done: false });
   });
 
   it('applies the completed class to the text when the todo is done', async () => {

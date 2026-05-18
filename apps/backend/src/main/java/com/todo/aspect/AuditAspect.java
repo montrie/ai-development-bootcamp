@@ -1,9 +1,11 @@
 package com.todo.aspect;
 
+import com.todo.model.Outcome;
 import com.todo.model.Todo;
 import com.todo.service.AuditService;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.AfterReturning;
+import org.aspectj.lang.annotation.AfterThrowing;
 import org.aspectj.lang.annotation.Aspect;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
@@ -28,7 +30,13 @@ public class AuditAspect {
         } else {
             resourceId = null;
         }
-        auditService.log(auditAction.value(), actor(), "SUCCESS", resourceId);
+        auditService.log(auditAction.value(), actor(), Outcome.SUCCESS, resourceId);
+    }
+
+    @AfterThrowing(pointcut = "@annotation(auditAction)", throwing = "ex")
+    public void onAuditedMethodFailure(JoinPoint jp, AuditAction auditAction, Throwable ex) {
+        Long resourceId = jp.getArgs().length > 0 && jp.getArgs()[0] instanceof Long id ? id : null;
+        auditService.log(auditAction.value(), actor(), Outcome.FAILURE, resourceId);
     }
 
     private String actor() {

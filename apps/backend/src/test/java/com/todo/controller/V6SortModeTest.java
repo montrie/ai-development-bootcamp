@@ -1,6 +1,7 @@
 package com.todo.controller;
 
 import com.todo.config.SecurityConfig;
+import com.todo.model.SortMode;
 import com.todo.model.User;
 import com.todo.repository.UserRepository;
 import com.todo.security.AuditAccessDeniedHandler;
@@ -58,7 +59,7 @@ class V6SortModeTest {
     void setUp() throws Exception {
         alice = new User();
         alice.setUsername("alice");
-        alice.setSortMode("CREATED_ASC");
+        alice.setSortMode(SortMode.CREATED_ASC);
 
         given(userRepository.findByUsername("alice")).willReturn(Optional.of(alice));
         given(userRepository.save(any(User.class))).willAnswer(inv -> inv.getArgument(0));

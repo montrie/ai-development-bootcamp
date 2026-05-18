@@ -1,7 +1,13 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
 import { resetUsers, registerViaApi, loginViaApi, createTodoViaApi, navigateAsUser, ADMIN_USERNAME, ADMIN_PASSWORD } from './helpers';
 
 // Feature: Admin User Management (F-24, F-25, F-26, F-27, F-28)
+
+async function loginAsAdmin(page: Page) {
+  await page.fill('#username-input', ADMIN_USERNAME);
+  await page.fill('#password-input', ADMIN_PASSWORD);
+  await page.click('#login-button');
+}
 
 test.beforeEach(async ({ page, request }) => {
   await resetUsers(request);
@@ -9,9 +15,7 @@ test.beforeEach(async ({ page, request }) => {
 });
 
 test('Admin sees the user management panel instead of the todo list', async ({ page }) => {
-  await page.fill('#username-input', ADMIN_USERNAME);
-  await page.fill('#password-input', ADMIN_PASSWORD);
-  await page.click('#login-button');
+  await loginAsAdmin(page);
   await expect(page.locator('.user-management-panel')).toBeVisible();
   await expect(page.locator('#todo-input')).not.toBeVisible();
 });
@@ -19,9 +23,7 @@ test('Admin sees the user management panel instead of the todo list', async ({ p
 test('Admin can see all registered users', async ({ page, request }) => {
   await registerViaApi(request, 'alice', 'secret123');
   await page.reload();
-  await page.fill('#username-input', ADMIN_USERNAME);
-  await page.fill('#password-input', ADMIN_PASSWORD);
-  await page.click('#login-button');
+  await loginAsAdmin(page);
   await expect(page.locator('.user-item[data-username="alice"]')).toBeVisible();
 });
 
@@ -29,19 +31,29 @@ test('Admin can delete a user and their todos are removed', async ({ page, reque
   const aliceToken = await registerViaApi(request, 'alice', 'secret123');
   await createTodoViaApi(request, 'Alice task', aliceToken);
   await page.reload();
-  await page.fill('#username-input', ADMIN_USERNAME);
-  await page.fill('#password-input', ADMIN_PASSWORD);
-  await page.click('#login-button');
+  await loginAsAdmin(page);
   await page.getByRole('button', { name: /delete user alice/i }).click();
   await expect(page.locator('.user-item[data-username="alice"]')).not.toBeVisible();
+});
+
+test('Confirm reset button is disabled until a password is entered', async ({ page, request }) => {
+  await registerViaApi(request, 'alice', 'oldpass');
+  await page.reload();
+  await loginAsAdmin(page);
+  await page.getByRole('button', { name: /reset password for alice/i }).click();
+  await expect(page.locator('#confirm-reset-button')).toBeDisabled();
+  await page.fill('#new-password-input', 'newpass123');
+  await expect(page.locator('#confirm-reset-button')).toBeEnabled();
+  await page.fill('#new-password-input', '   ');
+  await expect(page.locator('#confirm-reset-button')).toBeDisabled();
+  await page.fill('#new-password-input', '');
+  await expect(page.locator('#confirm-reset-button')).toBeDisabled();
 });
 
 test('Admin can reset a user\'s password', async ({ page, request }) => {
   await registerViaApi(request, 'alice', 'oldpass');
   await page.reload();
-  await page.fill('#username-input', ADMIN_USERNAME);
-  await page.fill('#password-input', ADMIN_PASSWORD);
-  await page.click('#login-button');
+  await loginAsAdmin(page);
   await page.getByRole('button', { name: /reset password for alice/i }).click();
   await page.fill('#new-password-input', 'newpass123');
   await page.click('#confirm-reset-button');

@@ -9,7 +9,6 @@ vi.mock('../services/api', () => ({
   fetchUserProfile: vi.fn().mockResolvedValue({ sortMode: 'CREATED_ASC' }),
   shareTodos: vi.fn(),
   createTodo: vi.fn(),
-  updateTodo: vi.fn(),
   deleteTodo: vi.fn(),
   unshareTodo: vi.fn(),
   editTodo: vi.fn(),

@@ -1,6 +1,7 @@
 package com.todo.security;
 
 import com.todo.model.AuditActionType;
+import com.todo.model.Outcome;
 import com.todo.service.AuditService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -32,7 +33,7 @@ class V4AuditSecurityHandlersTest {
     void authenticationEntryPointLogsUnauthenticatedForAnonymousAndSends401() throws IOException {
         entryPoint.commence(request, response, new BadCredentialsException("bad"));
 
-        verify(auditService).log(AuditActionType.UNAUTHENTICATED, "anonymous", "FAILURE", null);
+        verify(auditService).log(AuditActionType.UNAUTHENTICATED, "anonymous", Outcome.FAILURE, null);
         verify(response).sendError(HttpServletResponse.SC_UNAUTHORIZED);
     }
 
@@ -44,7 +45,7 @@ class V4AuditSecurityHandlersTest {
 
         accessDeniedHandler.handle(request, response, new AccessDeniedException("denied"));
 
-        verify(auditService).log(AuditActionType.ACCESS_DENIED, "alice", "FAILURE", null);
+        verify(auditService).log(AuditActionType.ACCESS_DENIED, "alice", Outcome.FAILURE, null);
         verify(response).sendError(HttpServletResponse.SC_FORBIDDEN);
     }
 
@@ -52,7 +53,7 @@ class V4AuditSecurityHandlersTest {
     void accessDeniedHandlerLogsUnknownWhenNoAuthenticationPresent() throws IOException {
         accessDeniedHandler.handle(request, response, new AccessDeniedException("denied"));
 
-        verify(auditService).log(AuditActionType.ACCESS_DENIED, "unknown", "FAILURE", null);
+        verify(auditService).log(AuditActionType.ACCESS_DENIED, "unknown", Outcome.FAILURE, null);
         verify(response).sendError(HttpServletResponse.SC_FORBIDDEN);
     }
 }

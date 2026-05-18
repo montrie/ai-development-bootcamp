@@ -3,6 +3,7 @@ package com.todo.controller;
 import com.todo.aspect.AuditAspect;
 import com.todo.config.SecurityConfig;
 import com.todo.model.AuditActionType;
+import com.todo.model.Outcome;
 import com.todo.model.Todo;
 import com.todo.model.User;
 import com.todo.support.MockUserFactory;
@@ -57,7 +58,7 @@ class V4AuditTodoMutationsTest extends TodoControllerTestBase {
                 .content("{\"text\":\"task\"}"))
             .andExpect(status().isCreated());
 
-        verify(auditService).log(AuditActionType.TODO_CREATED, "user", "SUCCESS", 42L);
+        verify(auditService).log(AuditActionType.TODO_CREATED, "user", Outcome.SUCCESS, 42L);
     }
 
     @Test
@@ -76,7 +77,7 @@ class V4AuditTodoMutationsTest extends TodoControllerTestBase {
                 .content("{\"done\":true}"))
             .andExpect(status().isOk());
 
-        verify(auditService).log(AuditActionType.TODO_UPDATED, "user", "SUCCESS", 7L);
+        verify(auditService).log(AuditActionType.TODO_UPDATED, "user", Outcome.SUCCESS, 7L);
     }
 
     @Test
@@ -89,6 +90,6 @@ class V4AuditTodoMutationsTest extends TodoControllerTestBase {
                 .with(MockUserFactory.jwtAs("user")))
             .andExpect(status().isNoContent());
 
-        verify(auditService).log(AuditActionType.TODO_DELETED, "user", "SUCCESS", 7L);
+        verify(auditService).log(AuditActionType.TODO_DELETED, "user", Outcome.SUCCESS, 7L);
     }
 }

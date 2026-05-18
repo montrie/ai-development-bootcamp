@@ -1,6 +1,7 @@
 package com.todo.controller;
 
 import com.todo.model.AuditActionType;
+import com.todo.model.Outcome;
 import com.todo.service.AuditService;
 import com.todo.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -38,7 +39,7 @@ public class AuthController {
     @PostMapping("/register")
     public ResponseEntity<Map<String, String>> register(@RequestBody AuthRequest request) {
         String token = userService.register(request.username(), request.password());
-        auditService.log(AuditActionType.USER_REGISTERED, request.username(), "SUCCESS", null);
+        auditService.log(AuditActionType.USER_REGISTERED, request.username(), Outcome.SUCCESS, null);
         return ResponseEntity.status(HttpStatus.CREATED).body(Map.of("token", token));
     }
 
@@ -52,10 +53,10 @@ public class AuthController {
     public ResponseEntity<Map<String, String>> login(@RequestBody AuthRequest request) {
         try {
             String token = userService.login(request.username(), request.password());
-            auditService.log(AuditActionType.USER_LOGIN, request.username(), "SUCCESS", null);
+            auditService.log(AuditActionType.USER_LOGIN, request.username(), Outcome.SUCCESS, null);
             return ResponseEntity.ok(Map.of("token", token));
         } catch (UserService.InvalidCredentialsException e) {
-            auditService.log(AuditActionType.USER_LOGIN, request.username(), "FAILURE", null);
+            auditService.log(AuditActionType.USER_LOGIN, request.username(), Outcome.FAILURE, null);
             throw e;
         }
     }

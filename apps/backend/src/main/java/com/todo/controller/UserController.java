@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.security.Principal;
-import java.util.Arrays;
 import java.util.Map;
 
 @Tag(name = "Users", description = "Manage the authenticated user's own account")
@@ -44,7 +43,7 @@ public class UserController {
     public Map<String, String> getMe(Principal principal) {
         User user = userRepository.findByUsername(principal.getName())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN));
-        return Map.of("sortMode", user.getSortMode());
+        return Map.of("sortMode", user.getSortMode().name());
     }
 
     @Operation(summary = "Update sort mode", description = "Updates the sort mode preference for the authenticated user")
@@ -52,14 +51,15 @@ public class UserController {
     @ApiResponse(responseCode = "400", description = "Invalid sort mode value")
     @PatchMapping("/me/sort-mode")
     public void updateSortMode(@RequestBody UpdateSortModeRequest req, Principal principal) {
-        boolean valid = Arrays.stream(SortMode.values())
-                .anyMatch(m -> m.name().equals(req.sortMode()));
-        if (!valid) {
+        SortMode mode;
+        try {
+            mode = SortMode.valueOf(req.sortMode());
+        } catch (IllegalArgumentException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid sortMode: " + req.sortMode());
         }
         User user = userRepository.findByUsername(principal.getName())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN));
-        user.setSortMode(req.sortMode());
+        user.setSortMode(mode);
         userRepository.save(user);
     }
 

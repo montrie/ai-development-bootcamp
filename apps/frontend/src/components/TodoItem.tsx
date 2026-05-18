@@ -2,7 +2,7 @@ import { useState } from 'react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import type { Todo } from '../services/api';
-import { toLocalIso } from '../utils/date';
+import { toLocalIso, parseDateString } from '../utils/date';
 
 type Props = {
   todo: Todo;
@@ -60,18 +60,14 @@ export default function TodoItem({
 }: Props) {
   const [editText, setEditText] = useState(todo.text);
   const [editDueDate, setEditDueDate] = useState<Date | null>(
-    todo.dueDate ? (() => { const [y, m, d] = todo.dueDate!.split('-').map(Number); return new Date(y, m - 1, d); })() : null
+    todo.dueDate ? parseDateString(todo.dueDate) : null
   );
   const [editInvalid, setEditInvalid] = useState(false);
 
   // Reset local edit state whenever we enter edit mode
   function handleEditStart() {
     setEditText(todo.text);
-    setEditDueDate(
-      todo.dueDate
-        ? (() => { const [y, m, d] = todo.dueDate!.split('-').map(Number); return new Date(y, m - 1, d); })()
-        : null
-    );
+    setEditDueDate(todo.dueDate ? parseDateString(todo.dueDate) : null);
     setEditInvalid(false);
     onEditStart(todo.id);
   }

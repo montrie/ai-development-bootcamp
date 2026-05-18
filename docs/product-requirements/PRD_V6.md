@@ -32,7 +32,7 @@ Features F-01 through F-58 carry over unchanged from Version 5.
 | ID | Requirement |
 |---|---|
 | F-59 | The `users` table gains two columns: `sort_mode VARCHAR NOT NULL DEFAULT 'CREATED_ASC'` and `custom_order BIGINT[] NOT NULL DEFAULT '{}'`; existing rows are migrated to these defaults |
-| F-60 | The valid values for `sort_mode` are exactly: `CREATED_ASC`, `CREATED_DESC`, `DUE_DATE_ASC`, `DUE_DATE_DESC`, `ALPHA_ASC`, `ALPHA_DESC`, `CUSTOM`; any other value is rejected with HTTP 400 |
+| F-60 | The valid values for `sort_mode` are exactly: `CREATED_ASC`, `CREATED_DESC`, `DUE_DATE_EARLIEST_FIRST`, `DUE_DATE_LATEST_FIRST`, `ALPHA_ASC`, `ALPHA_DESC`, `CUSTOM`; any other value is rejected with HTTP 400 |
 
 ### 3.2 Sort Mode — API
 
@@ -40,7 +40,7 @@ Features F-01 through F-58 carry over unchanged from Version 5.
 |---|---|
 | F-61 | `PATCH /api/users/me/sort-mode` (authenticated only — unauthenticated → HTTP 401) accepts `{ "sortMode": "<value>" }` and updates the user's `sort_mode`; returns HTTP 200 with the updated sort mode on success |
 | F-62 | `PATCH /api/todos/reorder` (authenticated only — unauthenticated → HTTP 401; IDs belonging to another user → HTTP 403) accepts `{ "order": [<id>, ...] }`; sets `sort_mode = 'CUSTOM'` and replaces `custom_order` with the supplied array; returns HTTP 200 on success |
-| F-63 | `GET /api/todos` returns todos ordered by the user's active `sort_mode`: `CREATED_ASC` → `created_at ASC`; `CREATED_DESC` → `created_at DESC`; `DUE_DATE_ASC` → `due_date ASC NULLS LAST, created_at ASC`; `DUE_DATE_DESC` → `due_date DESC NULLS LAST, created_at ASC`; `ALPHA_ASC` → `text ASC`; `ALPHA_DESC` → `text DESC`; `CUSTOM` → `array_position(custom_order, id)` with IDs absent from `custom_order` appended sorted by `created_at ASC` |
+| F-63 | `GET /api/todos` returns todos ordered by the user's active `sort_mode`: `CREATED_ASC` → `created_at ASC`; `CREATED_DESC` → `created_at DESC`; `DUE_DATE_EARLIEST_FIRST` → `due_date ASC NULLS LAST, created_at ASC`; `DUE_DATE_LATEST_FIRST` → `due_date DESC NULLS LAST, created_at ASC`; `ALPHA_ASC` → `text ASC`; `ALPHA_DESC` → `text DESC`; `CUSTOM` → `array_position(custom_order, id)` with IDs absent from `custom_order` appended sorted by `created_at ASC` |
 
 ### 3.3 Sort Mode — Custom Order Maintenance
 
@@ -52,7 +52,7 @@ Features F-01 through F-58 carry over unchanged from Version 5.
 
 | ID | Requirement |
 |---|---|
-| F-65 | The UI displays a sort mode selector above the todo list showing the current active mode, offering: "Created (oldest first)" (`CREATED_ASC`), "Created (newest first)" (`CREATED_DESC`), "Due date (earliest first)" (`DUE_DATE_ASC`), "Due date (latest first)" (`DUE_DATE_DESC`), "Title (A → Z)" (`ALPHA_ASC`), "Title (Z → A)" (`ALPHA_DESC`), and "Custom order" (`CUSTOM`); selecting `CUSTOM` restores the order stored in `custom_order` (i.e. the last manually arranged order) |
+| F-65 | The UI displays a sort mode selector above the todo list showing the current active mode, offering: "Created (oldest first)" (`CREATED_ASC`), "Created (newest first)" (`CREATED_DESC`), "Due date (earliest first)" (`DUE_DATE_EARLIEST_FIRST`), "Due date (latest first)" (`DUE_DATE_LATEST_FIRST`), "Title (A → Z)" (`ALPHA_ASC`), "Title (Z → A)" (`ALPHA_DESC`), and "Custom order" (`CUSTOM`); selecting `CUSTOM` restores the order stored in `custom_order` (i.e. the last manually arranged order) |
 | F-66 | Selecting a sort mode calls `PATCH /api/users/me/sort-mode` (selector is disabled while the request is in flight) and re-renders the list in the order returned by the subsequent `GET /api/todos` |
 
 ### 3.5 Drag & Drop — UI Behaviour

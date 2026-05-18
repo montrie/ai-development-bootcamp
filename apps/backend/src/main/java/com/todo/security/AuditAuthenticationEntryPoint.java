@@ -1,6 +1,7 @@
 package com.todo.security;
 
 import com.todo.model.AuditActionType;
+import com.todo.model.Outcome;
 import com.todo.service.AuditService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -19,7 +20,7 @@ public class AuditAuthenticationEntryPoint implements AuthenticationEntryPoint {
     @Override
     public void commence(HttpServletRequest req, HttpServletResponse res,
                          AuthenticationException ex) throws IOException {
-        auditService.log(AuditActionType.UNAUTHENTICATED, "anonymous", "FAILURE", null);
+        auditService.log(AuditActionType.UNAUTHENTICATED, "anonymous", Outcome.FAILURE, null);
         res.sendError(HttpServletResponse.SC_UNAUTHORIZED);
     }
 }

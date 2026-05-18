@@ -1,6 +1,7 @@
 package com.todo.controller;
 
 import com.todo.config.SecurityConfig;
+import com.todo.model.SortMode;
 import com.todo.model.Todo;
 import com.todo.model.User;
 import com.todo.support.MockUserFactory;
@@ -34,7 +35,7 @@ class V6ReorderTodosTest extends TodoControllerTestBase {
     void setUp() throws Exception {
         owner = new User();
         owner.setUsername("user");
-        owner.setSortMode("CREATED_ASC");
+        owner.setSortMode(SortMode.CREATED_ASC);
         owner.setCustomOrder(new Long[]{});
 
         todo1 = new Todo();

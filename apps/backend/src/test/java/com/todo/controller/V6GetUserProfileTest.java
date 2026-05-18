@@ -1,6 +1,7 @@
 package com.todo.controller;
 
 import com.todo.config.SecurityConfig;
+import com.todo.model.SortMode;
 import com.todo.model.User;
 import com.todo.repository.UserRepository;
 import com.todo.security.AuditAccessDeniedHandler;
@@ -64,7 +65,7 @@ class V6GetUserProfileTest {
     void getMeReturnsSortModeForAuthenticatedUser() throws Exception {
         User alice = new User();
         alice.setUsername("alice");
-        alice.setSortMode("CREATED_ASC");
+        alice.setSortMode(SortMode.CREATED_ASC);
 
         given(userRepository.findByUsername("alice")).willReturn(Optional.of(alice));
 
@@ -77,7 +78,7 @@ class V6GetUserProfileTest {
     void getMeReturnsCustomSortModeWhenSet() throws Exception {
         User bob = new User();
         bob.setUsername("bob");
-        bob.setSortMode("CUSTOM");
+        bob.setSortMode(SortMode.CUSTOM);
 
         given(userRepository.findByUsername("bob")).willReturn(Optional.of(bob));
 
