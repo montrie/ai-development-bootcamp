@@ -28,7 +28,7 @@ Feature: Admin User Management
     Then the confirm reset button should be disabled
     When I type "newpass123" in the new password field
     Then the confirm reset button should be enabled
-    When I type "   " in the new password field
+    When I replace the new password field with "   "
     Then the confirm reset button should be disabled
     When I clear the new password field
     Then the confirm reset button should be disabled
