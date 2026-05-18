@@ -44,7 +44,7 @@ export default function App() {
     fetchTodos()
       .then(setTodos)
       .catch(() => setError('Could not reach the server. Changes will not be saved.'));
-  }, [token]);
+  }, [token, role]);
 
   useEffect(() => {
     if (!toast) return;
@@ -166,7 +166,7 @@ export default function App() {
     dragIndexRef.current = index;
   }
 
-  function handleDrop(_index: number) {
+  function handleDrop() {
     // The optimistic reorder already happened incrementally in handleDragOver;
     // the final persist is done in handleDragEnd once the drag completes.
   }
