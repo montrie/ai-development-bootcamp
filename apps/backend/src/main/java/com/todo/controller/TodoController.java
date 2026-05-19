@@ -156,6 +156,10 @@ public class TodoController {
     // Map<String, Object> is intentional: a typed record cannot distinguish an absent key from an
     // explicit null, which is required to support clearing dueDate with "dueDate": null.
     @PatchMapping("/{id}")
+    // @Transactional spans findAccessibleTodo (which dereferences todo.getUser()) and
+    // repository.save in a single session. Required after disabling OSIV; otherwise the lazy
+    // Todo.user proxy throws LazyInitializationException after findById returns.
+    @Transactional
     public Todo updateTodo(
             @Parameter(description = "ID of the todo to update") @PathVariable Long id,
             @RequestBody Map<String, Object> patch) {
