@@ -20,7 +20,20 @@
   <properties>
     <java.version>26</java.version>
     <springdoc.version>3.0.3</springdoc.version>
+    <testcontainers.version>1.21.3</testcontainers.version>
   </properties>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.testcontainers</groupId>
+        <artifactId>testcontainers-bom</artifactId>
+        <version>${testcontainers.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
 
   <dependencies>
     <dependency>
@@ -88,6 +101,21 @@
       <artifactId>spring-security-test</artifactId>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-testcontainers</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.testcontainers</groupId>
+      <artifactId>junit-jupiter</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.testcontainers</groupId>
+      <artifactId>postgresql</artifactId>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <build>
@@ -95,6 +123,29 @@
       <plugin>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-maven-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <systemPropertyVariables>
+            <!--
+              Pin the docker-java API version. docker-java's auto-negotiation falls
+              back to API 1.32 when the daemon doesn't respond with a Ping during
+              probing (observed on WSL2 with /var/run/docker.sock), and 1.32 is
+              below the daemon's stated minimum of 1.40. 1.43 = Docker 20.10+,
+              accepted by every supported daemon.
+            -->
+            <api.version>1.43</api.version>
+            <!--
+              Disable the Ryuk reaper container: its host-side port binding is not
+              reachable in some sandboxed/restricted networking setups (WSL,
+              tightened CI egress). Cost: orphaned containers must be cleaned
+              manually if a test JVM is killed mid-run.
+            -->
+            <testcontainers.ryuk.disabled>true</testcontainers.ryuk.disabled>
+          </systemPropertyVariables>
+        </configuration>
       </plugin>
     </plugins>
   </build>
