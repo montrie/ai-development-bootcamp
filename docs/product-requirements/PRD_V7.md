@@ -60,6 +60,13 @@ No production-code dependencies change.
 
 | ID | Requirement |
 |---|---|
-| I-12 | V7 does not introduce JPA / Hibernate performance tuning (`@EntityGraph`, `JOIN FETCH`, DTO projections, OSIV disablement) — that work is sequenced as the next V7 chunk and depends on this foundation |
+| I-12 | V7 does not introduce the remaining JPA / Hibernate performance-tuning sub-concepts — DTO projections (`SELECT new com.todo.dto...` constructor expressions), `@BatchSize` / `hibernate.default_batch_fetch_size`, the Hibernate L2 / query cache, and keyset pagination on the `findAllByUserOrderBy*` family — that work is sequenced for a later chunk |
 | I-13 | V7 does not change CI configuration; the GitHub-hosted runners already expose a Docker daemon and require no additional steps |
 | I-14 | V7 does not add a JMH benchmark harness or a load-test profile |
+
+### 3.5 Chunk 2 — JPA Tuning (Measurement Subset)
+
+| ID | Requirement |
+|---|---|
+| I-15 | A repository integration test `V7CustomOrderExplainTest` issues `EXPLAIN (ANALYZE, FORMAT TEXT)` against the `findAllByUserOrderByCustom` shape and asserts (a) the top-level operator is a `Sort`, (b) the `todos` table appears as an underlying scan, and (c) the reported `Execution Time` stays under a documented upper bound. The captured plan is logged at INFO so the walkthrough is visible when the test is run locally |
+| I-16 | `UserRepository.removeFromCustomOrder` carries `@Modifying(flushAutomatically = true, clearAutomatically = true)` so a same-transaction `findById` after the native `array_remove` returns the post-update state. A regression test `V7UserRepositoryTest.removeFromCustomOrder_doesNotReturnStaleStateForSubsequentRead` covers this; the trade-off (persistence context cleared for every entity type in the current session) is documented inline at the annotation and in `.tips/jpa-n-plus-one-tuning.md` |
