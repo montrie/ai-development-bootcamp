@@ -2,8 +2,6 @@ package com.todo.repository;
 
 import com.todo.model.User;
 import com.todo.support.IntegrationTestBase;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,17 +14,14 @@ class V7UserRepositoryTest extends IntegrationTestBase {
     @Autowired
     UserRepository userRepository;
 
-    @PersistenceContext
-    EntityManager entityManager;
-
     @Test
     void removeFromCustomOrder_stripsTargetIdAndKeepsTheRest() {
         User user = saveUserWithCustomOrder("array-remove-user", 10L, 20L, 30L, 40L);
 
         userRepository.removeFromCustomOrder(user.getId(), 20L);
-        entityManager.refresh(user);
 
-        assertThat(user.getCustomOrder()).containsExactly(10L, 30L, 40L);
+        User reread = userRepository.findById(user.getId()).orElseThrow();
+        assertThat(reread.getCustomOrder()).containsExactly(10L, 30L, 40L);
     }
 
     @Test
@@ -34,9 +29,23 @@ class V7UserRepositoryTest extends IntegrationTestBase {
         User user = saveUserWithCustomOrder("array-remove-missing-user", 1L, 2L, 3L);
 
         userRepository.removeFromCustomOrder(user.getId(), 999L);
-        entityManager.refresh(user);
 
-        assertThat(user.getCustomOrder()).containsExactly(1L, 2L, 3L);
+        User reread = userRepository.findById(user.getId()).orElseThrow();
+        assertThat(reread.getCustomOrder()).containsExactly(1L, 2L, 3L);
+    }
+
+    // Regression guard for the persistence-context staleness fix. Before
+    // @Modifying(clearAutomatically = true) was applied, the same-transaction findById below
+    // returned the pre-update User from the first-level cache and this assertion failed.
+    // See docs/future-concepts.md:137 and .tips/jpa-n-plus-one-tuning.md.
+    @Test
+    void removeFromCustomOrder_doesNotReturnStaleStateForSubsequentRead() {
+        User user = saveUserWithCustomOrder("stale-state-user", 100L, 200L, 300L);
+
+        userRepository.removeFromCustomOrder(user.getId(), 200L);
+
+        User reread = userRepository.findById(user.getId()).orElseThrow();
+        assertThat(reread.getCustomOrder()).containsExactly(100L, 300L);
     }
 
     private User saveUserWithCustomOrder(String username, Long... customOrder) {

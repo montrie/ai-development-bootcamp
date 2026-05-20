@@ -207,6 +207,9 @@ public class TodoController {
                 .filter(t -> t.getUser().getUsername().equals(user.getUsername()))
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN));
         repository.delete(todo);
+        // removeFromCustomOrder is @Modifying(flushAutomatically=true, clearAutomatically=true):
+        // the post-update clear detaches every entity this tx loaded (including `user`), so any
+        // code added below must re-read via userRepository.findById to see fresh state.
         userRepository.removeFromCustomOrder(user.getId(), id);
     }
 
