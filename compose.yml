@@ -57,8 +57,22 @@ services:
     # src/ is mounted so new/changed source files are picked up without rebuilding the image.
     # target/ is intentionally NOT mounted — the container compiles to its own ephemeral
     # filesystem, avoiding stale .class files from previous host builds.
+    #
+    # /var/run/docker.sock is mounted so Testcontainers (V7 integration tests) can spawn
+    # sibling containers on the host's Docker daemon — Docker-out-of-Docker (DooD), not
+    # Docker-in-Docker. Without this mount, V7*Test fails with
+    # "Could not find a valid Docker environment".
     volumes:
       - ./apps/backend/src:/app/src
+      - /var/run/docker.sock:/var/run/docker.sock
+    # Sibling containers spawned by Testcontainers publish their ports on the host's docker0
+    # bridge, not inside this container. TESTCONTAINERS_HOST_OVERRIDE tells Testcontainers to
+    # connect via host.docker.internal, which extra_hosts maps to the host gateway on Linux
+    # GHA runners (and is already resolvable on Docker Desktop).
+    environment:
+      TESTCONTAINERS_HOST_OVERRIDE: host.docker.internal
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     command: mvn clean test
 
   frontend-unit-test:
